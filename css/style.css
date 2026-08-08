@@ -1,0 +1,167 @@
+body{margin:0;background:#f4f1e8;font-family:Arial;color:#17324d}
+header{background:#17324d;color:#fff;text-align:center;padding:16px}
+.screen{display:none;max-width:430px;margin:auto;padding:16px}.active{display:block}
+.card{background:#fff;border:1px solid #ddd;border-radius:10px;padding:12px;margin:10px 0;cursor:pointer}
+.title{font-weight:bold;font-size:18px}
+.sub{color:#666;font-size:13px}
+.badge{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:10px;font-size:12px;margin-top:6px}
+.btn{background:#6f7c58;color:#fff;padding:10px;border-radius:8px;text-align:center;margin-top:10px;cursor:pointer}
+input,textarea{width:100%;box-sizing:border-box;padding:8px;margin:6px 0}.back{cursor:pointer;font-weight:bold}
+label.chk{display:flex;align-items:center;gap:8px;margin:6px 0;} input[type=checkbox]{margin:0;}
+#checklist .chk{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #e5e5e5;font-size:18px;}#checklist .chk input{width:22px;height:22px;flex:0 0 22px;margin:0;}#checklist .chk span{flex:1;}
+#photosContainer {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+#photosContainer > div {
+    min-width: 0;
+}
+
+#photosContainer img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+#photosContainer .btn {
+    margin-top: 8px;
+    text-align: center;
+}
+
+#photosContainer > div {
+    width: 100%;
+    min-width: 0;
+}
+
+#photosContainer img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+#photosContainer .btn {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* =========================================
+   MOBILE - HOUSE MANAGEMENT
+   ========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+header {
+    width: 100%;
+    padding: 28px 20px;
+    text-align: center;
+}
+
+header h2 {
+    margin: 0;
+    font-size: 28px;
+}
+
+header small {
+    display: block;
+    margin-top: 10px;
+    font-size: 15px;
+}
+
+.screen {
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 18px;
+}
+
+.btn,
+button {
+    min-height: 48px;
+}
+
+input,
+select,
+textarea {
+    max-width: 100%;
+}
+
+.card {
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+
+    header {
+        padding: 24px 16px;
+    }
+
+    header h2 {
+        font-size: 24px;
+        letter-spacing: 0.5px;
+    }
+
+    header small {
+        font-size: 14px;
+    }
+
+    .screen {
+        padding: 20px 16px 32px;
+    }
+
+    h2 {
+        font-size: 25px;
+    }
+
+    h3 {
+        font-size: 21px;
+    }
+
+    .btn {
+        width: 100%;
+        min-height: 52px;
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    button {
+        min-height: 46px;
+        padding: 10px 14px;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .back {
+        padding: 8px 0 16px;
+        font-size: 17px;
+    }
+
+    .card {
+        padding: 18px;
+        margin-bottom: 14px;
+    }
+}

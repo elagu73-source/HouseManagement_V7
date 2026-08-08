@@ -1,0 +1,360 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>House Management V7</title>
+<link rel="stylesheet" href="css/style.css"></head><body>
+<header><h2>HOUSE MANAGEMENT</h2><small>Costa Boutique</small></header>
+
+<section id="home" class="screen active">
+<h3>Propiedades</h3>
+
+<input
+    id="searchProperty"
+    type="text"
+    placeholder="🔎 Buscar propiedad..."
+    oninput="render()"
+    style="width:100%;box-sizing:border-box;margin-bottom:12px;"
+>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+    <button onclick="setPropertyFilter('Todas')">Todas</button>
+    <button onclick="setPropertyFilter('Disponible')">Disponibles</button>
+    <button onclick="setPropertyFilter('Ocupada')">Ocupadas</button>
+    <button onclick="setPropertyFilter('Mantenimiento')">Mantenimiento</button>
+</div>
+
+<div id="houses"></div>
+</section>
+
+<section id="property" class="screen">
+<div class="back" onclick="go('home')">← Propiedades</div>
+<h2 id="title"></h2>
+<div id="summary"></div>
+<div class="btn" onclick="editCurrent()">Editar</div>
+<div class="btn" onclick="startPreparation()">🧹 Preparar Casa</div>
+<div class="btn" onclick="openChecklistEditor()">✏️ Editar Checklist</div>
+<div class="btn" onclick="abrirManualCasa()">🧠 Manual de la Casa</div>
+<div class="btn" onclick="openPhotos()">📷 Fotos</div>
+<div class="btn" onclick="openInfoGeneral()">🏠 Información general</div>
+<div class="btn" onclick="openIncidencias()">🚨 Incidencias</div>
+<div class="btn" onclick="openInventario()">📦 Inventario</div>
+</section>
+
+<section id="infoGeneral" class="screen">
+
+<div class="back" onclick="go('property')">← Casa</div>
+
+<h2>🏠 Información general</h2>
+
+<label>Nombre de la casa</label>
+<input id="infoNombre">
+
+<label>Dirección</label>
+<input id="infoDireccion">
+
+<label>Propietario</label>
+<input id="infoPropietario">
+
+<label>Teléfono</label>
+<input id="infoTelefono">
+
+<label>Capacidad máxima</label>
+<input id="infoCapacidad">
+
+<label>Habitaciones</label>
+<input id="infoHabitaciones">
+
+<label>Baños</label>
+<input id="infoBanios">
+
+<label>WiFi</label>
+<input id="infoWifi">
+
+<label>Alarma</label>
+<input id="infoAlarma">
+
+<label>Observaciones generales</label>
+<textarea id="infoObservaciones"></textarea>
+
+<div class="btn" onclick="guardarInfoGeneral()">💾 Guardar</div>
+
+</section>
+
+<section id="incidencias" class="screen">
+
+<div class="back" onclick="go('property')">← Casa</div>
+
+<h2>🚨 Incidencias</h2>
+
+<div id="listaIncidencias"></div>
+
+<div class="btn" onclick="nuevaIncidencia()">➕ Nueva incidencia</div>
+
+<div id="formIncidencia" style="display:none;">
+
+    <h3>➕ Nueva incidencia</h3>
+
+    <label>Ambiente</label>
+    <select id="incAmbiente">
+        <option value="">Seleccionar ambiente</option>
+        <option>Exterior</option>
+        <option>Living</option>
+        <option>Cocina</option>
+        <option>Dormitorio</option>
+        <option>Baño</option>
+        <option>Parrilla</option>
+        <option>Pileta</option>
+        <option>Otro</option>
+    </select>
+
+    <label>Descripción</label>
+    <textarea
+        id="incDescripcion"
+        placeholder="Describí el problema..."
+        style="width:100%;height:90px">
+    </textarea>
+
+    <label>Prioridad</label>
+    <select id="incPrioridad">
+        <option value="Alta">🔴 Alta</option>
+        <option value="Media" selected>🟡 Media</option>
+        <option value="Baja">🟢 Baja</option>
+    </select>
+
+    <label>Estado</label>
+    <select id="incEstado">
+        <option value="Abierta">Abierta</option>
+        <option value="En curso">En curso</option>
+        <option value="Resuelta">Resuelta</option>
+    </select>
+
+    <label>Responsable</label>
+    <input id="incResponsable" placeholder="Nombre del responsable">
+
+    <div class="btn" onclick="guardarIncidencia()">
+        💾 Guardar incidencia
+    </div>
+
+</div>
+
+</section>
+
+<section id="inventario" class="screen">
+
+  <div class="back" onclick="go('property')">← Casa</div>
+
+  <h2>📦 Inventario</h2>
+<div class="btn" onclick="iniciarControlInventario()">
+    🔎 Controlar inventario
+</div>
+  <div id="listaInventario"></div>
+
+  <div class="btn" onclick="nuevoItemInventario()">➕ Agregar elemento</div>
+
+</section>
+
+<section id="prep" class="screen">
+<div class="back" onclick="go('property')">← Casa</div><h2>Preparación</h2><div id="prepTitle"></div><div style="background:#ddd;height:10px;border-radius:6px;"><div id="progressBar" style="height:10px;background:#6f7c58;width:0%;"></div></div><div id="checklist"></div><div class="btn" onclick="nextStep()">Siguiente ambiente</div>
+</section>
+<section id="manual" class="screen">
+
+    <div class="back" onclick="go('property')">← Casa</div>
+
+    <h2>🧠 Manual de la Casa</h2>
+
+    <div class="card">
+        <h3>🚨 Emergencias</h3>
+
+        <div id="txtEmergencias">
+            No hay información.
+        </div>
+
+<div class="btn" onclick="abrirManual('emergencias')">            ✏️ Editar
+        </div>
+    </div>
+
+<div class="card">
+
+    <h3>🔑 Accesos</h3>
+
+    <div id="txtAccesos">
+        No hay información.
+    </div>
+
+    <div class="btn" onclick="abrirManual('accesos')">
+        ✏️ Editar
+    </div>
+
+</div>
+
+   <div class="card">
+
+    <h3>📶 Tecnología</h3>
+
+    <div id="txtTecnologia">
+        No hay información.
+    </div>
+
+    <div class="btn" onclick="abrirManual('tecnologia')">
+        ✏️ Editar
+    </div>
+
+</div>
+
+   <div class="card">
+
+    <h3>🌿 Exterior</h3>
+
+    <div id="txtExterior">
+        No hay información.
+    </div>
+
+    <div class="btn" onclick="abrirManual('exterior')">
+        ✏️ Editar
+    </div>
+
+</div>
+
+   <div class="card">
+
+    <h3>🛏️ Blancos</h3>
+
+    <div id="txtBlancos">
+        No hay información.
+    </div>
+
+    <div class="btn" onclick="abrirManual('blancos')">
+        ✏️ Editar
+    </div>
+
+</div>
+
+   <div class="card">
+
+    <h3>🔧 Proveedores</h3>
+
+    <div id="txtProveedores">
+        No hay información.
+    </div>
+
+    <div class="btn" onclick="abrirManual('proveedores')">
+        ✏️ Editar
+    </div>
+
+</div>
+
+</section>
+
+<section id="manualEdit" class="screen">
+
+    <div class="back" onclick="go('manual')">← Manual</div>
+
+    <h2 id="manualTitulo">🚨 Emergencias</h2>
+
+    <textarea
+        id="manualTexto"
+        style="width:100%;height:350px;margin-top:15px;padding:10px;font-size:15px;border-radius:8px;"></textarea>
+
+<div class="btn" onclick="guardarManual()">
+    💾 Guardar
+</div>
+
+</section>
+
+<section id="photos" class="screen">
+
+    <div class="back" onclick="go('property')">← Casa</div>
+
+    <h2>📷 Fotos de la Casa</h2>
+
+    <div class="card">
+
+    <h3>Agregar foto</h3>
+
+    <label>Ambiente</label>
+
+    <select id="photoAmbiente">
+    <option value="fachada">🏠 Fachada</option>
+    <option value="living">🛋️ Living</option>
+    <option value="comedor">🍽️ Comedor</option>
+    <option value="cocina">🍳 Cocina</option>
+    <option value="dormitorios">🛏️ Dormitorios</option>
+    <option value="baños">🚿 Baños</option>
+    <option value="exterior">🌳 Exterior</option>
+    <option value="mantenimiento">🔧 Mantenimiento</option>
+    <option value="otros">📦 Otros</option>
+</select>
+
+    <input
+        type="file"
+        id="photoInput"
+        accept="image/*"
+    >
+
+    <div class="btn" onclick="saveSelectedPhoto()">
+        📷 Agregar foto
+    </div>
+
+</div>
+
+<div class="card">
+
+    <h3>Fotos</h3>
+
+    <div id="photosContainer">
+        No hay fotos.
+    </div>
+
+</div>
+
+<div id="photoViewer" style="
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.85);
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+"
+onclick="cerrarVisorFoto()">
+
+    <img id="photoViewerImg" style="
+        max-width:90%;
+        max-height:90%;
+        object-fit:contain;
+        border-radius:10px;
+    ">
+
+</div>
+
+</section>
+<section id="edit" class="screen">
+<div class="back" onclick="go('property')">← Casa</div>
+<label>Nombre de la casa</label><input id="name">
+<label>Barrio</label><input id="barrio">
+<label>Lote</label><input id="lote">
+<label>Capacidad</label><input id="capacidad">
+<label>WiFi</label><input id="wifi">
+<label>Situación</label>
+<select id="situacion" style="width:100%;box-sizing:border-box;margin-bottom:14px;">
+    <option value="Disponible">Disponible</option>
+    <option value="Ocupada">Ocupada</option>
+    <option value="Mantenimiento">Mantenimiento</option>
+</select>
+<label>Observaciones</label><textarea id="obs"></textarea>
+<div class="btn" onclick="saveCurrent()">Guardar</div>
+</section>
+<section id="editChecklist" class="screen">
+<div class="back" onclick="go('property')">← Casa</div>
+<h3>Editar Checklist</h3>
+<select id="ambienteSel" onchange="loadChecklistEditor()"></select>
+<div id="items"></div>
+<input id="nuevoItem" placeholder="Nuevo ítem">
+<div class="btn" onclick="addItem()">➕ Agregar ítem</div>
+</section>
+
+<script src="js/storage.js"></script>
+<script src="js/photos.js"></script>
+<script src="js/app.js"></script>
+</body></html>
