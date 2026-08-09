@@ -32,11 +32,11 @@
     oninput="render()"
     style="width:100%;box-sizing:border-box;margin-bottom:12px;"
 >
-<div style="display:flex;gap:8px;flex-wrap:nowrap;margin-bottom:16px;"
-    <button onclick="setPropertyFilter('Todas')">Todas</button>
-    <button onclick="setPropertyFilter('Disponible')">Disponibles</button>
-    <button onclick="setPropertyFilter('Ocupada')">Ocupadas</button>
-    <button onclick="setPropertyFilter('Mantenimiento')">Mantenimiento</button>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:16px;">
+    <button style="min-width:0;padding:8px 2px;font-size:11px;" onclick="setPropertyFilter('Todas')">Todas</button>
+    <button style="min-width:0;padding:8px 2px;font-size:11px;" onclick="setPropertyFilter('Disponible')">Disponibles</button>
+    <button style="min-width:0;padding:8px 2px;font-size:11px;" onclick="setPropertyFilter('Ocupada')">Ocupadas</button>
+    <button style="min-width:0;padding:8px 2px;font-size:11px;" onclick="setPropertyFilter('Mantenimiento')">Mantenimiento</button>
 </div>
 
 <div id="houses"></div>
