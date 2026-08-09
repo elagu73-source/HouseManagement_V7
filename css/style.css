@@ -172,10 +172,14 @@ textarea {
     color: #F2EFE8;
     min-height: 100vh;
     width: 100%;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+}
+
+#cover.active {
+    display: flex;
 }
 
 .cover-content {
