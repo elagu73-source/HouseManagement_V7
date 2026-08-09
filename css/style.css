@@ -554,14 +554,14 @@ button:hover {
 
 .house-menu-btn {
     min-height: 58px;
-    background: var(--cb-white);
+    background: var(--cb-olive);
     border: 1px solid #E2E3DE;
     border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 9px;
     padding: 9px 10px;
-    color: var(--cb-navy);
+    color: var(--cb-white);
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
@@ -585,7 +585,7 @@ button:hover {
     width: 21px;
     height: 21px;
     fill: none;
-    stroke: var(--cb-olive);
+    stroke: var(--cb-white);
     stroke-width: 1.6;
     stroke-linecap: round;
     stroke-linejoin: round;
