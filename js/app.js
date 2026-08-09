@@ -52,7 +52,7 @@ const incidenciasCasa = incidencias.filter(
 
    d.className = 'card';
 
-d.style.display = "flex";
+d.style.display = window.innerWidth <= 600 ? "block" : "flex";
 d.style.alignItems = "flex-start";
 d.style.gap = "20px";
 
@@ -148,6 +148,40 @@ d.innerHTML = `
     </div>
 `;
 
+if (window.innerWidth <= 600) {
+
+    const izquierda = d.children[0];
+    const derecha = d.children[1];
+
+    izquierda.style.display = "grid";
+    izquierda.style.gridTemplateColumns = "100px 1fr";
+    izquierda.style.columnGap = "12px";
+    izquierda.style.width = "100%";
+
+    const foto = izquierda.children[0];
+
+    foto.style.gridColumn = "1";
+    foto.style.gridRow = "1 / span 3";
+    foto.style.width = "100px";
+    foto.style.height = "75px";
+    foto.style.marginBottom = "0";
+
+    izquierda.querySelectorAll(".title, .sub").forEach(elemento => {
+        elemento.style.gridColumn = "2";
+    });
+
+    derecha.style.width = "100%";
+    derecha.style.paddingTop = "15px";
+
+    Array.from(derecha.children).forEach(fila => {
+        fila.style.display = "contents";
+    });
+
+    derecha.querySelectorAll(".badge, .sub").forEach(elemento => {
+        elemento.style.display = "block";
+        elemento.style.marginBottom = "8px";
+    });
+}
 
 obtenerPrimeraFoto(i, function(url) {
 
