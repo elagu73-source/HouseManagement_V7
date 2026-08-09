@@ -388,6 +388,19 @@ button:hover {
 
 @media (max-width: 600px) {
 
+        #propertyFilters {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+    }
+
+    #propertyFilters button {
+        flex: 1 !important;
+        min-width: 0 !important;
+        padding: 10px 4px !important;
+        font-size: 13px !important;
+    }
+    
     .card {
         display: block !important;
         box-sizing: border-box !important;
