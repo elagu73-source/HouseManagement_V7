@@ -52,17 +52,126 @@
 </section>
 
 <section id="property" class="screen">
-<div class="back" onclick="go('home')">← Propiedades</div>
-<h2 id="title"></h2>
-<div id="summary"></div>
-<div class="btn" onclick="editCurrent()">Editar</div>
-<div class="btn" onclick="startPreparation()">🧹 Preparar Casa</div>
-<div class="btn" onclick="openChecklistEditor()">✏️ Editar Checklist</div>
-<div class="btn" onclick="abrirManualCasa()">🧠 Manual de la Casa</div>
-<div class="btn" onclick="openPhotos()">📷 Fotos</div>
-<div class="btn" onclick="openInfoGeneral()">🏠 Información general</div>
-<div class="btn" onclick="openIncidencias()">🚨 Incidencias</div>
-<div class="btn" onclick="openInventario()">📦 Inventario</div>
+
+    <div class="back" onclick="go('home')">← Propiedades</div>
+
+    <div class="house-detail">
+
+        <!-- FOTO PRINCIPAL -->
+        <div id="houseHeroPhoto" class="house-hero-photo"></div>
+
+        <!-- INFORMACIÓN DE LA CASA -->
+        <div class="house-detail-info">
+
+            <div class="house-detail-name" id="houseDetailName"></div>
+
+            <div class="house-detail-location" id="houseDetailLocation"></div>
+
+            <div class="house-detail-status" id="houseDetailStatus"></div>
+
+            <div class="house-detail-line" id="houseDetailIngreso"></div>
+
+            <div class="house-detail-line" id="houseDetailChecklist"></div>
+
+            <div class="house-detail-line" id="houseDetailIncidencias"></div>
+
+            <div class="house-detail-line" id="houseDetailRating"></div>
+
+        </div>
+
+        <!-- ACCESOS -->
+        <div class="house-menu">
+
+            <div class="house-menu-btn" onclick="openInfoGeneral()">
+                <span class="house-icon">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <line x1="12" y1="10" x2="12" y2="16"></line>
+                        <circle cx="12" cy="7" r="0.8"></circle>
+                    </svg>
+                </span>
+                <span>Información general</span>
+            </div>
+
+            <div class="house-menu-btn" onclick="abrirManualCasa()">
+                <span class="house-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v17H6.5A2.5 2.5 0 0 0 4 22V5.5Z"></path>
+                        <path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v17h4.5A2.5 2.5 0 0 1 20 22V5.5Z"></path>
+                    </svg>
+                </span>
+                <span>Manual</span>
+            </div>
+
+            <div class="house-menu-btn" onclick="startPreparation()">
+                <span class="house-icon">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                        <polyline points="8,12 11,15 17,8"></polyline>
+                    </svg>
+                </span>
+                <span>Checklist</span>
+            </div>
+
+            <div class="house-menu-btn" onclick="openIncidencias()">
+                <span class="house-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 4L21 20H3L12 4Z"></path>
+                        <line x1="12" y1="10" x2="12" y2="14"></line>
+                        <circle cx="12" cy="17" r="0.8"></circle>
+                    </svg>
+                </span>
+                <span>Incidencias</span>
+            </div>
+
+            <div class="house-menu-btn" onclick="openInventario()">
+                <span class="house-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 7L12 3L20 7L12 11L4 7Z"></path>
+                        <path d="M4 7V17L12 21L20 17V7"></path>
+                        <line x1="12" y1="11" x2="12" y2="21"></line>
+                    </svg>
+                </span>
+                <span>Inventario</span>
+            </div>
+
+            <div class="house-menu-btn" onclick="openPhotos()">
+                <span class="house-icon">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="6" width="18" height="14" rx="2"></rect>
+                        <circle cx="12" cy="13" r="3"></circle>
+                        <path d="M8 6L9.5 3H14.5L16 6"></path>
+                    </svg>
+                </span>
+                <span>Fotos</span>
+            </div>
+
+            <div class="house-menu-btn" onclick="editCurrent()">
+                <span class="house-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 20L8 19L19 8L16 5L5 16L4 20Z"></path>
+                        <line x1="14" y1="7" x2="17" y2="10"></line>
+                    </svg>
+                </span>
+                <span>Editar casa</span>
+            </div>
+
+            <div class="house-menu-btn" onclick="openChecklistEditor()">
+                <span class="house-icon">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="4" y="3" width="16" height="18" rx="2"></rect>
+                        <line x1="8" y1="8" x2="16" y2="8"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                        <line x1="8" y1="16" x2="13" y2="16"></line>
+                    </svg>
+                </span>
+                <span>Editar checklist</span>
+            </div>
+
+        </div>
+
+    </div>
+
 </section>
 
 <section id="infoGeneral" class="screen">

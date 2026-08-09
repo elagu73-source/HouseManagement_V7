@@ -148,41 +148,6 @@ d.innerHTML = `
     </div>
 `;
 
-if (window.innerWidth <= 600) {
-
-    const izquierda = d.children[0];
-    const derecha = d.children[1];
-
-    izquierda.style.display = "grid";
-    izquierda.style.gridTemplateColumns = "100px 1fr";
-    izquierda.style.columnGap = "12px";
-    izquierda.style.width = "100%";
-
-    const foto = izquierda.children[0];
-
-    foto.style.gridColumn = "1";
-    foto.style.gridRow = "1 / span 3";
-    foto.style.width = "100px";
-    foto.style.height = "75px";
-    foto.style.marginBottom = "0";
-
-    izquierda.querySelectorAll(".title, .sub").forEach(elemento => {
-        elemento.style.gridColumn = "2";
-    });
-
-    derecha.style.width = "100%";
-    derecha.style.paddingTop = "15px";
-
-    Array.from(derecha.children).forEach(fila => {
-        fila.style.display = "contents";
-    });
-
-    derecha.querySelectorAll(".badge, .sub").forEach(elemento => {
-        elemento.style.display = "block";
-        elemento.style.marginBottom = "8px";
-    });
-}
-
 obtenerPrimeraFoto(i, function(url) {
 
     const contenedorFoto =
@@ -238,12 +203,77 @@ function saveSelectedPhoto(){
 }
 
 function openHouse(i){
-    current=i;
-    let h=houses[i];
 
-    document.getElementById('title').textContent=(h.nombre ?? h.name ?? h.nombreCasa ?? h.nombre_casa ?? ('Casa '+(current+1)));
+    current = i;
 
-    summary.innerHTML=`<div class="card"><b>📍 Barrio:</b> ${h.barrio}<br><b>🏠 Lote:</b> ${h.lote}<br><b>👥 Capacidad:</b> ${h.capacidad}<br><b>📶 WiFi:</b> ${h.wifi}<br><b>📝 Obs:</b> ${h.obs||'-'}</div>`;
+    const h = houses[i];
+
+    const nombre =
+        h.nombre ??
+        h.name ??
+        h.nombreCasa ??
+        h.nombre_casa ??
+        ('Casa ' + (current + 1));
+
+    const incidencias = JSON.parse(
+        localStorage.getItem('cb_incidencias') || '[]'
+    );
+
+    const incidenciasCasa = incidencias.filter(
+        item => item.casa === current
+    ).length;
+
+    const checklist = h.checklistPorcentaje ?? 0;
+
+    const estado = h.estado ?? "Pendiente";
+
+    const estadoIcono =
+        estado === "Pendiente" ? "●" :
+        estado === "En preparación" ? "●" :
+        "●";
+
+    document.getElementById("houseDetailName").textContent = nombre;
+
+    document.getElementById("houseDetailLocation").textContent =
+        "📍 " + (h.barrio ?? "") +
+        (h.lote ? " · Lote " + h.lote : "");
+
+    document.getElementById("houseDetailStatus").innerHTML =
+        '<span class="house-status-dot">' +
+        estadoIcono +
+        '</span> ' +
+        estado;
+
+    document.getElementById("houseDetailIngreso").textContent =
+        "Próximo ingreso: " + (h.ingreso ?? "-");
+
+    document.getElementById("houseDetailChecklist").textContent =
+        "Checklist: " + checklist + "%";
+
+    document.getElementById("houseDetailIncidencias").textContent =
+        "Incidencias: " + incidenciasCasa;
+
+    document.getElementById("houseDetailRating").textContent =
+        "★ " + (h.rating ?? "-");
+
+    const foto = document.getElementById("houseHeroPhoto");
+
+    foto.innerHTML = "";
+
+    obtenerPrimeraFoto(current, function(url){
+
+        if(url){
+
+            const img = document.createElement("img");
+
+            img.src = url;
+            img.alt = nombre;
+
+            foto.appendChild(img);
+
+        }
+
+    });
 
     go("property");
 }
