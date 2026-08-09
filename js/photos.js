@@ -88,6 +88,39 @@ function getPhotos(houseId, ambiente) {
     };
 }
 
+window.obtenerPrimeraFoto = function(houseId, callback) {
+   
+    if (!photoDB) {
+    setTimeout(() => obtenerPrimeraFoto(houseId, callback), 300);
+    return;
+}
+
+    const transaction = photoDB.transaction(["photos"], "readonly");
+    const store = transaction.objectStore("photos");
+    const request = store.getAll();
+
+    request.onsuccess = function() {
+
+        const fotos = request.result.filter(
+            foto => foto.houseId === houseId
+        );
+
+        if (fotos.length === 0) {
+            callback(null);
+            return;
+        }
+
+        const url = URL.createObjectURL(fotos[0].archivo);
+
+        callback(url);
+    };
+
+    request.onerror = function() {
+        callback(null);
+    };
+
+};
+
 function showPhotoTest(houseId, ambiente) {
 
     const transaction = photoDB.transaction(["photos"], "readonly");

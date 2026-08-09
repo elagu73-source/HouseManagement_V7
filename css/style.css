@@ -234,3 +234,154 @@ textarea {
     letter-spacing: 3px;
     cursor: pointer;
 }
+
+/* =========================================
+   COSTA BOUTIQUE — AJUSTE VISUAL
+   SOLO ESTÉTICA — NO TOCAR FUNCIONALIDAD
+========================================= */
+
+:root {
+    --cb-navy: #0D2B45;
+    --cb-navy-soft: #0D2B45;
+    --cb-olive: #6B7A5A;
+    --cb-sand: #DCC9A6;
+    --cb-cream: #F2EFE8;
+    --cb-white: #FFFFFF;
+    --cb-gray: #E6E7E5;
+    --cb-text: #17324D;
+    --cb-muted: #6D746D;
+}
+
+/* BASE */
+
+body {
+    background: var(--cb-cream);
+    color: var(--cb-text);
+    font-family: "Montserrat", Arial, sans-serif;
+}
+
+/* ENCABEZADOS */
+
+header {
+    background: var(--cb-navy);
+    color: var(--cb-cream);
+    border-bottom: 3px solid var(--cb-olive);
+}
+
+header h2,
+h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+header small {
+    color: var(--cb-sand);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+/* TÍTULOS */
+
+h2,
+h3 {
+    color: var(--cb-navy);
+}
+
+h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+}
+
+h3 {
+    font-family: "Montserrat", Arial, sans-serif;
+    font-weight: 600;
+}
+
+/* CAMPOS */
+
+input,
+select,
+textarea {
+    background: var(--cb-white);
+    color: var(--cb-text);
+    border: 1px solid #D9D9D3;
+    border-radius: 10px;
+    font-family: "Montserrat", Arial, sans-serif;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--cb-olive);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(107,122,90,.12);
+}
+
+/* BOTONES */
+
+.btn,
+button {
+    background: var(--cb-olive);
+    color: var(--cb-white);
+    border: 0;
+    border-radius: 10px;
+    font-family: "Montserrat", Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: .5px;
+    box-shadow: 0 3px 8px rgba(13,43,69,.10);
+    transition: all .2s ease;
+}
+
+.btn:hover,
+button:hover {
+    background: #5D6B4E;
+    box-shadow: 0 5px 12px rgba(13,43,69,.15);
+}
+
+/* TARJETAS */
+
+.card {
+    background: var(--cb-white);
+    border: 1px solid #E2E3DE;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(13,43,69,.07);
+}
+
+.card:hover {
+    box-shadow: 0 6px 18px rgba(13,43,69,.10);
+}
+
+/* NOMBRE DE CASA */
+
+.title {
+    color: var(--cb-navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 19px;
+    font-weight: 400;
+}
+
+/* TEXTOS SECUNDARIOS */
+
+.sub {
+    color: var(--cb-muted);
+}
+
+/* ESTADOS */
+
+.badge {
+    background: #EEF1E8;
+    color: var(--cb-olive);
+    border: 1px solid #DDE4D4;
+}
+
+/* CHECKLIST */
+
+#checklist .chk {
+    background: var(--cb-white);
+    border-bottom: 1px solid var(--cb-gray);
+}
+
+#checklist .chk input[type="checkbox"] {
+    accent-color: var(--cb-olive);
+}

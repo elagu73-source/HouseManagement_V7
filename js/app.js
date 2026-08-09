@@ -42,14 +42,137 @@ function render(){
 
 casasFiltradas.forEach((h)=>{
     const i = houses.indexOf(h);
+    const incidencias = JSON.parse(localStorage.getItem('cb_incidencias') || '[]');
+
+const incidenciasCasa = incidencias.filter(
+    item => item.casa === i
+).length;
+
     const d=document.createElement('div');
- d.className='card';
- d.innerHTML=`<div class="title">🏡 ${h.nombre ?? h.name ?? h.nombreCasa ?? h.nombre_casa ?? ('Casa '+(i+1))}</div>
- <div class="sub">📍 ${h.barrio} - Lote ${h.lote}</div>
-<div class="badge">${h.estado === "Pendiente" ? "🔴" : h.estado === "En preparación" ? "🟡" : "🟢"} ${h.estado}</div> <div class="sub">👥 Próximo ingreso: ${h.ingreso}</div>
- <div class="sub">⭐ ${h.rating}</div>`;
- d.onclick=()=>openHouse(i);
- c.appendChild(d);
+
+   d.className = 'card';
+
+d.style.display = "flex";
+d.style.alignItems = "flex-start";
+d.style.gap = "20px";
+
+d.innerHTML = `
+
+    <!-- COLUMNA IZQUIERDA -->
+    <div style="
+        width:130px;
+        flex-shrink:0;
+    ">
+
+        <!-- ESPACIO PARA FOTO -->
+        <div
+            id="fotoCasa-${i}"
+            style="
+                width:110px;
+                height:80px;
+                border-radius:8px;
+                background:#f2f2f2;
+                overflow:hidden;
+                margin-bottom:10px;
+            "
+        ></div>
+
+        <!-- DATOS DE LA CASA -->
+        <div class="title">
+            ${h.nombre ?? h.name ?? h.nombreCasa ?? h.nombre_casa ?? ('Casa ' + (i+1))}
+        </div>
+
+        <div class="sub">
+            📍 ${h.barrio ?? ''}
+        </div>
+
+        <div class="sub">
+            Lote ${h.lote ?? ''}
+        </div>
+
+    </div>
+
+
+    <!-- COLUMNA DERECHA -->
+    <div style="
+        flex:1;
+        padding-top:10px;
+    ">
+
+        <!-- PRIMERA LINEA -->
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:30px;
+            margin-bottom:25px;
+        ">
+
+            <div class="badge">
+                ${h.estado === "Pendiente"
+                    ? "🔴"
+                    : h.estado === "En preparación"
+                        ? "🟡"
+                        : "🟢"
+                }
+                ${h.estado ?? "Pendiente"}
+            </div>
+
+            <div class="sub">
+                👥 Próximo ingreso: ${h.ingreso ?? '-'}
+            </div>
+
+            <div class="sub">
+                ⭐ ${h.rating ?? '-'}
+            </div>
+
+        </div>
+
+
+        <!-- SEGUNDA LINEA -->
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:30px;
+        ">
+
+            <div class="sub">
+                ☑️ Checklist: ${h.checklistPorcentaje ?? 0}%
+            </div>
+
+            <div class="sub">
+                ⚠️ Incidencias: ${incidenciasCasa}
+            </div>
+
+        </div>
+
+    </div>
+`;
+
+
+obtenerPrimeraFoto(i, function(url) {
+
+    const contenedorFoto =
+        document.getElementById("fotoCasa-" + i);
+
+    if (url && contenedorFoto) {
+
+        const img = document.createElement("img");
+
+        img.src = url;
+
+        img.style.width = "100%";
+        img.style.height = "100%";
+        img.style.objectFit = "cover";
+
+        contenedorFoto.appendChild(img);
+    }
+
+});
+
+
+d.onclick = () => openHouse(i);
+
+c.appendChild(d);
 });
 }
 function openPhotos(){
@@ -592,6 +715,43 @@ style="width:100%;height:90px;margin-top:8px"
 
 }
 
+function obtenerPorcentajeChecklist(houseIndex) {
+
+    const checksActuales = JSON.parse(
+        localStorage.getItem('cb_checks') || '{}'
+    );
+
+    let totalChecks = 0;
+    let checksCompletados = 0;
+
+    ambientes.forEach((ambiente, ambienteIndex) => {
+
+        const key = "c" + houseIndex + "_" + ambienteIndex;
+
+        ambiente.items.forEach((item, itemIndex) => {
+
+            totalChecks++;
+
+            if (
+                checksActuales[key] &&
+                checksActuales[key][itemIndex] === true
+            ) {
+                checksCompletados++;
+            }
+
+        });
+
+    });
+
+    if (totalChecks === 0) {
+        return 0;
+    }
+
+    return Math.round(
+        (checksCompletados / totalChecks) * 100
+    );
+}
+
 function actualizarEstadoCasa() {
 
     const checksActuales = JSON.parse(
@@ -619,6 +779,10 @@ function actualizarEstadoCasa() {
         });
 
     });
+
+    house.checklistPorcentaje = totalChecks > 0
+    ? Math.round((checksCompletados / totalChecks) * 100)
+    : 0;
 
     if (checksCompletados === 0) {
 
