@@ -32,18 +32,18 @@
     oninput="render()"
     style="width:100%;box-sizing:border-box;margin-bottom:12px;"
 >
-<div style="display:flex;justify-content:center;gap:4px;margin-bottom:16px;width:96%;">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:16px;width:100%;box-sizing:border-box;">
 
-    <button style="padding:8px 8px;font-size:11px;white-space:nowrap;"
+    <button style="width:100%;padding:6px 2px;font-size:11px;"
         onclick="setPropertyFilter('Todas')">Todas</button>
 
-    <button style="padding:8px 8px;font-size:11px;white-space:nowrap;"
+    <button style="width:100%;padding:6px 2px;font-size:11px;"
         onclick="setPropertyFilter('Disponible')">Disponibles</button>
 
-    <button style="padding:8px 8px;font-size:11px;white-space:nowrap;"
+    <button style="width:100%;padding:6px 2px;font-size:11px;"
         onclick="setPropertyFilter('Ocupada')">Ocupadas</button>
 
-    <button style="padding:8px 5px;font-size:9px;white-space:nowrap;"
+    <button style="width:100%;padding:6px 2px;font-size:9px;"
         onclick="setPropertyFilter('Mantenimiento')">Mantenimiento</button>
 
 </div>
