@@ -664,3 +664,30 @@ button:hover {
     }
 
 }
+
+/* =========================================
+   COSTA BOUTIQUE — SISTEMA DE ICONOS
+   ========================================= */
+
+.cb-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 18px;
+}
+
+.cb-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: var(--cb-olive);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.cb-icon.white svg {
+    stroke: var(--cb-white);
+}

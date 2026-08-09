@@ -4,6 +4,47 @@ function setPropertyFilter(filtro){
     propertyFilter = filtro;
     render();
 }
+
+function cbIcon(name){
+
+    const icons = {
+
+        location: `
+            <svg viewBox="0 0 24 24">
+                <path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z"></path>
+                <circle cx="12" cy="10" r="2.5"></circle>
+            </svg>`,
+
+        users: `
+            <svg viewBox="0 0 24 24">
+                <circle cx="9" cy="8" r="3"></circle>
+                <path d="M3.5 19c.6-3 2.4-4.5 5.5-4.5s4.9 1.5 5.5 4.5"></path>
+                <path d="M15 6.5a3 3 0 0 1 0 5.5"></path>
+                <path d="M17 14.5c2 .6 3.2 2 3.5 4.5"></path>
+            </svg>`,
+
+        star: `
+            <svg viewBox="0 0 24 24">
+                <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"></path>
+            </svg>`,
+
+        check: `
+            <svg viewBox="0 0 24 24">
+                <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                <polyline points="8,12 11,15 17,8"></polyline>
+            </svg>`,
+
+        alert: `
+            <svg viewBox="0 0 24 24">
+                <path d="M12 4 21 20H3L12 4Z"></path>
+                <line x1="12" y1="10" x2="12" y2="14"></line>
+                <circle cx="12" cy="17" r=".8"></circle>
+            </svg>`
+    };
+
+    return `<span class="cb-icon">${icons[name] || ''}</span>`;
+}
+
 initPhotoDB();
 function go(id){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -82,9 +123,9 @@ d.innerHTML = `
             ${h.nombre ?? h.name ?? h.nombreCasa ?? h.nombre_casa ?? ('Casa ' + (i+1))}
         </div>
 
-        <div class="sub">
-            📍 ${h.barrio ?? ''}
-        </div>
+<div class="sub">
+    ${cbIcon('location')} ${h.barrio ?? ''}
+</div>
 
         <div class="sub">
             Lote ${h.lote ?? ''}
@@ -117,13 +158,13 @@ d.innerHTML = `
                 ${h.estado ?? "Pendiente"}
             </div>
 
-            <div class="sub">
-                👥 Próximo ingreso: ${h.ingreso ?? '-'}
-            </div>
+<div class="sub">
+    ${cbIcon('users')} Próximo ingreso: ${h.ingreso ?? '-'}
+</div>
 
-            <div class="sub">
-                ⭐ ${h.rating ?? '-'}
-            </div>
+        <div class="sub">
+    ${cbIcon('star')} ${h.rating ?? '-'}
+</div>
 
         </div>
 
@@ -136,12 +177,12 @@ d.innerHTML = `
         ">
 
             <div class="sub">
-                ☑️ Checklist: ${h.checklistPorcentaje ?? 0}%
-            </div>
+    ${cbIcon('check')} Checklist: ${h.checklistPorcentaje ?? 0}%
+</div>
 
             <div class="sub">
-                ⚠️ Incidencias: ${incidenciasCasa}
-            </div>
+    ${cbIcon('alert')} Incidencias: ${incidenciasCasa}
+</div>
 
         </div>
 
