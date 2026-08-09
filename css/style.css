@@ -165,3 +165,68 @@ textarea {
         margin-bottom: 14px;
     }
 }
+
+/* PORTADA */
+#cover {
+    background: #01152E;
+    color: #F2EFE8;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.cover-content {
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+    padding: 40px 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.cover-logo {
+    width: 260px;
+    max-width: 75%;
+    margin-bottom: 12px;
+}
+
+.cover-line {
+    width: 55%;
+    height: 1px;
+    background: #6B7A5A;
+    margin: 8px 0 14px;
+}
+
+.cover-brand {
+    color: #6B7A5A;
+    font-family: Montserrat, sans-serif;
+    font-size: 15px;
+    letter-spacing: 7px;
+    margin-bottom: 25px;
+}
+
+.cover-content p {
+    color: #F2EFE8;
+    font-family: Montserrat, sans-serif;
+    font-size: 13px;
+    line-height: 1.7;
+    letter-spacing: 2px;
+    margin: 0 0 35px;
+}
+
+.cover-btn {
+    background: #6B7A5A;
+    color: white;
+    width: 220px;
+    padding: 16px;
+    border-radius: 5px;
+    text-align: center;
+    font-family: Montserrat, sans-serif;
+    font-size: 14px;
+    letter-spacing: 3px;
+    cursor: pointer;
+}

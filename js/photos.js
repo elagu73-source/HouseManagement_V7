@@ -167,12 +167,10 @@ const ordenAmbientes = [
     "living",
     "comedor",
     "cocina",
-    "dormitorio",
     "dormitorios",
-    "baño",
     "baños",
-    "interior",
     "exterior",
+    "mantenimiento",
     "otros"
 ];
 
