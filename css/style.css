@@ -388,67 +388,44 @@ button:hover {
 
 @media (max-width: 600px) {
 
-    #houses .card {
+    .card {
         display: block !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
         padding: 16px !important;
         margin-bottom: 14px !important;
-        box-sizing: border-box;
+        overflow: hidden !important;
     }
 
-    /* BLOQUE IZQUIERDO: FOTO + DATOS */
-    #houses .card > div:first-child {
+    .card > div:first-child {
         width: 100% !important;
         display: block !important;
     }
 
-    /* Foto */
-    #houses .card > div:first-child > div:first-child {
-        width: 100% !important;
-        height: 180px !important;
-        margin-bottom: 14px !important;
-    }
-
-    #houses .card > div:first-child > div:first-child img {
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: cover !important;
-    }
-
-    /* Nombre */
-    #houses .card .title {
-        font-size: 22px !important;
-        margin-bottom: 4px !important;
-    }
-
-    /* Barrio y lote */
-    #houses .card .sub {
-        font-size: 16px !important;
-    }
-
-    /* BLOQUE DERECHO */
-    #houses .card > div:nth-child(2) {
-        width: 100% !important;
-        padding-top: 14px !important;
-    }
-
-    /* Primera línea */
-    #houses .card > div:nth-child(2) > div:first-child {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        align-items: center !important;
-        gap: 10px !important;
+    .card > div:first-child > div:first-child {
+        width: 110px !important;
+        height: 80px !important;
         margin-bottom: 12px !important;
     }
 
-    /* Segunda línea */
-    #houses .card > div:nth-child(2) > div:last-child {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        align-items: center !important;
-        gap: 10px !important;
+    .card > div:nth-child(2) {
+        width: 100% !important;
+        padding-top: 10px !important;
     }
 
-    #houses .badge {
-        font-size: 15px !important;
+    .card > div:nth-child(2) > div {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+        margin-bottom: 12px !important;
+        white-space: normal !important;
+    }
+
+    .card .title {
+        font-size: 22px !important;
+    }
+
+    .card .sub {
+        font-size: 16px !important;
     }
 }
