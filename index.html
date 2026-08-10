@@ -25,12 +25,21 @@
 <section id="home" class="screen">
 <h3>Propiedades</h3>
 
-<input
-    id="searchProperty"
-    type="text"
-    placeholder="🔎 Buscar propiedad..."
-    oninput="render()"
-    style="width:100%;box-sizing:border-box;margin-bottom:12px;"
+<div class="property-search">
+    <span class="property-search-icon">
+        <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+        </svg>
+    </span>
+
+    <input
+        id="searchProperty"
+        type="text"
+        placeholder="Buscar propiedad..."
+        oninput="render()"
+    >
+</div>
 >
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:16px;width:100%;box-sizing:border-box;">
 
