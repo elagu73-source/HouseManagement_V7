@@ -1316,3 +1316,92 @@ button:hover {
 #manual .card {
     font-family: "Montserrat", Arial, sans-serif;
 }
+
+@media (max-width: 600px) {
+
+    /* MANUAL DE LA CASA — AJUSTE CELULAR */
+
+    #manual {
+        padding: 14px 16px 24px;
+    }
+
+    #manual .back {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        width: fit-content;
+        background: #0D2B45;
+        color: #FFFFFF;
+        padding: 7px 12px;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 14px;
+    }
+
+    #manual h2 {
+        font-size: 23px;
+        margin: 8px 0 16px;
+    }
+
+    #manual h2 .cb-icon {
+        width: 18px;
+        height: 18px;
+        flex-basis: 18px;
+    }
+
+    #manual h2 .cb-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    #manual .card {
+        padding: 14px;
+        margin: 10px 0;
+        border: 1px solid #E2E0D9;
+        border-radius: 13px;
+        box-shadow: 0 2px 8px rgba(13, 43, 69, 0.07);
+    }
+
+    #manual .card h3 {
+        font-size: 17px;
+        margin: 0 0 12px;
+    }
+
+    #manual .card h3 .cb-icon {
+        width: 18px;
+        height: 18px;
+        flex-basis: 18px;
+        margin-right: 3px;
+    }
+
+    #manual .card h3 .cb-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    #manual .card > div:not(.btn) {
+        font-size: 14px;
+        line-height: 1.45;
+    }
+
+    #manual .card .btn {
+        min-height: 42px;
+        height: 42px;
+        margin: 12px 0 0;
+        padding: 8px 12px;
+        font-size: 14px;
+        border-radius: 8px;
+    }
+
+    #manual .card .btn .cb-icon {
+        width: 17px;
+        height: 17px;
+        flex-basis: 17px;
+    }
+
+    #manual .card .btn .cb-icon svg {
+        width: 17px;
+        height: 17px;
+    }
+}
