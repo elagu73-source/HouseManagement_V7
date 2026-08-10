@@ -781,10 +781,17 @@ button:hover {
 }
 
 #prep .btn {
+    width: 100%;
+    max-width: 100%;
     min-height: 42px;
     padding: 9px 12px;
-    margin-top: 8px;
+    margin: 8px 0 0;
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
 }
 
 #prep h2 {
