@@ -1026,6 +1026,11 @@ button:hover {
         height: 16px;
     }
 
+    .property-header-logo {
+    width: 110px;
+    height: auto;
+}
+
     /* Banda inferior: estado + datos */
 .property-card-stats {
     display: grid !important;
