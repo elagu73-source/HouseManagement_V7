@@ -23,7 +23,7 @@
 </section>
 
 <section id="home" class="screen">
-    
+
 <div class="property-header">
     <img src="./logo-house-management.png" class="property-header-logo" alt="Costa Boutique House Management">
     <h3>Propiedades</h3>
@@ -194,7 +194,16 @@
 
 <div class="back" onclick="go('property')">← Casa</div>
 
-<h2>🏠 Información general</h2>
+<h2>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M3 11L12 3L21 11"></path>
+            <path d="M5 10V21H19V10"></path>
+            <path d="M9 21V14H15V21"></path>
+        </svg>
+    </span>
+    Información general
+</h2>
 
 <label>Nombre de la casa</label>
 <input id="infoNombre">
@@ -226,7 +235,16 @@
 <label>Observaciones generales</label>
 <textarea id="infoObservaciones"></textarea>
 
-<div class="btn" onclick="guardarInfoGeneral()">💾 Guardar</div>
+<div class="btn" onclick="guardarInfoGeneral()">
+    <span class="cb-icon white">
+        <svg viewBox="0 0 24 24">
+            <path d="M5 4H17L20 7V20H5Z"></path>
+            <path d="M8 4V10H16V4"></path>
+            <path d="M8 20V14H16V20"></path>
+        </svg>
+    </span>
+    Guardar
+</div>
 
 </section>
 
