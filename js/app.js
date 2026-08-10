@@ -284,9 +284,17 @@ function openHouse(i){
 
     document.getElementById("houseDetailName").textContent = nombre;
 
-    document.getElementById("houseDetailLocation").textContent =
-        "📍 " + (h.barrio ?? "") +
-        (h.lote ? " · Lote " + h.lote : "");
+    document.getElementById("houseDetailLocation").innerHTML =
+    '<span class="house-location-icon">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+            '<path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z"></path>' +
+            '<circle cx="12" cy="9" r="2.2"></circle>' +
+        '</svg>' +
+    '</span>' +
+    '<span>' +
+        (h.barrio ?? "") +
+        (h.lote ? " · Lote " + h.lote : "") +
+    '</span>';
 
     document.getElementById("houseDetailStatus").innerHTML =
         '<span class="house-status-dot">' +

@@ -1246,3 +1246,24 @@ button:hover {
     height: 18px;
     stroke: #FFFFFF;
 }
+
+.house-location-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    margin-right: 5px;
+}
+
+.house-location-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--cb-olive);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
