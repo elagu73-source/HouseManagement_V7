@@ -1405,3 +1405,17 @@ button:hover {
         height: 17px;
     }
 }
+
+@media (max-width: 600px) {
+
+    #manual > .btn {
+        background: #FFFFFF;
+        color: #17324D;
+        border: 1px solid #E2E0D9;
+        border-radius: 13px;
+        padding: 14px;
+        margin: 10px 0;
+        box-shadow: 0 2px 8px rgba(13, 43, 69, 0.07);
+    }
+
+}
