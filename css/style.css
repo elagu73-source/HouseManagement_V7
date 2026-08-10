@@ -1189,3 +1189,10 @@ button:hover {
     opacity: 1;
 }
 
+.property-header-logo {
+    width: 150px;
+    height: auto;
+}
+#home {
+    background: #FDFCF9;
+}
