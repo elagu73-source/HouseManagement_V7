@@ -1202,3 +1202,22 @@ button:hover {
     background: #FDFCF9;
     padding-top: 8px;
 }
+
+#home {
+    position: relative;
+}
+
+#home h3 {
+    position: absolute;
+    top: 8px;
+    right: 16px;
+    margin: 0;
+    background: #0D2B45;
+    color: #FFFFFF;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
