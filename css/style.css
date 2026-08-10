@@ -706,3 +706,261 @@ button:hover {
 .card .sub .cb-icon {
     flex-shrink: 0;
 }
+
+/* =========================================
+   PROPIEDADES — NUEVA IDENTIDAD VISUAL
+   ========================================= */
+
+.property-card-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.property-card-photo {
+    width: 120px;
+    height: 92px;
+    flex: 0 0 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #E9E5DA;
+}
+
+.property-card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.property-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.property-card-header {
+    width: 100%;
+}
+
+.property-card-header .title {
+    margin-bottom: 7px;
+}
+
+.property-card-header .sub {
+    margin-bottom: 5px;
+}
+
+.property-card-header .sub:last-child {
+    margin-bottom: 0;
+}
+
+
+/* BANDA DE INFORMACIÓN */
+
+.property-card-stats {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 1fr;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #E4E5DF;
+}
+
+
+/* ESTADO */
+
+.property-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--cb-navy);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.property-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+    flex: 0 0 9px;
+}
+
+.property-status-dot.pending {
+    background: #B86B5D;
+}
+
+.property-status-dot.preparing {
+    background: #D6BE8A;
+}
+
+.property-status-dot.ready {
+    background: var(--cb-olive);
+}
+
+
+/* DATOS */
+
+.property-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    color: var(--cb-navy);
+    font-size: 12px;
+}
+
+.property-stat .cb-icon {
+    flex: 0 0 17px;
+    width: 17px;
+    height: 17px;
+}
+
+.property-stat .cb-icon svg {
+    width: 17px;
+    height: 17px;
+}
+
+.property-stat span {
+    min-width: 0;
+}
+
+.property-stat small {
+    display: block;
+    color: var(--cb-muted);
+    font-size: 10px;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+
+/* DETALLE NAVY */
+
+.property-card-main::before {
+    content: "";
+    width: 3px;
+    align-self: stretch;
+    background: var(--cb-navy);
+    border-radius: 3px;
+    margin-right: -7px;
+}
+
+
+/* =========================================
+   PROPIEDADES — CELULAR
+   ========================================= */
+
+@media (max-width: 600px) {
+
+    .property-card-main {
+        display: grid;
+        grid-template-columns: 92px 1fr;
+        gap: 11px;
+        align-items: start;
+    }
+
+    .property-card-main::before {
+        display: none;
+    }
+
+    .property-card-photo {
+        width: 92px;
+        height: 76px;
+        flex: none;
+        border-radius: 10px;
+    }
+
+    .property-card-header .title {
+        font-size: 18px !important;
+        margin-bottom: 5px;
+    }
+
+    .property-card-header .sub {
+        font-size: 12px !important;
+        margin-bottom: 4px;
+    }
+
+    .property-card-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 9px 8px;
+        margin-top: 11px;
+        padding-top: 10px;
+    }
+
+    .property-status {
+        font-size: 11px;
+    }
+
+    .property-stat {
+        font-size: 11px;
+    }
+
+    .property-stat small {
+        font-size: 9px;
+    }
+
+    .property-stat .cb-icon {
+        width: 16px;
+        height: 16px;
+        flex-basis: 16px;
+    }
+
+    .property-stat .cb-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+}
+
+/* Valoración de la propiedad */
+.property-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.property-card-title-area {
+    min-width: 0;
+}
+
+.property-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--cb-navy);
+    font-size: 16px;
+    font-weight: 600;
+    padding-top: 2px;
+    white-space: nowrap;
+}
+
+.property-rating .cb-icon {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+}
+
+.property-rating .cb-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+@media (max-width: 600px) {
+
+    .property-rating {
+        font-size: 14px;
+        gap: 4px;
+    }
+
+    .property-rating .cb-icon,
+    .property-rating .cb-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+}

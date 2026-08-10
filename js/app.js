@@ -9,6 +9,11 @@ function cbIcon(name){
 
     const icons = {
 
+        back: `
+    <svg viewBox="0 0 24 24">
+        <path d="M15 5 8 12l7 7"></path>
+    </svg>`,
+
         location: `
             <svg viewBox="0 0 24 24">
                 <path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z"></path>
@@ -28,6 +33,14 @@ function cbIcon(name){
                 <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"></path>
             </svg>`,
 
+        calendar: `
+    <svg viewBox="0 0 24 24">
+        <rect x="4" y="5" width="16" height="15" rx="2"></rect>
+        <line x1="8" y1="3" x2="8" y2="7"></line>
+        <line x1="16" y1="3" x2="16" y2="7"></line>
+        <line x1="4" y1="9" x2="20" y2="9"></line>
+    </svg>`,
+
         check: `
             <svg viewBox="0 0 24 24">
                 <rect x="4" y="4" width="16" height="16" rx="2"></rect>
@@ -46,9 +59,13 @@ function cbIcon(name){
 }
 
 initPhotoDB();
+
 function go(id){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+
+    const backIcon = document.getElementById('backIcon');
+    if(backIcon) backIcon.innerHTML = cbIcon('back');
 
     if(id === 'home'){
         render();
@@ -99,94 +116,84 @@ d.style.gap = "20px";
 
 d.innerHTML = `
 
-    <!-- COLUMNA IZQUIERDA -->
-    <div style="
-        width:130px;
-        flex-shrink:0;
-    ">
+    <div class="property-card-main">
 
-        <!-- ESPACIO PARA FOTO -->
         <div
             id="fotoCasa-${i}"
-            style="
-                width:110px;
-                height:80px;
-                border-radius:8px;
-                background:#f2f2f2;
-                overflow:hidden;
-                margin-bottom:10px;
-            "
+            class="property-card-photo"
         ></div>
 
-        <!-- DATOS DE LA CASA -->
-        <div class="title">
-            ${h.nombre ?? h.name ?? h.nombreCasa ?? h.nombre_casa ?? ('Casa ' + (i+1))}
-        </div>
+        <div class="property-card-content">
 
-<div class="sub">
-    ${cbIcon('location')} ${h.barrio ?? ''}
-</div>
+            <div class="property-card-header">
 
-        <div class="sub">
-            Lote ${h.lote ?? ''}
-        </div>
+                <div>
+                    <div class="title">
+                        ${h.nombre ?? h.name ?? h.nombreCasa ?? h.nombre_casa ?? ('Casa ' + (i+1))}
+                    </div>
 
-    </div>
+                    <div class="sub">
+                        ${cbIcon('location')}
+                        <span>${h.barrio ?? ''}, Lote ${h.lote ?? ''}</span>
+                    </div>
 
+                    <div class="sub">
+                        ${cbIcon('users')}
+                        <span>${h.capacidad ?? '-'} huéspedes</span>
+                    </div>
 
-    <!-- COLUMNA DERECHA -->
-    <div style="
-        flex:1;
-        padding-top:10px;
-    ">
+                    <div class="sub">
+                        ${cbIcon('star')}
+                        <span>${h.rating ?? '-'}</span>
+                    </div>
+                </div>
 
-        <!-- PRIMERA LINEA -->
-        <div style="
-            display:flex;
-            align-items:center;
-            gap:30px;
-            margin-bottom:25px;
-        ">
-
-            <div class="badge">
-                ${h.estado === "Pendiente"
-                    ? "🔴"
-                    : h.estado === "En preparación"
-                        ? "🟡"
-                        : "🟢"
-                }
-                ${h.estado ?? "Pendiente"}
             </div>
 
-<div class="sub">
-    ${cbIcon('users')} Próximo ingreso: ${h.ingreso ?? '-'}
-</div>
-
-        <div class="sub">
-    ${cbIcon('star')} ${h.rating ?? '-'}
-</div>
-
-        </div>
-
-
-        <!-- SEGUNDA LINEA -->
-        <div style="
-            display:flex;
-            align-items:center;
-            gap:30px;
-        ">
-
-            <div class="sub">
-    ${cbIcon('check')} Checklist: ${h.checklistPorcentaje ?? 0}%
-</div>
-
-            <div class="sub">
-    ${cbIcon('alert')} Incidencias: ${incidenciasCasa}
-</div>
-
         </div>
 
     </div>
+
+    <div class="property-card-stats">
+
+        <div class="property-status">
+            <span class="property-status-dot ${
+                h.estado === "Pendiente"
+                    ? "pending"
+                    : h.estado === "En preparación"
+                        ? "preparing"
+                        : "ready"
+            }"></span>
+
+            <span>${h.estado ?? "Pendiente"}</span>
+        </div>
+
+        <div class="property-stat">
+            ${cbIcon('calendar')}
+            <span>
+                <small>Próximo ingreso</small>
+                ${h.ingreso ?? '-'}
+            </span>
+        </div>
+
+        <div class="property-stat">
+            ${cbIcon('check')}
+            <span>
+                <small>Checklist</small>
+                ${h.checklistPorcentaje ?? 0}%
+            </span>
+        </div>
+
+        <div class="property-stat">
+            ${cbIcon('alert')}
+            <span>
+                <small>Incidencias</small>
+                ${incidenciasCasa}
+            </span>
+        </div>
+
+    </div>
+
 `;
 
 obtenerPrimeraFoto(i, function(url) {
