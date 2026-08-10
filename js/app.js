@@ -127,7 +127,8 @@ d.innerHTML = `
 
             <div class="property-card-header">
 
-                <div>
+                <div class="property-card-title-area">
+
                     <div class="title">
                         ${h.nombre ?? h.name ?? h.nombreCasa ?? h.nombre_casa ?? ('Casa ' + (i+1))}
                     </div>
@@ -142,10 +143,11 @@ d.innerHTML = `
                         <span>${h.capacidad ?? '-'} huéspedes</span>
                     </div>
 
-                    <div class="sub">
-                        ${cbIcon('star')}
-                        <span>${h.rating ?? '-'}</span>
-                    </div>
+                </div>
+
+                <div class="property-rating">
+                    ${cbIcon('star')}
+                    <span>${h.rating ?? '-'}</span>
                 </div>
 
             </div>
