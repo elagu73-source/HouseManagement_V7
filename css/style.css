@@ -1,887 +1,1191 @@
-
-:root{
-  --cb-navy:#0D2B45;
-  --cb-olive:#6B7A5A;
-  --cb-sand:#DCC9A6;
-  --cb-cream:#F2EFE8;
-  --cb-white:#FFFFFF;
-  --cb-gray:#E6E7E5;
-  --cb-text:#17324D;
-  --cb-muted:#6D746D;
-  --cb-border:#E2E3DE;
-  --cb-danger:#B86B5D;
-  --cb-warning:#D6BE8A;
+body{margin:0;background:#f4f1e8;font-family:Arial;color:#17324d}
+header{background:#17324d;color:#fff;text-align:center;padding:16px}
+.screen{display:none;max-width:430px;margin:auto;padding:16px}.active{display:block}
+.card{background:#fff;border:1px solid #ddd;border-radius:10px;padding:12px;margin:10px 0;cursor:pointer}
+.title{font-weight:bold;font-size:18px}
+.sub{color:#666;font-size:13px}
+.badge{display:inline-block;background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:10px;font-size:12px;margin-top:6px}
+.btn{background:#6f7c58;color:#fff;padding:10px;border-radius:8px;text-align:center;margin-top:10px;cursor:pointer}
+input,textarea{width:100%;box-sizing:border-box;padding:8px;margin:6px 0}.back{cursor:pointer;font-weight:bold}
+label.chk{display:flex;align-items:center;gap:8px;margin:6px 0;} input[type=checkbox]{margin:0;}
+#checklist .chk{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #e5e5e5;font-size:18px;}#checklist .chk input{width:22px;height:22px;flex:0 0 22px;margin:0;}#checklist .chk span{flex:1;}
+#photosContainer {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
 }
 
-*{box-sizing:border-box}
-
-html,body{
-  margin:0;
-  padding:0;
-  width:100%;
-  min-height:100%;
+#photosContainer > div {
+    min-width: 0;
 }
 
-body{
-  overflow-x:hidden;
-  background:var(--cb-cream);
-  color:var(--cb-text);
-  font-family:"Montserrat",Arial,sans-serif;
-  -webkit-font-smoothing:antialiased;
+#photosContainer img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
 }
 
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-
-.screen{
-  display:none;
-  width:100%;
-  max-width:760px;
-  margin:0 auto;
-  padding:24px 20px 36px;
-}
-.screen.active{display:block}
-
-h2,h3{
-  color:var(--cb-navy);
-}
-h2{
-  font-family:Georgia,"Times New Roman",serif;
-  font-weight:400;
-  letter-spacing:.5px;
-}
-h3{
-  font-family:"Montserrat",Arial,sans-serif;
-  font-weight:600;
+#photosContainer .btn {
+    margin-top: 8px;
+    text-align: center;
 }
 
-input,select,textarea{
-  width:100%;
-  max-width:100%;
-  box-sizing:border-box;
-  padding:11px 12px;
-  margin:6px 0 12px;
-  background:var(--cb-white);
-  color:var(--cb-text);
-  border:1px solid #D9D9D3;
-  border-radius:10px;
-  font-family:"Montserrat",Arial,sans-serif;
-}
-input:focus,select:focus,textarea:focus{
-  border-color:var(--cb-olive);
-  outline:none;
-  box-shadow:0 0 0 2px rgba(107,122,90,.12);
-}
-textarea{resize:vertical;min-height:100px}
-
-label{
-  display:block;
-  color:var(--cb-navy);
-  font-size:13px;
-  font-weight:600;
-  margin-top:8px;
+#photosContainer > div {
+    width: 100%;
+    min-width: 0;
 }
 
-.btn,button{
-  background:var(--cb-olive);
-  color:var(--cb-white);
-  border:0;
-  border-radius:10px;
-  font-weight:600;
-  letter-spacing:.2px;
-  box-shadow:0 3px 8px rgba(13,43,69,.10);
-  transition:background .2s ease,box-shadow .2s ease,transform .1s ease;
+#photosContainer img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
 }
-.btn{
-  min-height:48px;
-  padding:12px 16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  margin:10px 0;
-  cursor:pointer;
-}
-button{min-height:44px;padding:10px 14px}
-.btn:hover,button:hover{
-  background:#5D6B4E;
-  box-shadow:0 5px 12px rgba(13,43,69,.15);
-}
-.btn:active,button:active{transform:translateY(1px)}
 
-.card{
-  width:100%;
-  background:var(--cb-white);
-  border:1px solid var(--cb-border);
-  border-radius:14px;
-  padding:16px;
-  margin:10px 0;
-  box-shadow:0 4px 14px rgba(13,43,69,.07);
+#photosContainer .btn {
+    width: 100%;
+    box-sizing: border-box;
 }
-.card:hover{box-shadow:0 6px 18px rgba(13,43,69,.10)}
-.title{
-  color:var(--cb-navy);
-  font-family:Georgia,"Times New Roman",serif;
-  font-size:19px;
-  font-weight:400;
-}
-.sub{
-  color:var(--cb-muted);
-  font-size:13px;
-}
-.badge{
-  display:inline-flex;
-  align-items:center;
-  background:#EEF1E8;
-  color:var(--cb-olive);
-  border:1px solid #DDE4D4;
-  padding:5px 9px;
-  border-radius:10px;
-  font-size:12px;
-  margin-top:6px;
-}
-.back{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  color:var(--cb-navy);
-  cursor:pointer;
-  font-weight:600;
-  padding:5px 0 14px;
-}
-.back .cb-icon{color:var(--cb-navy)}
 
-.cb-icon{
-  width:18px;
-  height:18px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  flex:0 0 18px;
-  vertical-align:middle;
+/* =========================================
+   MOBILE - HOUSE MANAGEMENT
+   ========================================= */
+
+* {
+    box-sizing: border-box;
 }
-.cb-icon svg{
-  width:18px;
-  height:18px;
-  display:block;
-  fill:none;
-  stroke:var(--cb-olive);
-  stroke-width:1.6;
-  stroke-linecap:round;
-  stroke-linejoin:round;
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
 }
-.card .sub{
-  display:flex;
-  align-items:center;
-  gap:6px;
+
+body {
+    overflow-x: hidden;
 }
-.card .sub .cb-icon{flex-shrink:0}
+
+header {
+    width: 100%;
+    padding: 28px 20px;
+    text-align: center;
+}
+
+header h2 {
+    margin: 0;
+    font-size: 28px;
+}
+
+header small {
+    display: block;
+    margin-top: 10px;
+    font-size: 15px;
+}
+
+.screen {
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 18px;
+}
+
+.btn,
+button {
+    min-height: 48px;
+}
+
+input,
+select,
+textarea {
+    max-width: 100%;
+}
+
+.card {
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+
+    header {
+        padding: 24px 16px;
+    }
+
+    header h2 {
+        font-size: 24px;
+        letter-spacing: 0.5px;
+    }
+
+    header small {
+        font-size: 14px;
+    }
+
+    .screen {
+        padding: 20px 16px 32px;
+    }
+
+    h2 {
+        font-size: 25px;
+    }
+
+    h3 {
+        font-size: 21px;
+    }
+
+    .btn {
+        width: 100%;
+        min-height: 52px;
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    button {
+        min-height: 46px;
+        padding: 10px 14px;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .back {
+        padding: 8px 0 16px;
+        font-size: 17px;
+    }
+
+    .card {
+        padding: 18px;
+        margin-bottom: 14px;
+    }
+}
 
 /* PORTADA */
-#cover{
-  min-height:100vh;
-  width:100%;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:#FBFAF7;
-  color:var(--cb-navy);
-  padding:24px;
-}
-#cover.active{display:flex}
-.cover-content{
-  width:100%;
-  max-width:680px;
-  text-align:center;
-  padding:30px 20px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-.cover-logo{
-  width:min(620px,88vw);
-  max-width:100%;
-  height:auto;
-  display:block;
-  margin:0 auto 28px;
-}
-.cover-line{
-  width:48%;
-  max-width:360px;
-  height:1px;
-  background:var(--cb-olive);
-  margin:0 auto 22px;
-}
-.cover-brand{
-  color:var(--cb-navy);
-  font-family:Georgia,"Times New Roman",serif;
-  font-size:13px;
-  letter-spacing:3px;
-  text-transform:uppercase;
-  margin-bottom:24px;
-}
-.cover-content p{
-  color:var(--cb-muted);
-  font-size:12px;
-  line-height:1.7;
-  letter-spacing:1.5px;
-  margin:0 0 28px;
-}
-.cover-btn{
-  background:var(--cb-olive);
-  color:#fff;
-  width:210px;
-  min-height:48px;
-  padding:14px 16px;
-  border-radius:8px;
-  text-align:center;
-  font-size:13px;
-  font-weight:600;
-  letter-spacing:2.5px;
-  cursor:pointer;
-  box-shadow:0 4px 12px rgba(13,43,69,.12);
+#cover {
+    background: #01152E;
+    color: #F2EFE8;
+    min-height: 100vh;
+    width: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
-/* HOME / PROPIEDADES */
-.property-page-header{
-  width:100%;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:18px;
-  margin-bottom:18px;
-}
-.property-page-header h3{
-  margin:0;
-  font-size:28px;
-  letter-spacing:.2px;
-}
-.property-header-logo{
-  width:190px;
-  max-width:48%;
-  height:auto;
-  object-fit:contain;
+#cover.active {
+    display: flex;
 }
 
-.property-search{
-  width:100%;
-  height:44px;
-  margin:0 0 12px;
-  display:flex;
-  align-items:center;
-  gap:9px;
-  padding:0 13px;
-  background:var(--cb-white);
-  border:1px solid #D9D9D3;
-  border-radius:11px;
-}
-.property-search-icon{
-  width:18px;
-  height:18px;
-  min-width:18px;
-  flex:0 0 18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.property-search-icon svg{
-  width:18px;
-  height:18px;
-  display:block;
-  fill:none;
-  stroke:var(--cb-navy);
-  stroke-width:1.7;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-}
-.property-search input#searchProperty{
-  width:100%;
-  height:100%;
-  min-width:0;
-  margin:0!important;
-  padding:0!important;
-  border:0!important;
-  border-radius:0!important;
-  outline:0!important;
-  box-shadow:none!important;
-  background:transparent!important;
-  color:var(--cb-navy)!important;
-  font-size:13px!important;
+.cover-content {
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+    padding: 40px 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-#propertyFilters{
-  width:100%;
-  display:grid!important;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:6px;
-  margin-bottom:16px;
-}
-#propertyFilters button{
-  width:100%;
-  min-height:40px;
-  padding:8px 6px;
-  font-size:12px;
-  white-space:nowrap;
-  background:var(--cb-white);
-  color:var(--cb-navy);
-  border:1px solid #D9D9D3;
-  box-shadow:none;
-}
-#propertyFilters button.filter-active{
-  background:var(--cb-olive);
-  color:var(--cb-white);
-  border-color:var(--cb-olive);
+.cover-logo {
+    width: 260px;
+    max-width: 75%;
+    margin-bottom: 12px;
 }
 
-/* TARJETA DE PROPIEDAD */
-#houses .card{
-  cursor:pointer;
-  padding:16px;
-  overflow:hidden;
-}
-.property-card-main{
-  position:relative;
-  display:flex;
-  align-items:flex-start;
-  gap:16px;
-  width:100%;
-}
-.property-card-main::before{
-  content:"";
-  width:3px;
-  align-self:stretch;
-  background:var(--cb-navy);
-  border-radius:3px;
-  flex:0 0 3px;
-  margin-right:-7px;
-}
-.property-card-photo{
-  width:120px;
-  height:92px;
-  flex:0 0 120px;
-  border-radius:12px;
-  overflow:hidden;
-  background:#E9E5DA;
-  border:1px solid #DED8C9;
-}
-.property-card-photo img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-.property-card-content{
-  flex:1;
-  min-width:0;
-}
-.property-card-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:10px;
-  width:100%;
-}
-.property-card-title-area{min-width:0;flex:1}
-.property-card-header .title{
-  margin-bottom:7px;
-  line-height:1.15;
-}
-.property-card-header .sub{
-  margin-bottom:5px;
-}
-.property-card-header .sub:last-child{margin-bottom:0}
-.property-card-header .sub span{
-  min-width:0;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.property-rating{
-  display:flex;
-  align-items:center;
-  gap:5px;
-  color:var(--cb-navy);
-  font-size:16px;
-  font-weight:600;
-  padding-top:2px;
-  white-space:nowrap;
-}
-.property-rating .cb-icon,
-.property-rating .cb-icon svg{
-  width:18px;
-  height:18px;
+.cover-line {
+    width: 55%;
+    height: 1px;
+    background: #6B7A5A;
+    margin: 8px 0 14px;
 }
 
-/* BANDA DE INFORMACIÓN */
-.property-card-stats{
-  width:100%;
-  display:grid;
-  grid-template-columns:1.2fr 1fr 1fr 1fr;
-  align-items:center;
-  gap:8px;
-  margin-top:14px;
-  padding-top:12px;
-  border-top:1px solid #E4E5DF;
-}
-.property-status{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  color:var(--cb-navy);
-  font-size:12px;
-  font-weight:600;
-  white-space:nowrap;
-  min-width:0;
-}
-.property-status-dot{
-  width:9px;
-  height:9px;
-  border-radius:50%;
-  display:inline-block;
-  flex:0 0 9px;
-}
-.property-status-dot.pending{background:var(--cb-danger)}
-.property-status-dot.preparing{background:var(--cb-warning)}
-.property-status-dot.ready{background:var(--cb-olive)}
-.property-stat{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  min-width:0;
-  color:var(--cb-navy);
-  font-size:12px;
-}
-.property-stat .cb-icon{
-  width:17px;
-  height:17px;
-  flex:0 0 17px;
-}
-.property-stat .cb-icon svg{
-  width:17px;
-  height:17px;
-}
-.property-stat span:not(.cb-icon){min-width:0}
-.property-stat small{
-  display:block;
-  color:var(--cb-muted);
-  font-size:10px;
-  line-height:1.2;
-  margin-bottom:2px;
+.cover-brand {
+    color: #6B7A5A;
+    font-family: Montserrat, sans-serif;
+    font-size: 15px;
+    letter-spacing: 7px;
+    margin-bottom: 25px;
 }
 
-/* DETALLE CASA */
-.house-detail{width:100%}
-.house-hero-photo{
-  width:100%;
-  height:300px;
-  background:#e8e8e3;
-  border-radius:14px;
-  overflow:hidden;
-  margin-bottom:14px;
+.cover-content p {
+    color: #F2EFE8;
+    font-family: Montserrat, sans-serif;
+    font-size: 13px;
+    line-height: 1.7;
+    letter-spacing: 2px;
+    margin: 0 0 35px;
 }
-.house-hero-photo img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
+
+.cover-btn {
+    background: #6B7A5A;
+    color: white;
+    width: 220px;
+    padding: 16px;
+    border-radius: 5px;
+    text-align: center;
+    font-family: Montserrat, sans-serif;
+    font-size: 14px;
+    letter-spacing: 3px;
+    cursor: pointer;
 }
-.house-detail-info{
-  background:var(--cb-white);
-  border:1px solid var(--cb-border);
-  border-radius:14px;
-  padding:16px;
-  margin-bottom:14px;
+
+/* =========================================
+   COSTA BOUTIQUE — AJUSTE VISUAL
+   SOLO ESTÉTICA — NO TOCAR FUNCIONALIDAD
+========================================= */
+
+:root {
+    --cb-navy: #0D2B45;
+    --cb-navy-soft: #0D2B45;
+    --cb-olive: #6B7A5A;
+    --cb-sand: #DCC9A6;
+    --cb-cream: #F2EFE8;
+    --cb-white: #FFFFFF;
+    --cb-gray: #E6E7E5;
+    --cb-text: #17324D;
+    --cb-muted: #6D746D;
 }
-.house-detail-name{
-  color:var(--cb-navy);
-  font-family:Georgia,"Times New Roman",serif;
-  font-size:26px;
-  margin-bottom:4px;
+
+/* BASE */
+
+body {
+    background: var(--cb-cream);
+    color: var(--cb-text);
+    font-family: "Montserrat", Arial, sans-serif;
 }
-.house-detail-location{
-  color:var(--cb-muted);
-  font-size:13px;
-  margin-bottom:10px;
+
+/* ENCABEZADOS */
+
+header {
+    background: var(--cb-navy);
+    color: var(--cb-cream);
+    border-bottom: 3px solid var(--cb-olive);
 }
-.house-detail-status{
-  color:var(--cb-olive);
-  font-weight:600;
-  font-size:13px;
-  margin-bottom:7px;
+
+header h2,
+h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    letter-spacing: 1px;
 }
-.house-status-dot{font-size:10px;color:var(--cb-olive)}
-.house-detail-line{
-  color:var(--cb-muted);
-  font-size:13px;
-  line-height:1.6;
+
+header small {
+    color: var(--cb-sand);
+    letter-spacing: 3px;
+    text-transform: uppercase;
 }
-.house-detail-line:last-child{
-  color:var(--cb-olive);
-  font-weight:600;
+
+/* TÍTULOS */
+
+h2,
+h3 {
+    color: var(--cb-navy);
 }
-.house-menu{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:10px;
+
+h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
 }
-.house-menu-btn{
-  min-height:62px;
-  background:var(--cb-olive);
-  border:1px solid #E2E3DE;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  gap:9px;
-  padding:10px 12px;
-  color:var(--cb-white);
-  font-size:12px;
-  font-weight:600;
-  cursor:pointer;
-  box-shadow:0 3px 10px rgba(13,43,69,.06);
+
+h3 {
+    font-family: "Montserrat", Arial, sans-serif;
+    font-weight: 600;
 }
-.house-menu-btn:hover{border-color:var(--cb-olive)}
-.house-icon{
-  width:25px;
-  height:25px;
-  flex:0 0 25px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+
+/* CAMPOS */
+
+input,
+select,
+textarea {
+    background: var(--cb-white);
+    color: var(--cb-text);
+    border: 1px solid #D9D9D3;
+    border-radius: 10px;
+    font-family: "Montserrat", Arial, sans-serif;
 }
-.house-icon svg{
-  width:21px;
-  height:21px;
-  fill:none;
-  stroke:var(--cb-white);
-  stroke-width:1.6;
-  stroke-linecap:round;
-  stroke-linejoin:round;
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--cb-olive);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(107,122,90,.12);
+}
+
+/* BOTONES */
+
+.btn,
+button {
+    background: var(--cb-olive);
+    color: var(--cb-white);
+    border: 0;
+    border-radius: 10px;
+    font-family: "Montserrat", Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: .5px;
+    box-shadow: 0 3px 8px rgba(13,43,69,.10);
+    transition: all .2s ease;
+}
+
+.btn:hover,
+button:hover {
+    background: #5D6B4E;
+    box-shadow: 0 5px 12px rgba(13,43,69,.15);
+}
+
+/* TARJETAS */
+
+.card {
+    background: var(--cb-white);
+    border: 1px solid #E2E3DE;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(13,43,69,.07);
+}
+
+.card:hover {
+    box-shadow: 0 6px 18px rgba(13,43,69,.10);
+}
+
+/* NOMBRE DE CASA */
+
+.title {
+    color: var(--cb-navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 19px;
+    font-weight: 400;
+}
+
+/* TEXTOS SECUNDARIOS */
+
+.sub {
+    color: var(--cb-muted);
+}
+
+/* ESTADOS */
+
+.badge {
+    background: #EEF1E8;
+    color: var(--cb-olive);
+    border: 1px solid #DDE4D4;
 }
 
 /* CHECKLIST */
-#checklist .chk{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  padding:14px 0;
-  border-bottom:1px solid var(--cb-gray);
-  font-size:17px;
-}
-#checklist .chk input{
-  width:22px;
-  height:22px;
-  flex:0 0 22px;
-  margin:0;
-  accent-color:var(--cb-olive);
-}
-#checklist .chk span{flex:1}
 
-/* FOTOS */
-#photosContainer{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:15px;
-}
-#photosContainer>div{min-width:0}
-#photosContainer img{
-  width:100%;
-  height:180px;
-  object-fit:cover;
-  border-radius:10px;
-  cursor:pointer;
-}
-#photosContainer .btn{
-  margin-top:8px;
-  width:100%;
+#checklist .chk {
+    background: var(--cb-white);
+    border-bottom: 1px solid var(--cb-gray);
 }
 
-/* MODAL FOTO */
-#photoViewer{
-  display:none;
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,.85);
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-  padding:20px;
-}
-#photoViewer img{
-  max-width:92%;
-  max-height:92%;
-  object-fit:contain;
-  border-radius:10px;
+#checklist .chk input[type="checkbox"] {
+    accent-color: var(--cb-olive);
 }
 
-/* RESPONSIVE */
-@media (max-width:800px){
-  .screen{max-width:760px}
+@media (max-width: 600px) {
+
+    #propertyFilters {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+    }
+
+    #propertyFilters button {
+        flex: 1 !important;
+        min-width: 0 !important;
+        padding: 10px 4px !important;
+        font-size: 13px !important;
+    }
+
+    /* Tarjeta Propiedades */
+    #houses .card {
+        width: 100% !important;
+        padding: 14px !important;
+        margin-bottom: 14px !important;
+        overflow: hidden !important;
+    }
+
+    /* Parte superior: foto + información */
+    #houses .property-card-main {
+        position: relative;
+        display: grid !important;
+        grid-template-columns: 92px minmax(0, 1fr) !important;
+        gap: 12px !important;
+        align-items: start !important;
+        width: 100% !important;
+    }
+
+    /* Línea azul */
+    #houses .property-card-main::before {
+        content: "";
+        position: absolute;
+        left: -14px;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--cb-navy);
+        border-radius: 0 3px 3px 0;
+    }
+
+    /* Foto / placeholder */
+    #houses .property-card-photo {
+        width: 92px !important;
+        height: 76px !important;
+        min-width: 92px !important;
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        border-radius: 10px !important;
+        background: #E9E5DA !important;
+        border: 1px solid #DED8C9 !important;
+        overflow: hidden !important;
+    }
+
+    #houses .property-card-photo img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        display: block !important;
+    }
+
+    /* Información */
+    #houses .property-card-content {
+        width: 100% !important;
+        min-width: 0 !important;
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+    }
+
+    #houses .property-card-header {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+
+    #houses .property-card-title-area {
+        min-width: 0 !important;
+        flex: 1 !important;
+    }
+
+    #houses .property-card-header .title {
+        font-size: 18px !important;
+        line-height: 1.15 !important;
+        margin-bottom: 6px !important;
+    }
+
+    #houses .property-card-header .sub {
+        font-size: 12px !important;
+        line-height: 1.35 !important;
+        margin-bottom: 4px !important;
+    }
+
+    #houses .property-card-header .sub span {
+        min-width: 0 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+
+    /* Estrella */
+    #houses .property-rating {
+        flex: 0 0 auto !important;
+        font-size: 14px !important;
+        gap: 4px !important;
+        padding-top: 1px !important;
+    }
+
+    #houses .property-rating .cb-icon,
+    #houses .property-rating .cb-icon svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    /* Información inferior */
+#houses .property-card-stats {
+    display: grid !important;
+    grid-template-columns: 1.15fr 1fr 1fr 1fr !important;
+    gap: 6px !important;
+    width: 100% !important;
+    margin-top: 12px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid #E4E5DF !important;
+    align-items: start !important;
 }
 
-@media (max-width:600px){
-  .screen{
-    max-width:100%;
-    padding:16px 16px 28px;
-  }
+    #houses .property-status,
+    #houses .property-stat {
+        min-width: 0 !important;
+    }
 
-  h2{font-size:25px}
-  h3{font-size:21px}
+    #houses .property-status {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 11px !important;
+    }
 
-  .btn{
-    width:100%;
-    min-height:52px;
-    margin:10px 0;
-  }
-  button{min-height:46px;padding:10px 12px}
-
-  input,select,textarea{font-size:16px}
-
-  .back{
-    padding:6px 0 12px;
-    font-size:16px;
-  }
-
-  .card{
-    padding:14px;
-    margin-bottom:14px;
-  }
-
-  /* PORTADA */
-  #cover{padding:16px}
-  .cover-content{padding:20px 10px}
-  .cover-logo{
-    width:min(520px,94vw);
-    margin-bottom:22px;
-  }
-  .cover-line{width:58%;margin-bottom:18px}
-  .cover-brand{font-size:12px;letter-spacing:2.5px}
-  .cover-content p{font-size:11px;letter-spacing:1px;margin-bottom:24px}
-  .cover-btn{width:190px}
-
-  /* HOME */
-  .property-page-header{
-    align-items:center;
-    gap:10px;
-    margin-bottom:14px;
-  }
-  .property-page-header h3{font-size:25px}
-  .property-header-logo{
-    width:145px;
-    max-width:44%;
-  }
-
-  #propertyFilters{
-    grid-template-columns:repeat(4,minmax(0,1fr))!important;
-    gap:5px!important;
-    margin-bottom:14px;
-  }
-  #propertyFilters button{
-    min-height:40px!important;
-    padding:8px 3px!important;
-    font-size:11px!important;
-    white-space:normal;
-    line-height:1.1;
-  }
-
-  /* PROPIEDADES: foto + datos arriba, banda abajo */
-  #houses .card{
-    width:100%!important;
-    padding:14px!important;
-    margin-bottom:14px!important;
-    overflow:hidden!important;
-  }
-
-  #houses .property-card-main{
-    position:relative!important;
-    display:grid!important;
-    grid-template-columns:92px minmax(0,1fr)!important;
-    gap:12px!important;
-    align-items:start!important;
-    width:100%!important;
-  }
-  #houses .property-card-main::before{
-    content:""!important;
-    position:absolute!important;
-    left:-14px!important;
-    top:0!important;
-    bottom:0!important;
-    width:3px!important;
-    background:var(--cb-navy)!important;
-    border-radius:0 3px 3px 0!important;
-    margin:0!important;
-  }
-  #houses .property-card-photo{
-    width:92px!important;
-    height:76px!important;
-    min-width:92px!important;
-    grid-column:1!important;
-    grid-row:1!important;
-    border-radius:10px!important;
-  }
-  #houses .property-card-content{
-    width:100%!important;
-    min-width:0!important;
-    grid-column:2!important;
-    grid-row:1!important;
-  }
-  #houses .property-card-header{
-    width:100%!important;
-    display:flex!important;
-    justify-content:space-between!important;
-    align-items:flex-start!important;
-    gap:8px!important;
-  }
-  #houses .property-card-title-area{
-    min-width:0!important;
-    flex:1!important;
-  }
-  #houses .property-card-header .title{
-    font-size:18px!important;
-    line-height:1.15!important;
-    margin-bottom:6px!important;
-  }
-  #houses .property-card-header .sub{
-    font-size:12px!important;
-    line-height:1.35!important;
-    margin-bottom:4px!important;
-  }
-  #houses .property-card-header .sub span{
-    min-width:0!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-    white-space:nowrap!important;
-  }
-  #houses .property-rating{
-    flex:0 0 auto!important;
-    font-size:14px!important;
-    gap:4px!important;
-    padding-top:1px!important;
-  }
-  #houses .property-rating .cb-icon,
-  #houses .property-rating .cb-icon svg{
-    width:16px!important;
-    height:16px!important;
-  }
-
-  #houses .property-card-stats{
-    display:grid!important;
-    grid-template-columns:1.15fr 1fr 1fr 1fr!important;
-    gap:6px!important;
-    width:100%!important;
-    margin-top:12px!important;
-    padding-top:10px!important;
-    border-top:1px solid #E4E5DF!important;
-    align-items:start!important;
-  }
-  #houses .property-status,
-  #houses .property-stat{
-    min-width:0!important;
-  }
-  #houses .property-status{
-    display:flex!important;
-    align-items:center!important;
-    gap:6px!important;
-    font-size:11px!important;
-    white-space:normal!important;
-    line-height:1.2!important;
-  }
-  #houses .property-status-dot{
-    width:8px!important;
-    height:8px!important;
-    flex:0 0 8px!important;
-  }
-  #houses .property-stat{
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    justify-content:flex-start!important;
-    gap:3px!important;
-    min-height:55px!important;
-    text-align:center!important;
-    font-size:10px!important;
-  }
-  #houses .property-stat .cb-icon{
-    width:18px!important;
-    height:18px!important;
-    flex:0 0 18px!important;
-    display:flex!important;
-  }
-  #houses .property-stat .cb-icon svg{
-    width:17px!important;
-    height:17px!important;
-  }
-  #houses .property-stat span:not(.cb-icon){
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    line-height:1.25!important;
-    min-width:0!important;
-  }
-  #houses .property-stat small{
-    font-size:9px!important;
-    line-height:1.15!important;
-  }
-
-  /* CASA */
-  #property{padding:10px 16px 24px}
-  #property .back{padding:4px 0 10px;font-size:14px}
-  .house-hero-photo{
-    height:180px;
-    margin-bottom:10px;
-    border-radius:13px;
-  }
-  .house-detail-info{
-    padding:12px 13px;
-    margin-bottom:10px;
-    border-radius:13px;
-  }
-  .house-detail-name{font-size:22px;margin-bottom:2px}
-  .house-detail-location{font-size:12px;margin-bottom:7px}
-  .house-detail-status{font-size:12px;margin-bottom:4px}
-  .house-detail-line{font-size:12px;line-height:1.45}
-  .house-menu{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:7px;
-  }
-  .house-menu-btn{
-    min-height:54px;
-    padding:7px 8px;
-    gap:7px;
-    font-size:11px;
-    border-radius:10px;
-  }
-  .house-icon{width:23px;height:23px;flex-basis:23px}
-  .house-icon svg{width:19px;height:19px}
-
-  #photosContainer{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:10px;
-  }
-  #photosContainer img{height:150px}
-
-  #photoViewer img{
-    max-width:96%;
-    max-height:90%;
-  }
+    #houses .property-stat {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 3px !important;
+    min-width: 0 !important;
+    min-height: 55px !important;
+    text-align: center !important;
+    font-size: 10px !important;
 }
 
-@media (max-width:390px){
-  .property-header-logo{width:125px}
-  #houses .property-card-main{
-    grid-template-columns:84px minmax(0,1fr)!important;
-    gap:10px!important;
-  }
-  #houses .property-card-photo{
-    width:84px!important;
-    min-width:84px!important;
-    height:70px!important;
-  }
-  #houses .property-card-header .title{font-size:17px!important}
-  #houses .property-card-header .sub{font-size:11px!important}
-  #houses .property-card-stats{
-    grid-template-columns:1.1fr 1fr 1fr 1fr!important;
-    gap:4px!important;
-  }
+#houses .property-stat .cb-icon {
+    width: 18px !important;
+    height: 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 18px !important;
 }
+
+#houses .property-stat .cb-icon svg {
+    width: 17px !important;
+    height: 17px !important;
+    display: block !important;
+}
+
+#houses .property-stat span:not(.cb-icon) {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    line-height: 1.25 !important;
+}
+
+#houses .property-stat small {
+    font-size: 9px !important;
+    line-height: 1.15 !important;
+}
+}
+
+/* =========================================
+   CASA — NUEVA VISTA
+   ========================================= */
+
+.house-detail {
+    width: 100%;
+}
+
+.house-hero-photo {
+    width: 100%;
+    height: 190px;
+    background: #e8e8e3;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.house-hero-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.house-detail-info {
+    background: var(--cb-white);
+    border: 1px solid #E2E3DE;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+}
+
+.house-detail-name {
+    color: var(--cb-navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 24px;
+    margin-bottom: 3px;
+}
+
+.house-detail-location {
+    color: var(--cb-muted);
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.house-detail-status {
+    color: var(--cb-olive);
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 7px;
+}
+
+.house-status-dot {
+    font-size: 10px;
+    color: var(--cb-olive);
+}
+
+.house-detail-line {
+    color: var(--cb-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.house-detail-line:last-child {
+    color: var(--cb-olive);
+    font-weight: 600;
+}
+
+.house-menu {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.house-menu-btn {
+    min-height: 58px;
+    background: var(--cb-olive);
+    border: 1px solid #E2E3DE;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 10px;
+    color: var(--cb-white);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(13,43,69,.06);
+}
+
+.house-menu-btn:hover {
+    border-color: var(--cb-olive);
+}
+
+.house-icon {
+    width: 25px;
+    height: 25px;
+    flex: 0 0 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.house-icon svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: var(--cb-white);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+
+/* =========================================
+   CASA — CELULAR
+   ========================================= */
+
+@media (max-width: 600px) {
+
+    #property {
+        padding: 14px 16px 24px;
+    }
+
+    #property .back {
+        padding: 5px 0 10px;
+        font-size: 14px;
+    }
+
+    .house-hero-photo {
+        height: 155px;
+        margin-bottom: 10px;
+        border-radius: 13px;
+    }
+
+    .house-detail-info {
+        padding: 11px 13px;
+        margin-bottom: 10px;
+        border-radius: 13px;
+    }
+
+    .house-detail-name {
+        font-size: 22px;
+        margin-bottom: 2px;
+    }
+
+    .house-detail-location {
+        font-size: 12px;
+        margin-bottom: 7px;
+    }
+
+    .house-detail-status {
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .house-detail-line {
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .house-menu {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+    }
+
+    .house-menu-btn {
+        min-height: 51px;
+        padding: 7px 8px;
+        gap: 7px;
+        font-size: 11px;
+        border-radius: 10px;
+    }
+
+    .house-icon {
+        width: 23px;
+        height: 23px;
+        flex-basis: 23px;
+    }
+
+    .house-icon svg {
+        width: 19px;
+        height: 19px;
+    }
+
+}
+
+/* =========================================
+   COSTA BOUTIQUE — SISTEMA DE ICONOS
+   ========================================= */
+
+.cb-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 18px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+.cb-icon svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    fill: none;
+    stroke: var(--cb-olive);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.cb-icon.white svg {
+    stroke: var(--cb-white);
+}
+
+/* Alinear iconos con el texto de las tarjetas */
+.card .sub {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.card .sub .cb-icon {
+    flex-shrink: 0;
+}
+
+/* =========================================
+   PROPIEDADES — NUEVA IDENTIDAD VISUAL
+   ========================================= */
+
+.property-card-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.property-card-photo {
+    width: 120px;
+    height: 92px;
+    flex: 0 0 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #E9E5DA;
+}
+
+.property-card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.property-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.property-card-header {
+    width: 100%;
+}
+
+.property-card-header .title {
+    margin-bottom: 7px;
+}
+
+.property-card-header .sub {
+    margin-bottom: 5px;
+}
+
+.property-card-header .sub:last-child {
+    margin-bottom: 0;
+}
+
+
+/* BANDA DE INFORMACIÓN */
+
+.property-card-stats {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 1fr;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #E4E5DF;
+}
+
+
+/* ESTADO */
+
+.property-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--cb-navy);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.property-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+    flex: 0 0 9px;
+}
+
+.property-status-dot.pending {
+    background: #B86B5D;
+}
+
+.property-status-dot.preparing {
+    background: #D6BE8A;
+}
+
+.property-status-dot.ready {
+    background: var(--cb-olive);
+}
+
+
+/* DATOS */
+
+.property-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    color: var(--cb-navy);
+    font-size: 12px;
+}
+
+.property-stat .cb-icon {
+    flex: 0 0 17px;
+    width: 17px;
+    height: 17px;
+}
+
+.property-stat .cb-icon svg {
+    width: 17px;
+    height: 17px;
+}
+
+.property-stat span {
+    min-width: 0;
+}
+
+.property-stat small {
+    display: block;
+    color: var(--cb-muted);
+    font-size: 10px;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+
+/* DETALLE NAVY */
+
+.property-card-main::before {
+    content: "";
+    width: 3px;
+    align-self: stretch;
+    background: var(--cb-navy);
+    border-radius: 3px;
+    margin-right: -7px;
+}
+
+/* =========================================
+   PROPIEDADES — CELULAR
+   ========================================= */
+
+@media (max-width: 600px) {
+
+    .property-card-main {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        width: 100%;
+    }
+
+    /* Detalle azul de la identidad Costa Boutique */
+    .property-card-main::before {
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        margin: 0;
+        background: var(--cb-navy);
+        border-radius: 3px;
+    }
+
+    .property-card-photo {
+        width: 92px;
+        height: 76px;
+        min-width: 92px;
+        border-radius: 10px;
+        background: #E9E5DA !important;
+        border: 1px solid #DED8C9;
+        overflow: hidden;
+    }
+
+    .property-card-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .property-card-content {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .property-card-header {
+        width: 100%;
+        display: block;
+    }
+
+    .property-card-header .title {
+        font-size: 18px !important;
+        line-height: 1.15;
+        margin-bottom: 6px;
+    }
+
+    .property-card-header .sub {
+        font-size: 12px !important;
+        line-height: 1.35;
+        margin-bottom: 4px;
+        min-width: 0;
+    }
+
+    .property-card-header .sub span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .property-rating {
+        font-size: 14px;
+        gap: 4px;
+        margin-top: 2px;
+    }
+
+    .property-rating .cb-icon,
+    .property-rating .cb-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* Banda inferior: estado + datos */
+.property-card-stats {
+    display: grid !important;
+    grid-template-columns: 1.15fr 1fr 1fr 1fr !important;
+    align-items: start !important;
+    gap: 6px !important;
+    width: 100% !important;
+    margin-top: 12px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid #E4E5DF !important;
+}
+
+.property-status {
+    min-width: 0 !important;
+    font-size: 11px !important;
+    gap: 6px !important;
+    align-self: center !important;
+}
+
+.property-stat {
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 3px !important;
+    min-height: 55px !important;
+    text-align: center !important;
+    font-size: 10px !important;
+}
+
+.property-stat .cb-icon {
+    width: 18px !important;
+    height: 18px !important;
+    flex: 0 0 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.property-stat .cb-icon svg {
+    width: 17px !important;
+    height: 17px !important;
+    display: block !important;
+}
+
+.property-stat span:not(.cb-icon) {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    line-height: 1.25 !important;
+}
+
+.property-stat small {
+    font-size: 9px !important;
+    line-height: 1.15 !important;
+}
+}
+
+/* Valoración de la propiedad */
+.property-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.property-card-title-area {
+    min-width: 0;
+}
+
+.property-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--cb-navy);
+    font-size: 16px;
+    font-weight: 600;
+    padding-top: 2px;
+    white-space: nowrap;
+}
+
+.property-rating .cb-icon {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+}
+
+.property-rating .cb-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+@media (max-width: 600px) {
+
+    .property-rating {
+        font-size: 14px;
+        gap: 4px;
+    }
+
+    .property-rating .cb-icon,
+    .property-rating .cb-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+}
+
+/* BUSCADOR PROPIEDADES */
+
+.property-search {
+    width: 100%;
+    height: 44px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0 13px;
+    background: #FFFFFF;
+    border: 1px solid #D9D9D3;
+    border-radius: 11px;
+}
+
+.property-search-icon {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.property-search-icon svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    fill: none;
+    stroke: var(--cb-navy);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.property-search input {
+    width: 100%;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    outline: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--cb-navy);
+}
+
+.property-search input::placeholder {
+    color: #8A8A8A;
+    opacity: 1;
+}
+
