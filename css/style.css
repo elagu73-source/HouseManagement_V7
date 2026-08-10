@@ -1281,3 +1281,14 @@ button:hover {
     font-weight: 600;
     margin-bottom: 12px;
 }
+
+#infoGeneral h2 {
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+    font-weight: 400;
+}
+
+#infoGeneral label,
+#infoGeneral input,
+#infoGeneral textarea {
+    font-family: "Montserrat", Arial, sans-serif;
+}
