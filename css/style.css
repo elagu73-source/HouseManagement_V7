@@ -506,15 +506,16 @@ button:hover {
     }
 
     /* Información inferior */
-    #houses .property-card-stats {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 8px 10px !important;
-        width: 100% !important;
-        margin-top: 12px !important;
-        padding-top: 10px !important;
-        border-top: 1px solid #E4E5DF !important;
-    }
+#houses .property-card-stats {
+    display: grid !important;
+    grid-template-columns: 1.25fr 1fr 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-top: 12px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid #E4E5DF !important;
+    align-items: center !important;
+}
 
     #houses .property-status,
     #houses .property-stat {
