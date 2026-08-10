@@ -258,6 +258,7 @@ body {
     background: var(--cb-cream);
     color: var(--cb-text);
     font-family: "Montserrat", Arial, sans-serif;
+    
 }
 
 /* ENCABEZADOS */
@@ -754,6 +755,48 @@ button:hover {
         height: 19px;
     }
 
+    #prep {
+    padding: 10px 16px 14px;
+}
+
+#prep h2 {
+    font-size: 25px;
+    margin: 8px 0 12px;
+}
+
+#prepTitle {
+    font-size: 17px;
+}
+
+#checklist .chk {
+    gap: 10px;
+    padding: 9px 18px;
+    font-size: 15px;
+}
+
+#checklist .chk input {
+    width: 19px;
+    height: 19px;
+    flex: 0 0 19px;
+}
+
+#prep .btn {
+    min-height: 42px;
+    padding: 9px 12px;
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+#prep h2 {
+    font-family: "Playfair Display", serif;
+}
+
+#prep,
+#prep .chk,
+#prep .btn,
+#prep textarea {
+    font-family: "Montserrat", Arial, sans-serif;
+}
 }
 
 /* =========================================
@@ -1222,7 +1265,8 @@ button:hover {
     white-space: nowrap;
 }
 
-#property .back {
+#property .back,
+#prep .back {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1408,13 +1452,12 @@ button:hover {
 
 @media (max-width: 600px) {
 
-    #manual .card:first-of-type {
-        background: #FFFFFF;
-        border: 1px solid #E2E0D9;
-        border-radius: 13px;
-        padding: 14px;
-        margin: 10px 0;
-        box-shadow: 0 2px 8px rgba(13, 43, 69, 0.07);
+    #manual .card {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 18px !important;
+        margin: 10px 0 14px !important;
     }
 
 }

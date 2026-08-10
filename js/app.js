@@ -824,7 +824,15 @@ checklist.innerHTML += `
 
 <div style="margin-top:20px">
 
-<b>📝 Observaciones</b>
+<b>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M4 20L8 19L19 8L16 5L5 16L4 20Z"></path>
+            <line x1="14" y1="7" x2="17" y2="10"></line>
+        </svg>
+    </span>
+    Observaciones
+</b>
 
 <textarea
 id="obsPrep"
