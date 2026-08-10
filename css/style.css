@@ -1221,3 +1221,28 @@ button:hover {
     line-height: 1;
     white-space: nowrap;
 }
+
+#property .back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    background: #0D2B45;
+    color: #FFFFFF;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+#property .back #backIcon {
+    display: flex;
+    align-items: center;
+}
+
+#property .back #backIcon svg {
+    width: 18px;
+    height: 18px;
+    stroke: #FFFFFF;
+}
