@@ -1479,3 +1479,88 @@ button:hover {
     }
 
 }
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.card-header .title {
+    flex: 1;
+}
+
+.btn-delete-incidencia {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #E6E7E5;
+    border-radius: 8px;
+    background: #F2EFE8;
+    color: #0D2B45;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.btn-delete-incidencia .cb-icon {
+    width: 17px;
+    height: 17px;
+}
+
+.btn-delete-incidencia .cb-icon svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+}
+
+.estado-incidencia {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.semaforo {
+    width: 18px;
+    height: 44px;
+    padding: 4px;
+    border-radius: 9px;
+    background: #E6E7E5;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+.semaforo span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #F2EFE8;
+    border: 1px solid #DCC9A6;
+    box-sizing: border-box;
+}
+
+/* PENDIENTE */
+.semaforo-pendiente span:first-child {
+    background: #0D2B45 !important;
+    border-color: #0D2B45 !important;
+}
+
+/* EN CURSO */
+.semaforo-en-curso span:nth-child(2) {
+    background: #DCC9A6 !important;
+    border-color: #DCC9A6 !important;
+}
+
+/* RESUELTA */
+.semaforo-resuelta span:last-child {
+    background: #6B7A5A !important;
+    border-color: #6B7A5A !important;
+}

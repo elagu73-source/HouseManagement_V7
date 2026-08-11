@@ -576,7 +576,14 @@ function openIncidencias(){
 
         lista.innerHTML = `
             <div class="card">
-                <b>🚨 No hay incidencias registradas</b>
+                <span class="cb-icon">
+    <svg viewBox="0 0 24 24">
+        <path d="M12 3 21 20H3L12 3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="14"></line>
+        <circle cx="12" cy="17" r="0.8"></circle>
+    </svg>
+</span>
+No hay incidencias registradas
                 <div class="sub">
                     Esta casa no tiene incidencias pendientes.
                 </div>
@@ -596,15 +603,24 @@ function openIncidencias(){
                 incidencia.prioridad === 'Alta' ? '🔴' :
                 incidencia.prioridad === 'Media' ? '🟡' : '🟢';
 
-            const estadoIcono =
-                incidencia.estado === 'Resuelta' ? '🟢' :
-                incidencia.estado === 'En curso' ? '🟡' : '🔴';
+            const estadoSemaforo =
+    incidencia.estado === 'Resuelta' ? 'resuelta' :
+    incidencia.estado === 'En curso' ? 'en-curso' :
+    'pendiente';
+
+    const estadoColor =
+    incidencia.estado === 'Resuelta' ? '#6B7A5A' :
+    incidencia.estado === 'En curso' ? '#DCC9A6' :
+    '#0D2B45';
 
             lista.innerHTML += `
                 <div class="card">
 
-                    <div class="title">
-                        <span class="cb-icon">
+    <div class="card-header">
+
+        <div class="title">
+            <span class="cb-icon">
+
     <svg viewBox="0 0 24 24">
         <path d="M12 3 21 20H3L12 3Z"></path>
         <line x1="12" y1="9" x2="12" y2="14"></line>
@@ -613,7 +629,24 @@ function openIncidencias(){
 </span>
 ${incidencia.ambiente || 'Sin ambiente'}
                     </div>
+<button
+    class="btn-delete-incidencia"
+    onclick="eliminarIncidencia(${indice})"
+    title="Eliminar incidencia"
+    aria-label="Eliminar incidencia"
+>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M6 7H18"></path>
+            <path d="M9 7V5H15V7"></path>
+            <path d="M8 7L9 20H15L16 7"></path>
+            <path d="M10 11V17"></path>
+            <path d="M14 11V17"></path>
+        </svg>
+    </span>
+</button>
 
+</div>
                     <div class="sub">
                         ${incidencia.descripcion}
                     </div>
@@ -629,15 +662,14 @@ ${incidencia.ambiente || 'Sin ambiente'}
 Prioridad: ${incidencia.prioridad}
                     </div>
 
-                    <div class="sub">
-                    <span class="cb-icon">
-    <svg viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="8"></circle>
-        <polyline points="8,12 11,15 16,9"></polyline>
-    </svg>
+             <div class="sub estado-incidencia">
+ <span class="semaforo">
+    <span style="${estadoSemaforo === 'pendiente' ? `background:${estadoColor}; border-color:${estadoColor};` : ''}"></span>
+    <span style="${estadoSemaforo === 'en-curso' ? `background:${estadoColor}; border-color:${estadoColor};` : ''}"></span>
+    <span style="${estadoSemaforo === 'resuelta' ? `background:${estadoColor}; border-color:${estadoColor};` : ''}"></span>
 </span>
-Estado: ${incidencia.estado}
-                    </div>
+    Estado: ${incidencia.estado}
+</div>
 
                     <div class="sub">
                        <span class="cb-icon">
@@ -752,6 +784,23 @@ function guardarIncidencia(){
     alert('Incidencia guardada');
 
     document.getElementById('formIncidencia').style.display='none';
+
+    openIncidencias();
+}
+
+function eliminarIncidencia(index){
+    let incidencias = JSON.parse(
+        localStorage.getItem('cb_incidencias') || '[]'
+    );
+
+    if(!confirm('¿Eliminar esta incidencia?')) return;
+
+    incidencias.splice(index, 1);
+
+    localStorage.setItem(
+        'cb_incidencias',
+        JSON.stringify(incidencias)
+    );
 
     openIncidencias();
 }
