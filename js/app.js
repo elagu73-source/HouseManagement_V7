@@ -515,20 +515,50 @@ function renderControlInventario(){
 
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
 
-                    <button onclick="cambiarEstadoInventario(${index}, 'presente')"
-                        ${estado === 'presente' ? 'style="font-weight:bold;"' : ''}>
-                        🟢 Está
-                    </button>
+                   <button
+    onclick="cambiarEstadoInventario(${index}, 'presente')"
+    style="display:flex;align-items:center;gap:7px;"
+>
+   <span style="
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    display:inline-block;
+    background:#6B7A5A;
+    border:1px solid #6B7A5A;
+"></span>
+    Está
+</button>
 
-                    <button onclick="cambiarEstadoInventario(${index}, 'falta')"
-                        ${estado === 'falta' ? 'style="font-weight:bold;"' : ''}>
-                        🔴 Falta
-                    </button>
+<button
+    onclick="cambiarEstadoInventario(${index}, 'falta')"
+    style="display:flex;align-items:center;gap:7px;"
+>
+    <span style="
+        width:12px;
+        height:12px;
+        border-radius:50%;
+        display:inline-block;
+        background:#DCC9A6;
+        border:1px solid #DCC9A6;
+    "></span>
+    Falta
+</button>
 
-                    <button onclick="cambiarEstadoInventario(${index}, 'danado')"
-                        ${estado === 'danado' ? 'style="font-weight:bold;"' : ''}>
-                        🟠 Dañado
-                    </button>
+<button
+    onclick="cambiarEstadoInventario(${index}, 'danado')"
+    style="display:flex;align-items:center;gap:7px;"
+>
+    <span style="
+        width:12px;
+        height:12px;
+        border-radius:50%;
+        display:inline-block;
+        background:#0D2B45;
+        border:1px solid #0D2B45;
+    "></span>
+    Dañado
+</button>
 
                 </div>
 

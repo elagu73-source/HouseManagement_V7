@@ -388,9 +388,26 @@ Guardar incidencia
 
 <section id="inventario" class="screen">
 
-  <div class="back" onclick="go('property')">← Casa</div>
+  <div class="back" onclick="go('property')">
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M15 18L9 12L15 6"></path>
+        </svg>
+    </span>
+    Casa
+</div>
 
-  <h2>📦 Inventario</h2>
+  <h2>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M4 7L12 3L20 7L12 11L4 7Z"></path>
+            <path d="M4 7V17L12 21L20 17V7"></path>
+            <path d="M12 11V21"></path>
+        </svg>
+    </span>
+    Inventario
+</h2>
+
 <div class="btn" onclick="iniciarControlInventario()">
     🔎 Controlar inventario
 </div>
