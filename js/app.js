@@ -604,7 +604,14 @@ function openIncidencias(){
                 <div class="card">
 
                     <div class="title">
-                        🚨 ${incidencia.ambiente || 'Sin ambiente'}
+                        <span class="cb-icon">
+    <svg viewBox="0 0 24 24">
+        <path d="M12 3 21 20H3L12 3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="14"></line>
+        <circle cx="12" cy="17" r="0.8"></circle>
+    </svg>
+</span>
+${incidencia.ambiente || 'Sin ambiente'}
                     </div>
 
                     <div class="sub">
@@ -612,26 +619,59 @@ function openIncidencias(){
                     </div>
 
                     <div class="sub">
-                        ${prioridadIcono}
-                        Prioridad: ${incidencia.prioridad}
+                        <span class="cb-icon">
+    <svg viewBox="0 0 24 24">
+        <path d="M12 3 21 20H3L12 3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="14"></line>
+        <circle cx="12" cy="17" r="0.8"></circle>
+    </svg>
+</span>
+Prioridad: ${incidencia.prioridad}
                     </div>
 
                     <div class="sub">
-                        ${estadoIcono}
-                        Estado: ${incidencia.estado}
+                    <span class="cb-icon">
+    <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8"></circle>
+        <polyline points="8,12 11,15 16,9"></polyline>
+    </svg>
+</span>
+Estado: ${incidencia.estado}
                     </div>
 
                     <div class="sub">
-                        👤 ${incidencia.responsable || 'Sin responsable'}
+                       <span class="cb-icon">
+    <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="3"></circle>
+        <path d="M5 20c0-4 3-6 7-6s7 2 7 6"></path>
+    </svg>
+</span>
+${incidencia.responsable || 'Sin responsable'}
                     </div>
 
                     <div class="sub">
-                        📅 ${incidencia.fecha}
+                        <span class="cb-icon">
+    <svg viewBox="0 0 24 24">
+        <rect x="4" y="5" width="16" height="15" rx="2"></rect>
+        <line x1="8" y1="3" x2="8" y2="7"></line>
+        <line x1="16" y1="3" x2="16" y2="7"></line>
+        <line x1="4" y1="10" x2="20" y2="10"></line>
+    </svg>
+</span>
+${incidencia.fecha}
                     </div>
 
                     <div class="btn"
                          onclick="cambiarEstadoIncidencia(${indice})">
-                        🔄 Cambiar estado
+                        <span class="cb-icon white">
+    <svg viewBox="0 0 24 24">
+        <path d="M20 11a8 8 0 0 0-14.9-3"></path>
+        <polyline points="5,4 5,9 10,9"></polyline>
+        <path d="M4 13a8 8 0 0 0 14.9 3"></path>
+        <polyline points="19,20 19,15 14,15"></polyline>
+    </svg>
+</span>
+Cambiar estado
                     </div>
 
                 </div>

@@ -252,18 +252,52 @@
 
 <div class="back" onclick="go('property')">← Casa</div>
 
-<h2>🚨 Incidencias</h2>
+<h2>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 3 21 20H3L12 3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="14"></line>
+            <circle cx="12" cy="17" r="0.8"></circle>
+        </svg>
+    </span>
+    Incidencias
+</h2>
 
 <div id="listaIncidencias"></div>
 
-<div class="btn" onclick="nuevaIncidencia()">➕ Nueva incidencia</div>
+<div class="btn" onclick="nuevaIncidencia()">
+    <span class="cb-icon white">
+        <svg viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    </span>
+    Nueva incidencia
+</div>
 
 <div id="formIncidencia" style="display:none;">
 
-    <h3>➕ Nueva incidencia</h3>
+  <h3>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    </span>
+    Nueva incidencia
+</h3>
 
-    <label>Ambiente</label>
-    <select id="incAmbiente">
+<label>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11Z"></path>
+            <circle cx="12" cy="10" r="2.5"></circle>
+        </svg>
+    </span>
+    Ambiente
+</label>
+
+<select id="incAmbiente">
         <option value="">Seleccionar ambiente</option>
         <option>Exterior</option>
         <option>Living</option>
@@ -275,32 +309,77 @@
         <option>Otro</option>
     </select>
 
-    <label>Descripción</label>
+<label>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M4 20h4L19 9l-4-4L4 16v4Z"></path>
+            <line x1="13" y1="6" x2="18" y2="11"></line>
+        </svg>
+    </span>
+    Descripción
+</label>
+
     <textarea
         id="incDescripcion"
         placeholder="Describí el problema..."
         style="width:100%;height:90px">
     </textarea>
 
-    <label>Prioridad</label>
+<label>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 3 21 20H3L12 3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="14"></line>
+            <circle cx="12" cy="17" r="0.8"></circle>
+        </svg>
+    </span>
+    Prioridad
+</label>
+
     <select id="incPrioridad">
         <option value="Alta">🔴 Alta</option>
         <option value="Media" selected>🟡 Media</option>
         <option value="Baja">🟢 Baja</option>
     </select>
 
-    <label>Estado</label>
+ <label>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="8"></circle>
+            <polyline points="8,12 11,15 16,9"></polyline>
+        </svg>
+    </span>
+    Estado
+</label>
+
     <select id="incEstado">
         <option value="Abierta">Abierta</option>
         <option value="En curso">En curso</option>
         <option value="Resuelta">Resuelta</option>
     </select>
 
-    <label>Responsable</label>
+    <label>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="3"></circle>
+            <path d="M5 20c0-4 3-6 7-6s7 2 7 6"></path>
+        </svg>
+    </span>
+    Responsable
+</label>
+
     <input id="incResponsable" placeholder="Nombre del responsable">
 
     <div class="btn" onclick="guardarIncidencia()">
-        💾 Guardar incidencia
+        <span class="cb-icon white">
+    <svg viewBox="0 0 24 24">
+        <path d="M5 4H17L20 7V20H5Z"></path>
+        <path d="M8 4V10H16V4"></path>
+        <path d="M8 20V14H16V20"></path>
+    </svg>
+</span>
+Guardar incidencia
+
     </div>
 
 </div>
