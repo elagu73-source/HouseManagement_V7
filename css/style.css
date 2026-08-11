@@ -1299,7 +1299,8 @@ button:hover {
 
 #property .back,
 #prep .back,
-#incidencias .back {
+#incidencias .back,
+#manualEdit .back {
     display: flex;
     align-items: center;
     gap: 8px;
