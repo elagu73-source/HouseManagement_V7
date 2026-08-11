@@ -1298,7 +1298,8 @@ button:hover {
 }
 
 #property .back,
-#prep .back {
+#prep .back,
+#incidencias .back {
     display: flex;
     align-items: center;
     gap: 8px;
