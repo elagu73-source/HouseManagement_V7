@@ -1029,7 +1029,7 @@ function actualizarEstadoCasa() {
 
     });
 
-    house.checklistPorcentaje = totalChecks > 0
+    houses[current].checklistPorcentaje = totalChecks > 0
     ? Math.round((checksCompletados / totalChecks) * 100)
     : 0;
 

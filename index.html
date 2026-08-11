@@ -433,7 +433,16 @@ Guardar incidencia
 </section>
 
 <section id="prep" class="screen">
-<div class="back" onclick="go('property')">← Casa</div><h2>Preparación</h2><div id="prepTitle"></div><div style="background:#ddd;height:10px;border-radius:6px;"><div id="progressBar" style="height:10px;background:#6f7c58;width:0%;"></div></div><div id="checklist"></div><div class="btn" onclick="nextStep()">Siguiente ambiente</div>
+<div class="back" onclick="actualizarEstadoCasa(); openHouse(current)">
+    <span class="cb-icon white">
+        <svg viewBox="0 0 24 24">
+            <path d="M15 5 8 12l7 7"></path>
+        </svg>
+    </span>
+    Casa
+</div>
+
+<h2>Preparación</h2><div id="prepTitle"></div><div style="background:#ddd;height:10px;border-radius:6px;"><div id="progressBar" style="height:10px;background:#6f7c58;width:0%;"></div></div><div id="checklist"></div><div class="btn" onclick="nextStep()">Siguiente ambiente</div>
 </section>
 <section id="manual" class="screen">
 
