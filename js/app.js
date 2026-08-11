@@ -815,7 +815,8 @@ function guardarIncidencia(){
 
     document.getElementById('formIncidencia').style.display='none';
 
-    openIncidencias();
+render();
+openIncidencias();
 }
 
 function eliminarIncidencia(index){
