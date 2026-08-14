@@ -1718,3 +1718,9 @@ top: 20px !important;
 #inventario > .back {
     top: 16px;
 }
+
+@media (max-width: 600px) {
+    #inventario .control-back {
+        top: -4px !important;
+    }
+}
