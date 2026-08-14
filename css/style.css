@@ -1710,15 +1710,11 @@ button:hover {
 
 #inventario .control-back {
     position: absolute;
-    top: 16px !important;
+top: 20px !important;
     right: 16px;
     z-index: 10;
 }
 
 #inventario > .back {
     top: 16px;
-}
-
-#inventario .control-back {
-    top: -4px !important;
 }
