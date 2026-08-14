@@ -258,13 +258,13 @@
 
 <section id="incidencias" class="screen">
 
-<div class="back" onclick="render(); openHouse(current)"></div>
+<div class="back" onclick="render(); openHouse(current)">
     <span class="cb-icon white">
         <svg viewBox="0 0 24 24">
             <path d="M15 5 8 12l7 7"></path>
         </svg>
     </span>
-    Casa
+    <span>Casa</span>
 </div>
 
 <h2>
@@ -403,10 +403,10 @@ Guardar incidencia
 
 <section id="inventario" class="screen">
 
-  <div class="back" onclick="go('property')">
-    <span class="cb-icon">
+<div class="back" onclick="go('property')">
+    <span class="cb-icon white">
         <svg viewBox="0 0 24 24">
-            <path d="M15 18L9 12L15 6"></path>
+            <path d="M15 5 8 12l7 7"></path>
         </svg>
     </span>
     Casa
@@ -424,11 +424,20 @@ Guardar incidencia
 </h2>
 
 <div class="btn" onclick="iniciarControlInventario()">
-    🔎 Controlar inventario
+    <span class="cb-icon white">
+        <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="6"></circle>
+            <line x1="16" y1="16" x2="21" y2="21"></line>
+        </svg>
+    </span>
+    Controlar inventario
 </div>
-  <div id="listaInventario"></div>
 
-  <div class="btn" onclick="nuevoItemInventario()">➕ Agregar elemento</div>
+<div id="listaInventario"></div>
+
+<div class="btn" onclick="nuevoItemInventario()">
+    Agregar elemento
+</div>
 
 </section>
 
@@ -770,5 +779,5 @@ onclick="cerrarVisorFoto()">
 
 <script src="js/storage.js"></script>
 <script src="js/photos.js"></script>
-<script src="js/app.js?v=4"></script>
+<script src="js/app.js?v=6"></script>
 </body></html>

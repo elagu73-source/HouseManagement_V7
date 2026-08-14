@@ -1299,19 +1299,23 @@ button:hover {
 
 #property .back,
 #prep .back,
-#incidencias .back,
-#manualEdit .back {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: fit-content;
-    background: #0D2B45;
-    color: #FFFFFF;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 12px;
+#incidencias .back {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: fit-content !important;
+    height: auto !important;
+    min-height: 35px !important;
+    box-sizing: border-box !important;
+    background: #0D2B45 !important;
+    color: #FFFFFF !important;
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    margin-bottom: 12px !important;
 }
 
 #property .back #backIcon {
@@ -1579,4 +1583,110 @@ button:hover {
 .semaforo-resuelta span:last-child {
     background: #6B7A5A !important;
     border-color: #6B7A5A !important;
+}
+
+#incidencias .back {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: fit-content !important;
+    height: 35px !important;
+    box-sizing: border-box !important;
+    background: #0D2B45 !important;
+    color: #FFFFFF !important;
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    margin-bottom: 12px !important;
+}
+
+#incidencias .back .cb-icon {
+    display: inline-flex !important;
+    width: 18px !important;
+    height: 18px !important;
+    flex: 0 0 18px !important;
+}
+
+#incidencias .back .cb-icon svg {
+    width: 18px !important;
+    height: 18px !important;
+    stroke: #FFFFFF !important;
+}
+
+#inventario {
+    font-family: "Montserrat", Arial, sans-serif;
+}
+
+#inventario h2 {
+    font-family: "Playfair Display", serif;
+    font-weight: 400;
+}
+
+#inventario .back {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: fit-content !important;
+    background: #0D2B45 !important;
+    color: #FFFFFF !important;
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    margin-bottom: 12px !important;
+    box-sizing: border-box !important;
+}
+
+#inventario .back .cb-icon {
+    display: inline-flex !important;
+    width: 18px !important;
+    height: 18px !important;
+    flex: 0 0 18px !important;
+}
+
+#inventario .back .cb-icon svg {
+    width: 18px !important;
+    height: 18px !important;
+    stroke: #FFFFFF !important;
+}
+
+#listaInventario .title {
+    font-family: "Playfair Display", serif;
+    font-weight: 400;
+}
+
+#listaInventario .sub {
+    font-family: "Montserrat", Arial, sans-serif;
+}
+
+#listaInventario .btn-eliminar-inventario {
+    margin-top: 12px;
+    background: #0D2B45;
+    color: #FFFFFF;
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: "Montserrat", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#inventario {
+    position: relative;
+}
+
+#inventario .control-back {
+    position: absolute;
+    top: 26px;
+    right: 16px;
+    z-index: 10;
+}
+
+#inventario > .back {
+    top: 16px;
 }

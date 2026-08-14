@@ -409,12 +409,29 @@ function openInventario(){
             <div class="card">
 
                 <div class="title">
-                    📦 ${item.nombre}
-                </div>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M4 7L12 3L20 7L12 11L4 7Z"></path>
+            <path d="M4 7V17L12 21L20 17V7"></path>
+            <path d="M12 11V21"></path>
+        </svg>
+    </span>
+    ${item.nombre}
+</div>
 
                 <div class="sub">
-${item.control === "danado" ? "🟠 Dañado" : item.control === "falta" ? "🔴 Falta" : "🟢 Está"}
+$${item.control === "danado"
+    ? '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#0D2B45;margin-right:5px;vertical-align:middle;"></span> Dañado'
+    : item.control === "falta"
+    ? '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#DCC9A6;margin-right:5px;vertical-align:middle;"></span> Falta'
+    : '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#6B7A5A;margin-right:5px;vertical-align:middle;"></span> Está'}
                 </div>
+                <button
+    class="btn-eliminar-inventario"
+    onclick="eliminarItemInventario(${index})"
+>
+    Eliminar
+</button>
 
             </div>
         `;
@@ -430,8 +447,12 @@ function nuevoItemInventario(){
     const key = "c" + current + "_inventario";
 
     let inventario = JSON.parse(
-        localStorage.getItem("cb_inventario") || "{}"
-    );
+    localStorage.getItem("cb_inventario") || "{}"
+);
+
+if (Array.isArray(inventario)) {
+    inventario = {};
+}
 
     if(!inventario[key]){
         inventario[key] = [];
@@ -441,6 +462,27 @@ function nuevoItemInventario(){
         nombre: nombre.trim(),
         presente: true
     });
+
+    localStorage.setItem(
+        "cb_inventario",
+        JSON.stringify(inventario)
+    );
+
+    openInventario();
+}
+
+function eliminarItemInventario(index){
+    if(!confirm("¿Querés eliminar este elemento del inventario?")) return;
+
+    const key = "c" + current + "_inventario";
+
+    let inventario = JSON.parse(
+        localStorage.getItem("cb_inventario") || "{}"
+    );
+
+    if(!inventario[key] || !inventario[key][index]) return;
+
+    inventario[key].splice(index, 1);
 
     localStorage.setItem(
         "cb_inventario",
@@ -494,9 +536,24 @@ function renderControlInventario(){
     const items = inventario[key] || [];
 
     lista.innerHTML = `
+    <div class="back control-back" onclick="openInventario()">
+    <span class="cb-icon white">
+        <svg viewBox="0 0 24 24">
+            <path d="M15 5 8 12l7 7"></path>
+        </svg>
+    </span>
+    Inventario
+</div>
         <div class="card">
-            <b>🔎 Control de salida</b>
-            <div class="sub">
+<b>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="6"></circle>
+            <line x1="16" y1="16" x2="21" y2="21"></line>
+        </svg>
+    </span>
+    Control de salida
+</b>            <div class="sub">
                 Revisá cada elemento y marcá si está, falta o está dañado.
             </div>
         </div>
@@ -510,8 +567,15 @@ function renderControlInventario(){
             <div class="card">
 
                 <div class="title">
-                    📦 ${item.nombre}
-                </div>
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M4 7L12 3L20 7L12 11L4 7Z"></path>
+            <path d="M4 7V17L12 21L20 17V7"></path>
+            <path d="M12 11V21"></path>
+        </svg>
+    </span>
+    ${item.nombre}
+</div>
 
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
 
