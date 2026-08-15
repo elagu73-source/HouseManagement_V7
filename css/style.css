@@ -1955,3 +1955,7 @@ top: 20px !important;
     height: 18px;
     stroke: #FFFFFF;
 }
+
+#editChecklist .btn .cb-icon svg path {
+    stroke: #FFFFFF !important;
+}
