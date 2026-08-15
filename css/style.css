@@ -1724,3 +1724,15 @@ top: 20px !important;
         top: 20px !important;
     }
 }
+
+#photos h2 {
+    font-family: "Playfair Display", serif !important;
+}
+
+#photos,
+#photos label,
+#photos select,
+#photos input,
+#photos .btn {
+    font-family: "Montserrat", Arial, sans-serif !important;
+}
