@@ -982,7 +982,15 @@ onclick="cerrarVisorFoto()">
 <select id="ambienteSel" onchange="loadChecklistEditor()"></select>
 <div id="items"></div>
 <input id="nuevoItem" placeholder="Nuevo ítem">
-<div class="btn" onclick="addItem()">➕ Agregar ítem</div>
+<div class="btn" onclick="addItem()">
+    <span class="cb-icon white" style="color:#FFFFFF;">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 5V19" stroke="#FFFFFF"></path>
+<path d="M5 12H19" stroke="#FFFFFF"></path>
+        </svg>
+    </span>
+    Agregar ítem
+</div>
 </section>
 
 <script src="js/storage.js"></script>
