@@ -227,8 +227,13 @@ ambientesOrdenados.forEach(ambiente => {
 
             const titulo = document.createElement("div");
 
-            titulo.innerText =
-                "📁 " + ambiente.charAt(0).toUpperCase() + ambiente.slice(1);
+            titulo.innerHTML =
+    '<span class="cb-icon">' +
+        '<svg viewBox="0 0 24 24">' +
+            '<path d="M3 6H9L11 8H21V19H3Z"></path>' +
+        '</svg>' +
+    '</span> ' +
+    ambiente.charAt(0).toUpperCase() + ambiente.slice(1);
 
             titulo.style.fontWeight = "bold";
             titulo.style.fontSize = "18px";
@@ -283,7 +288,18 @@ ambientesOrdenados.forEach(ambiente => {
                     document.createElement("div");
 
                 botonEliminar.className = "btn";
-                botonEliminar.innerText = "🗑️ Eliminar";
+                botonEliminar.innerHTML = `
+    <span class="cb-icon white">
+        <svg viewBox="0 0 24 24">
+            <path d="M4 7H20"></path>
+            <path d="M9 7V5H15V7"></path>
+            <path d="M7 7L8 20H16L17 7"></path>
+            <path d="M10 11V17"></path>
+            <path d="M14 11V17"></path>
+        </svg>
+    </span>
+    Eliminar
+`;
 
                 botonEliminar.onclick = function(){
 
