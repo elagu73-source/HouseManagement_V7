@@ -710,17 +710,182 @@ Guardar incidencia
 
     <label>Ambiente</label>
 
-    <select id="photoAmbiente">
-    <option value="fachada">🏠 Fachada</option>
-    <option value="living">🛋️ Living</option>
-    <option value="comedor">🍽️ Comedor</option>
-    <option value="cocina">🍳 Cocina</option>
-    <option value="dormitorios">🛏️ Dormitorios</option>
-    <option value="baños">🚿 Baños</option>
-    <option value="exterior">🌳 Exterior</option>
-    <option value="mantenimiento">🔧 Mantenimiento</option>
-    <option value="otros">📦 Otros</option>
-</select>
+  <div class="photo-ambiente-selector">
+
+    <button type="button" id="photoAmbienteVisual" class="photo-ambiente-btn"
+onclick="const m=document.getElementById('photoAmbienteOpciones'); m.style.setProperty('display', m.style.display==='block'?'none':'block','important')">
+        <span class="cb-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M3 11L12 4L21 11"></path>
+<path d="M5 10V20H19V10"></path>
+<path d="M9 20V14H15V20"></path>
+            </svg>
+        </span>
+        <span id="photoAmbienteTexto">Fachada</span>
+        <span class="photo-ambiente-flecha">⌄</span>
+    </button>
+
+    <div id="photoAmbienteOpciones" class="photo-ambiente-opciones">
+
+        <div class="photo-ambiente-opcion" data-value="fachada">
+            <span class="cb-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 11L12 4L21 11"></path>
+                    <path d="M5 10V20H19V10"></path>
+                    <path d="M9 20V14H15V20"></path>
+                </svg>
+            </span>
+            Fachada
+        </div>
+
+        <div class="photo-ambiente-opcion" data-value="living">
+            <span class="cb-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M5 11V8C5 6 7 5 9 5H15C17 5 19 6 19 8V11"></path>
+                    <path d="M3 11H21V17H3Z"></path>
+                    <path d="M5 17V20"></path>
+                    <path d="M19 17V20"></path>
+                </svg>
+            </span>
+            Living
+        </div>
+
+        <div class="photo-ambiente-opcion" data-value="comedor">
+            <span class="cb-icon">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="7"></circle>
+                    <path d="M5 12H19"></path>
+                    <path d="M12 5V19"></path>
+                </svg>
+            </span>
+            Comedor
+        </div>
+
+        <div class="photo-ambiente-opcion" data-value="cocina">
+            <span class="cb-icon">
+                <svg viewBox="0 0 24 24">
+                    <rect x="4" y="5" width="16" height="14" rx="2"></rect>
+                    <path d="M8 9H16"></path>
+                    <path d="M8 13H10"></path>
+                    <path d="M12 13H14"></path>
+                    <path d="M16 13H16"></path>
+                </svg>
+            </span>
+            Cocina
+        </div>
+
+        <div class="photo-ambiente-opcion" data-value="dormitorios">
+            <span class="cb-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4 11V6H20V11"></path>
+                    <path d="M3 11H21V18H3Z"></path>
+                    <path d="M5 18V21"></path>
+                    <path d="M19 18V21"></path>
+                    <path d="M6 11V8H10V11"></path>
+                </svg>
+            </span>
+            Dormitorios
+        </div>
+
+        <div class="photo-ambiente-opcion" data-value="baños">
+            <span class="cb-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M5 4V13"></path>
+                    <path d="M5 4C5 2 8 2 8 4V7"></path>
+                    <path d="M3 13H21"></path>
+                    <path d="M6 13V18C6 20 8 21 12 21C16 21 18 20 18 18V13"></path>
+                    <path d="M18 7V13"></path>
+                </svg>
+            </span>
+            Baños
+        </div>
+
+        <div class="photo-ambiente-opcion" data-value="exterior">
+            <span class="cb-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 21V10"></path>
+                    <path d="M12 13C8 13 6 11 6 8C9 8 12 10 12 13"></path>
+                    <path d="M12 10C12 6 15 4 19 4C19 8 17 10 12 10"></path>
+                </svg>
+            </span>
+            Exterior
+        </div>
+
+        <div class="photo-ambiente-opcion" data-value="mantenimiento">
+            <span class="cb-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M14 6L18 2L22 6L18 10Z"></path>
+                    <path d="M16 8L8 16"></path>
+                    <path d="M5 19L3 21"></path>
+                    <path d="M6 15L9 18"></path>
+                </svg>
+            </span>
+            Mantenimiento
+        </div>
+
+        <div class="photo-ambiente-opcion" data-value="otros">
+            <span class="cb-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 7L12 3L21 7V19L12 23L3 19Z"></path>
+                    <path d="M3 7L12 11L21 7"></path>
+                    <path d="M12 11V23"></path>
+                </svg>
+            </span>
+            Otros
+        </div>
+
+    </div>
+
+    <!-- SELECT REAL: NO SE ELIMINA -->
+    <select id="photoAmbiente" style="display:none;">
+        <option value="fachada">Fachada</option>
+        <option value="living">Living</option>
+        <option value="comedor">Comedor</option>
+        <option value="cocina">Cocina</option>
+        <option value="dormitorios">Dormitorios</option>
+        <option value="baños">Baños</option>
+        <option value="exterior">Exterior</option>
+        <option value="mantenimiento">Mantenimiento</option>
+        <option value="otros">Otros</option>
+    </select>
+
+</div>
+
+<script>
+(function(){
+
+    const selector = document.getElementById("photoAmbienteVisual");
+    const opciones = document.getElementById("photoAmbienteOpciones");
+    const selectReal = document.getElementById("photoAmbiente");
+    const texto = document.getElementById("photoAmbienteTexto");
+
+    if (!selector || !opciones || !selectReal || !texto) return;
+
+    selector.addEventListener("click", function(e){
+        e.stopPropagation();
+        opciones.classList.toggle("open");
+    });
+
+    opciones.querySelectorAll(".photo-ambiente-opcion").forEach(opcion => {
+
+        opcion.addEventListener("click", function(){
+
+            const valor = this.dataset.value;
+
+            selectReal.value = valor;
+            texto.textContent = this.textContent.trim();
+
+            opciones.classList.remove("open");
+        });
+
+    });
+
+    document.addEventListener("click", function(){
+        opciones.classList.remove("open");
+    });
+
+})();
+</script>
 
     <input
         type="file"
@@ -803,4 +968,39 @@ onclick="cerrarVisorFoto()">
 <script src="js/storage.js"></script>
 <script src="js/photos.js"></script>
 <script src="js/app.js?v=6"></script>
+<script>
+function togglePhotoAmbiente(event) {
+    event.stopPropagation();
+
+    const opciones = document.getElementById("photoAmbienteOpciones");
+
+    if (!opciones) return;
+
+    opciones.classList.toggle("open");
+}
+
+function seleccionarPhotoAmbiente(valor, nombre) {
+
+    const selectReal = document.getElementById("photoAmbiente");
+    const texto = document.getElementById("photoAmbienteTexto");
+    const opciones = document.getElementById("photoAmbienteOpciones");
+
+    if (!selectReal || !texto || !opciones) return;
+
+    selectReal.value = valor;
+    texto.textContent = nombre;
+
+    opciones.classList.remove("open");
+}
+
+document.addEventListener("click", function() {
+
+    const opciones = document.getElementById("photoAmbienteOpciones");
+
+    if (opciones) {
+        opciones.classList.remove("open");
+    }
+
+});
+</script>
 </body></html>

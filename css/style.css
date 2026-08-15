@@ -1750,3 +1750,91 @@ top: 20px !important;
     font-size: 15px !important;
     font-weight: 600 !important;
 }
+
+.photo-ambiente-selector {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    margin-top: 8px;
+}
+
+.photo-ambiente-btn {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid #D8D5CD;
+    border-radius: 10px;
+    background: #FFFFFF;
+    color: #0D2B45;
+    font-family: "Montserrat", Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.photo-ambiente-btn .cb-icon,
+.photo-ambiente-opcion .cb-icon {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.photo-ambiente-btn .cb-icon svg,
+.photo-ambiente-opcion .cb-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: #6B7A5A;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.photo-ambiente-flecha {
+    margin-left: auto;
+    font-size: 18px;
+    color: #6B7A5A;
+}
+
+.photo-ambiente-opciones {
+    display: none;
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #FFFFFF;
+    border: 1px solid #D8D5CD;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.12);
+    overflow: hidden;
+}
+
+.photo-ambiente-opciones.open {
+    display: block;
+}
+
+.photo-ambiente-opcion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 9px 14px;
+    box-sizing: border-box;
+    color: #0D2B45;
+    font-family: "Montserrat", Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.photo-ambiente-opcion:hover {
+    background: #F1F0EA;
+}
