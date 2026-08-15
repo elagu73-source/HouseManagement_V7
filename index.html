@@ -403,10 +403,10 @@ Guardar incidencia
 
 <section id="inventario" class="screen">
 
-<div class="back" onclick="go('property')">
+<div class="back" onclick="go('property')" style="display:flex;align-items:center;gap:8px;width:fit-content;background:#0D2B45;color:#FFFFFF;padding:8px 14px;border-radius:8px;font-size:15px;font-weight:600;margin-bottom:12px;">
     <span class="cb-icon white">
         <svg viewBox="0 0 24 24">
-            <path d="M15 5 8 12l7 7"></path>
+            <path d="M15 18L9 12L15 6"></path>
         </svg>
     </span>
     Casa
@@ -941,7 +941,16 @@ onclick="cerrarVisorFoto()">
 
 </section>
 <section id="edit" class="screen">
-<div class="back" onclick="go('property')">← Casa</div>
+
+<div class="back" onclick="go('property')">
+    <span class="cb-icon white">
+        <svg viewBox="0 0 24 24">
+            <path d="M15 5 8 12l7 7"></path>
+        </svg>
+    </span>
+    Casa
+</div>
+
 <label>Nombre de la casa</label><input id="name">
 <label>Barrio</label><input id="barrio">
 <label>Lote</label><input id="lote">
@@ -954,7 +963,18 @@ onclick="cerrarVisorFoto()">
     <option value="Mantenimiento">Mantenimiento</option>
 </select>
 <label>Observaciones</label><textarea id="obs"></textarea>
-<div class="btn" onclick="saveCurrent()">Guardar</div>
+
+<div class="btn" onclick="saveCurrent()">
+    <span class="cb-icon white">
+        <svg viewBox="0 0 24 24">
+            <path d="M5 4H17L20 7V20H5Z"></path>
+            <path d="M8 4V10H16V4"></path>
+            <path d="M8 20V14H16V20"></path>
+        </svg>
+    </span>
+    Guardar
+</div>
+
 </section>
 <section id="editChecklist" class="screen">
 <div class="back" onclick="go('property')">← Casa</div>

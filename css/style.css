@@ -1586,7 +1586,7 @@ button:hover {
 }
 
 #incidencias .back {
-    display: inline-flex !important;
+    display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     gap: 8px !important;
@@ -1837,4 +1837,66 @@ top: 20px !important;
 
 .photo-ambiente-opcion:hover {
     background: #F1F0EA;
+}
+
+/* FOTOS — AJUSTE SOLO CELULAR */
+@media (max-width: 600px) {
+
+    #photos .card {
+        padding: 18px 16px !important;
+        margin-bottom: 16px !important;
+    }
+
+    #photos .card h3 {
+        margin-top: 0 !important;
+        margin-bottom: 14px !important;
+    }
+
+    #photos .card:first-of-type {
+        padding-top: 18px !important;
+        padding-bottom: 18px !important;
+    }
+
+    #photos .card:nth-of-type(2) {
+        padding-top: 18px !important;
+        padding-bottom: 18px !important;
+    }
+
+}
+
+/* BOTÓN CASA - EDITAR CASA */
+#edit .back {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+
+    width: fit-content !important;
+    height: auto !important;
+
+    background: #0D2B45 !important;
+    color: #FFFFFF !important;
+
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+
+    font-family: "Montserrat", Arial, sans-serif !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+
+    margin-bottom: 24px !important;
+}
+
+#edit .back .cb-icon {
+    display: inline-flex !important;
+    width: 18px !important;
+    height: 18px !important;
+    flex: 0 0 18px !important;
+}
+
+#edit .back .cb-icon svg {
+    width: 18px !important;
+    height: 18px !important;
+    stroke: #FFFFFF !important;
+    fill: none !important;
 }
