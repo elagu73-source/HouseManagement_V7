@@ -1214,8 +1214,19 @@ const env = data[idx];
 
 env.items.forEach((t,i)=>{
 
-box.innerHTML += `<div style="display:flex;gap:6px;margin:4px 0"><input value="${t}" onchange="editItem(${idx},${i},this.value)"><button onclick="delItem(${idx},${i})">🗑️</button></div>`;
-
+box.innerHTML += `<div style="display:flex;gap:6px;margin:4px 0"><input value="${t}" onchange="editItem(${idx},${i},this.value)">
+<button class="checklist-delete" onclick="delItem(${idx},${i})">
+    <span class="cb-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M4 7H20"></path>
+            <path d="M9 7V4H15V7"></path>
+            <path d="M7 7L8 20H16L17 7"></path>
+            <path d="M10 11V17"></path>
+            <path d="M14 11V17"></path>
+        </svg>
+    </span>
+</button>
+</div>`;
 });
 }
 function editItem(a,i,v){

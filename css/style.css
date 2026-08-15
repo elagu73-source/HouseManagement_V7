@@ -1900,3 +1900,58 @@ top: 20px !important;
     stroke: #FFFFFF !important;
     fill: none !important;
 }
+
+#editChecklist .back {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: fit-content !important;
+    background: #0D2B45 !important;
+    color: #FFFFFF !important;
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+    font-family: "Montserrat", Arial, sans-serif !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    margin-bottom: 12px !important;
+}
+
+#editChecklist,
+#editChecklist h3,
+#editChecklist label,
+#editChecklist select,
+#editChecklist input,
+#editChecklist .btn,
+#editChecklist .checklist-delete {
+    font-family: "Montserrat", Arial, sans-serif !important;
+}
+
+#editChecklist h3 {
+    font-family: "Playfair Display", Georgia, serif !important;
+    font-weight: 400 !important;
+}
+
+#editChecklist .checklist-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: #0D2B45;
+    cursor: pointer;
+}
+
+#editChecklist .checklist-delete .cb-icon {
+    width: 18px;
+    height: 18px;
+}
+
+#editChecklist .checklist-delete .cb-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: #FFFFFF;
+}
