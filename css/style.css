@@ -1736,3 +1736,17 @@ top: 20px !important;
 #photos .btn {
     font-family: "Montserrat", Arial, sans-serif !important;
 }
+
+#photos .photos-casa {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: fit-content !important;
+    background: #0D2B45 !important;
+    color: #FFFFFF !important;
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+    font-family: "Montserrat", Arial, sans-serif !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+}
