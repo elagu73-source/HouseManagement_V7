@@ -727,8 +727,8 @@ onclick="const m=document.getElementById('photoAmbienteOpciones'); m.style.setPr
 
     <div id="photoAmbienteOpciones" class="photo-ambiente-opciones">
 
-        <div class="photo-ambiente-opcion" data-value="fachada">
-            <span class="cb-icon">
+<div class="photo-ambiente-opcion" data-value="fachada"
+onclick="document.getElementById('photoAmbiente').value='fachada'; document.getElementById('photoAmbienteTexto').textContent='Fachada'; document.getElementById('photoAmbienteOpciones').style.setProperty('display','none','important');">            <span class="cb-icon">
                 <svg viewBox="0 0 24 24">
                     <path d="M3 11L12 4L21 11"></path>
                     <path d="M5 10V20H19V10"></path>
@@ -999,6 +999,38 @@ document.addEventListener("click", function() {
 
     if (opciones) {
         opciones.classList.remove("open");
+    }
+
+});
+</script>
+
+<script>
+document.addEventListener("click", function(e) {
+
+    const opcion = e.target.closest(".photo-ambiente-opcion");
+
+    if (!opcion) return;
+
+    const valor = opcion.dataset.value;
+
+    const selectReal = document.getElementById("photoAmbiente");
+    const texto = document.getElementById("photoAmbienteTexto");
+    const menu = document.getElementById("photoAmbienteOpciones");
+
+    if (selectReal) {
+        selectReal.value = valor;
+
+        // Disparamos el cambio del select real
+        selectReal.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    if (texto) {
+        texto.textContent = opcion.textContent.trim();
+    }
+
+    if (menu) {
+        menu.style.setProperty("display", "none", "important");
+        menu.classList.remove("open");
     }
 
 });
