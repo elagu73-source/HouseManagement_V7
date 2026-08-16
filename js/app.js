@@ -935,9 +935,16 @@ if (p) {
 }
 function editCurrent(){let h=houses[current];
 document.getElementById('name').value=(h.nombre ?? h.name ?? h.nombreCasa ?? h.nombre_casa ?? '');document.getElementById('barrio').value=h.barrio;document.getElementById('lote').value=h.lote||'';document.getElementById('capacidad').value=h.capacidad;document.getElementById('wifi').value=h.wifi;document.getElementById('obs').value=h.obs;document.getElementById('situacion').value=h.situacion || 'Disponible';go('edit');}
+
 function saveCurrent(){let h=houses[current];
 h.nombre=document.getElementById('name').value; h.name=document.getElementById('name').value; h.nombreCasa=document.getElementById('name').value; h.nombre_casa=document.getElementById('name').value;h.barrio=document.getElementById('barrio').value;h.lote=document.getElementById('lote').value;h.capacidad=document.getElementById('capacidad').value;h.wifi=document.getElementById('wifi').value;h.obs=document.getElementById('obs').value;h.situacion=document.getElementById('situacion').value;
-saveData(houses);document.getElementById('title').textContent=h.nombre;render();openHouse(current);}
+saveData(houses);
+saveHouseToSupabase(h);
+const title = document.getElementById('title');
+if (title) title.textContent = h.nombre;
+render();
+openHouse(current);
+render();openHouse(current);}
 render();
 
 const ambientes=[
