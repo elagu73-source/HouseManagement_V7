@@ -1255,16 +1255,75 @@ async function guardarChecklistSupabase() {
     );
 }
 let checks = JSON.parse(localStorage.getItem("cb_checks") || "{}");
-function startPreparation(){
+
+async function startPreparation(){
 
     console.log("CURRENT =", current);
-    console.log("CHECKS =", checks);
 
-    paso=0;
-    renderPrep();
+    const house = houses[current];
+
+    if (!house || !house.id) {
+        console.error("❌ La casa no tiene UUID de Supabase");
+        return;
+    }
+
+    console.log("🏠 Cargando checklist de Supabase:", house.id);
+
+    const { data, error } = await supabaseClient
+        .from("house_checklists")
+        .select("data")
+        .eq("house_id", house.id)
+        .maybeSingle();
+
+    if (error) {
+
+        console.error(
+            "❌ Error cargando checklist desde Supabase:",
+            error
+        );
+
+        return;
+    }
+
+    if (data && data.data) {
+
+        console.log(
+            "✅ CHECKLIST ENCONTRADO EN SUPABASE:",
+            data.data
+        );
+
+        Object.keys(data.data).forEach(ambienteIndex => {
+
+            const key =
+                "c" + current + "_" + ambienteIndex;
+
+            checks[key] = data.data[ambienteIndex];
+
+        });
+
+        localStorage.setItem(
+            "cb_checks",
+            JSON.stringify(checks)
+        );
+
+    } else {
+
+        console.log(
+            "ℹ️ Esta casa todavía no tiene checklist en Supabase."
+        );
+
+    }
+
+    console.log("CHECKS CARGADOS =", checks);
+
+    paso = 0;
+
     go('prep');
 
+    renderPrep();
+
 }
+
 function renderPrep(){
 
 const env = ensureChecklist()[paso];
