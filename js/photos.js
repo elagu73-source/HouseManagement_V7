@@ -56,13 +56,150 @@ function savePhoto(file, houseId, ambiente) {
 
     const request = store.add(photo);
 
-    request.onsuccess = function() {
-        console.log("✅ Foto guardada correctamente");
-    };
+request.onsuccess = function() {
+
+    console.log("✅ Foto guardada correctamente");
+
+};
 
     request.onerror = function() {
         console.error("❌ Error al guardar la foto");
     };
+}
+
+async function savePhotoToSupabase(file, houseId, ambiente) {
+
+    try {
+
+        // Obtener usuario autenticado
+        const { data: userData, error: userError } =
+            await supabaseClient.auth.getUser();
+
+        if (userError || !userData.user) {
+            console.error("❌ No hay usuario autenticado:", userError);
+            return false;
+        }
+
+        const userId = userData.user.id;
+
+        // Si recibimos el índice de la casa, obtener su UUID real
+        
+// Obtener el UUID real de la casa
+let houseUuid = houseId;
+
+// Si recibimos el índice de la casa
+if (typeof houseId === "number") {
+
+    const house = houses[houseId];
+
+    if (!house) {
+        console.error("❌ No existe la casa:", houseId);
+        return false;
+    }
+
+    // Si la casa ya tiene UUID, usarlo
+    if (house.id) {
+
+        houseUuid = house.id;
+
+    } else {
+
+        // La casa existe en localStorage pero todavía
+        // no tiene ID en Supabase.
+        console.log(
+            "🏠 La casa no tiene UUID. Creándola en Supabase..."
+        );
+
+        await saveHouseToSupabase(house);
+
+        // Después de guardar debería tener su UUID
+        houseUuid = house.id;
+
+    }
+}
+
+if (!houseUuid) {
+
+    console.error(
+        "❌ No se pudo obtener el ID de Supabase de la casa"
+    );
+
+    return false;
+}
+
+console.log(
+    "✅ UUID DE CASA PARA LA FOTO:",
+    houseUuid
+);
+
+// Nombre único para la foto
+const nombreArchivo =
+    Date.now() +
+    "-" +
+    Math.random().toString(36).substring(2) +
+    "-" +
+    file.name;
+
+        // Ruta dentro del bucket
+        const storagePath =
+            userId + "/" +
+            houseUuid + "/" +
+            ambiente + "/" +
+            nombreArchivo;
+
+        // 1. Subir archivo a Storage
+
+        console.log("📁 STORAGE PATH:", storagePath);
+console.log("📄 NOMBRE ARCHIVO:", file.name);
+console.log("🏠 HOUSE UUID:", houseUuid);
+
+        const { error: uploadError } =
+            await supabaseClient.storage
+                .from("house-photos")
+                .upload(storagePath, file);
+
+        if (uploadError) {
+            console.error("❌ Error subiendo foto a Storage:", uploadError);
+            return false;
+        }
+
+        // 2. Registrar la foto en la tabla
+        const { error: insertError } =
+            await supabaseClient
+                .from("house_photos")
+                .insert({
+                    house_id: houseUuid,
+                    user_id: userId,
+                    ambiente: ambiente,
+                    nombre: file.name,
+                    storage_path: storagePath
+                });
+
+        if (insertError) {
+
+            console.error(
+                "❌ Error registrando foto en house_photos:",
+                insertError
+            );
+
+            // Si falló la base, eliminamos el archivo que acabamos de subir
+            await supabaseClient.storage
+                .from("house-photos")
+                .remove([storagePath]);
+
+            return false;
+        }
+
+        console.log("✅ FOTO GUARDADA EN SUPABASE:", storagePath);
+
+        return true;
+
+    } catch (error) {
+
+        console.error("❌ Error inesperado guardando foto:", error);
+
+        return false;
+    }
 }
 
 function getPhotos(houseId, ambiente) {
@@ -154,198 +291,296 @@ function showPhotoTest(houseId, ambiente) {
     };
 }
 
-function mostrarFotos(houseId) {
+async function mostrarFotos(houseId) {
 
     const container = document.getElementById("photosContainer");
 
     if (!container) return;
 
-    const transaction = photoDB.transaction(["photos"], "readonly");
-    const store = transaction.objectStore("photos");
-    const request = store.getAll();
+    // Obtener UUID real de la casa
+    let houseUuid = houseId;
 
-    request.onsuccess = function () {
+    if (typeof houseId === "number") {
 
-        const fotos = request.result.filter(
-            foto => foto.houseId === houseId
-        );
+        const house = houses[houseId];
 
-        container.innerHTML = "";
-
-        if (fotos.length === 0) {
-            container.innerText = "No hay fotos.";
+        if (!house || !house.id) {
+            console.error("❌ La casa no tiene UUID de Supabase");
+            container.innerText = "No se pudo identificar la casa.";
             return;
         }
 
-        // La galería general deja de ser una grilla.
-        // Cada ambiente tendrá su propia grilla.
-        container.style.display = "block";
+        houseUuid = house.id;
+    }
 
-        // Agrupar fotos por ambiente
-        const grupos = {};
+    console.log("🔎 Buscando fotos de casa:", houseUuid);
 
-        fotos.forEach(foto => {
+    // Buscar fotos en Supabase
+    const { data: fotos, error } = await supabaseClient
+        .from("house_photos")
+        .select("*")
+        .eq("house_id", houseUuid)
+        .order("created_at", { ascending: true });
 
-            if (!grupos[foto.ambiente]) {
-                grupos[foto.ambiente] = [];
+    if (error) {
+
+        console.error(
+            "❌ Error buscando fotos en Supabase:",
+            error
+        );
+
+        container.innerText = "No se pudieron cargar las fotos.";
+        return;
+    }
+
+    container.innerHTML = "";
+
+    if (!fotos || fotos.length === 0) {
+
+        console.log(
+            "ℹ️ No hay fotos en Supabase para esta casa."
+        );
+
+        container.innerText = "No hay fotos.";
+        return;
+    }
+
+    console.log(
+        "📸 FOTOS ENCONTRADAS:",
+        fotos
+    );
+
+    container.style.display = "block";
+
+    // Agrupar por ambiente
+    const grupos = {};
+
+    fotos.forEach(foto => {
+
+        if (!grupos[foto.ambiente]) {
+            grupos[foto.ambiente] = [];
+        }
+
+        grupos[foto.ambiente].push(foto);
+
+    });
+
+    const ordenAmbientes = [
+        "fachada",
+        "living",
+        "comedor",
+        "cocina",
+        "dormitorios",
+        "baños",
+        "exterior",
+        "mantenimiento",
+        "otros"
+    ];
+
+    const ambientesOrdenados =
+        Object.keys(grupos).sort((a, b) => {
+
+            const posicionA =
+                ordenAmbientes.indexOf(a.toLowerCase());
+
+            const posicionB =
+                ordenAmbientes.indexOf(b.toLowerCase());
+
+            const ordenA =
+                posicionA === -1 ? 999 : posicionA;
+
+            const ordenB =
+                posicionB === -1 ? 999 : posicionB;
+
+            return ordenA - ordenB;
+        });
+
+    for (const ambiente of ambientesOrdenados) {
+
+        const grupo = document.createElement("div");
+
+        grupo.style.width = "100%";
+        grupo.style.marginBottom = "25px";
+
+        const titulo = document.createElement("div");
+
+        titulo.innerHTML =
+            '<span class="cb-icon">' +
+                '<svg viewBox="0 0 24 24">' +
+                    '<path d="M3 6H9L11 8H21V19H3Z"></path>' +
+                '</svg>' +
+            '</span> ' +
+            ambiente.charAt(0).toUpperCase() +
+            ambiente.slice(1);
+
+        titulo.style.fontWeight = "bold";
+        titulo.style.fontSize = "18px";
+        titulo.style.marginBottom = "10px";
+
+        grupo.appendChild(titulo);
+
+        const grid = document.createElement("div");
+
+        grid.style.display = "grid";
+        grid.style.gridTemplateColumns = "repeat(3, 1fr)";
+        grid.style.gap = "15px";
+
+        for (const foto of grupos[ambiente]) {
+
+            const div = document.createElement("div");
+
+            div.style.minWidth = "0";
+
+            // Obtener URL temporal de Supabase Storage
+            const { data: urlData, error: urlError } =
+                await supabaseClient.storage
+                    .from("house-photos")
+                    .createSignedUrl(
+                        foto.storage_path,
+                        3600
+                    );
+
+            if (urlError) {
+
+                console.error(
+                    "❌ Error obteniendo URL de foto:",
+                    urlError
+                );
+
+                continue;
             }
 
-            grupos[foto.ambiente].push(foto);
+            const img = document.createElement("img");
 
-        });
+            img.src = urlData.signedUrl;
 
-        // Crear cada ambiente
-const ordenAmbientes = [
-    "fachada",
-    "living",
-    "comedor",
-    "cocina",
-    "dormitorios",
-    "baños",
-    "exterior",
-    "mantenimiento",
-    "otros"
-];
+            img.style.width = "100%";
+            img.style.height = "120px";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "10px";
+            img.style.cursor = "pointer";
+            img.style.display = "block";
 
-const ambientesOrdenados = Object.keys(grupos).sort((a, b) => {
+            // Abrir visor
+            img.onclick = function(event) {
 
-    const posicionA = ordenAmbientes.indexOf(a.toLowerCase());
-    const posicionB = ordenAmbientes.indexOf(b.toLowerCase());
+                event.stopPropagation();
 
-    const ordenA = posicionA === -1 ? 999 : posicionA;
-    const ordenB = posicionB === -1 ? 999 : posicionB;
+                const viewer =
+                    document.getElementById("photoViewer");
 
-    return ordenA - ordenB;
+                const viewerImg =
+                    document.getElementById("photoViewerImg");
 
-});
-
-ambientesOrdenados.forEach(ambiente => {
-            const grupo = document.createElement("div");
-
-            grupo.style.width = "100%";
-            grupo.style.marginBottom = "25px";
-
-            const titulo = document.createElement("div");
-
-            titulo.innerHTML =
-    '<span class="cb-icon">' +
-        '<svg viewBox="0 0 24 24">' +
-            '<path d="M3 6H9L11 8H21V19H3Z"></path>' +
-        '</svg>' +
-    '</span> ' +
-    ambiente.charAt(0).toUpperCase() + ambiente.slice(1);
-
-            titulo.style.fontWeight = "bold";
-            titulo.style.fontSize = "18px";
-            titulo.style.marginBottom = "10px";
-
-            grupo.appendChild(titulo);
-
-            // Grilla de 3 fotos
-            const grid = document.createElement("div");
-
-            grid.style.display = "grid";
-            grid.style.gridTemplateColumns = "repeat(3, 1fr)";
-            grid.style.gap = "15px";
-
-            grupos[ambiente].forEach(foto => {
-
-                const div = document.createElement("div");
-
-                div.style.minWidth = "0";
-
-                const img = document.createElement("img");
-
-                img.src = URL.createObjectURL(foto.archivo);
-
-                img.style.width = "100%";
-                img.style.height = "120px";
-                img.style.objectFit = "cover";
-                img.style.borderRadius = "10px";
-                img.style.cursor = "pointer";
-                img.style.display = "block";
-
-                // Abrir visor
-                img.onclick = function(event){
-
-                    event.stopPropagation();
-
-                    const viewer =
-                        document.getElementById("photoViewer");
-
-                    const viewerImg =
-                        document.getElementById("photoViewerImg");
-
+                if (viewerImg) {
                     viewerImg.src = img.src;
+                }
+
+                if (viewer) {
                     viewer.style.display = "flex";
+                }
 
-                };
+            };
 
-                div.appendChild(img);
+            div.appendChild(img);
 
-                // Botón eliminar
-                const botonEliminar =
-                    document.createElement("div");
+            // Botón eliminar
+            const botonEliminar =
+                document.createElement("div");
 
-                botonEliminar.className = "btn";
-                botonEliminar.innerHTML = `
-    <span class="cb-icon white">
-        <svg viewBox="0 0 24 24">
-            <path d="M4 7H20"></path>
-            <path d="M9 7V5H15V7"></path>
-            <path d="M7 7L8 20H16L17 7"></path>
-            <path d="M10 11V17"></path>
-            <path d="M14 11V17"></path>
-        </svg>
-    </span>
-    Eliminar
-`;
+            botonEliminar.className = "btn";
 
-                botonEliminar.onclick = function(){
+            botonEliminar.innerHTML = `
+                <span class="cb-icon white">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 7H20"></path>
+                        <path d="M9 7V5H15V7"></path>
+                        <path d="M7 7L8 20H16L17 7"></path>
+                        <path d="M10 11V17"></path>
+                        <path d="M14 11V17"></path>
+                    </svg>
+                </span>
+                Eliminar
+            `;
 
-                    if(confirm("¿Querés eliminar esta foto?")){
+            botonEliminar.onclick = function() {
 
-                        deletePhoto(foto.id);
+                if (confirm("¿Querés eliminar esta foto?")) {
 
-                    }
+                    deletePhoto(foto.id);
 
-                };
+                }
 
-                div.appendChild(botonEliminar);
+            };
 
-                grid.appendChild(div);
+            div.appendChild(botonEliminar);
 
-            });
+            grid.appendChild(div);
+        }
 
-            grupo.appendChild(grid);
+        grupo.appendChild(grid);
 
-            container.appendChild(grupo);
-
-        });
-
-    };
+        container.appendChild(grupo);
+    }
 }
 
-function deletePhoto(id) {
+async function deletePhoto(foto) {
 
-    const transaction = photoDB.transaction(["photos"], "readwrite");
-    const store = transaction.objectStore("photos");
+    try {
 
-    const request = store.delete(id);
+        console.log("🗑️ Eliminando foto:", foto);
 
-    request.onsuccess = function() {
+        // 1. Eliminar archivo de Storage
+        const { error: storageError } =
+            await supabaseClient.storage
+                .from("house-photos")
+                .remove([
+                    foto.storage_path
+                ]);
 
-        console.log("🗑️ Foto eliminada correctamente");
+        if (storageError) {
 
+            console.error(
+                "❌ Error eliminando archivo de Storage:",
+                storageError
+            );
+
+            return;
+        }
+
+        // 2. Eliminar registro de la tabla
+        const { error: databaseError } =
+            await supabaseClient
+                .from("house_photos")
+                .delete()
+                .eq("id", foto.id);
+
+        if (databaseError) {
+
+            console.error(
+                "❌ Error eliminando registro de house_photos:",
+                databaseError
+            );
+
+            return;
+        }
+
+        console.log(
+            "🗑️ FOTO ELIMINADA CORRECTAMENTE DE SUPABASE"
+        );
+
+        // 3. Actualizar galería
         mostrarFotos(current);
 
-    };
+    } catch (error) {
 
-    request.onerror = function() {
+        console.error(
+            "❌ Error inesperado eliminando foto:",
+            error
+        );
 
-        console.error("❌ Error al eliminar la foto");
+    }
 
-    };
 }
 
 function cerrarVisorFoto(){
