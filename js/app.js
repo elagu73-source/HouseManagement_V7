@@ -1268,6 +1268,12 @@ async function startPreparation(){
     }
 
     console.log("🏠 Cargando checklist de Supabase:", house.id);
+alert("ESTOY CARGANDO CHECKLIST DESDE SUPABASE");
+    const diagnostico = document.getElementById("diagnosticoChecklist");
+
+if (diagnostico) {
+    diagnostico.textContent = "☁️ Cargando checklist desde Supabase...";
+}
 
     const { data, error } = await supabaseClient
         .from("house_checklists")
@@ -1291,6 +1297,9 @@ async function startPreparation(){
             "✅ CHECKLIST ENCONTRADO EN SUPABASE:",
             data.data
         );
+        if (diagnostico) {
+    diagnostico.textContent = "✅ Checklist encontrado en Supabase";
+}
 
         Object.keys(data.data).forEach(ambienteIndex => {
 
