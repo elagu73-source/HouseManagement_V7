@@ -1223,6 +1223,10 @@ async function guardarChecklistSupabase() {
         return;
     }
 
+const observaciones = JSON.parse(
+    localStorage.getItem("cb_observaciones") || "{}"
+);
+
     const dataCasa = {};
 
     ambientes.forEach((ambiente, i) => {
@@ -1240,6 +1244,7 @@ async function guardarChecklistSupabase() {
         .upsert({
             house_id: house.id,
             data: dataCasa,
+            observaciones: observaciones,
             updated_at: new Date().toISOString()
         });
 
@@ -1281,7 +1286,7 @@ if (diagnostico) {
 
     const { data, error } = await supabaseClient
         .from("house_checklists")
-        .select("data")
+        .select("data, observaciones")
         .eq("house_id", house.id)
         .maybeSingle();
 
@@ -1318,6 +1323,19 @@ if (diagnostico) {
             "cb_checks",
             JSON.stringify(checks)
         );
+
+if (data.observaciones) {
+
+    localStorage.setItem(
+        "cb_observaciones",
+        JSON.stringify(data.observaciones)
+    );
+
+    console.log(
+        "📝 OBSERVACIONES ENCONTRADAS EN SUPABASE:",
+        data.observaciones
+    );
+}
 
     } else {
 
