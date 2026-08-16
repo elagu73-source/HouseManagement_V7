@@ -133,12 +133,17 @@ console.log(
 );
 
 // Nombre único para la foto
+const nombreSeguro = file.name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "_");
+
 const nombreArchivo =
     Date.now() +
     "-" +
     Math.random().toString(36).substring(2) +
     "-" +
-    file.name;
+    nombreSeguro;
 
         // Ruta dentro del bucket
         const storagePath =
@@ -225,36 +230,81 @@ function getPhotos(houseId, ambiente) {
     };
 }
 
-window.obtenerPrimeraFoto = function(houseId, callback) {
-   
-    if (!photoDB) {
-    setTimeout(() => obtenerPrimeraFoto(houseId, callback), 300);
-    return;
-}
+window.obtenerPrimeraFoto = async function(houseId, callback) {
 
-    const transaction = photoDB.transaction(["photos"], "readonly");
-    const store = transaction.objectStore("photos");
-    const request = store.getAll();
+    try {
 
-    request.onsuccess = function() {
+        let houseUuid = houseId;
 
-        const fotos = request.result.filter(
-            foto => foto.houseId === houseId
-        );
+        // Si recibimos el índice de la casa,
+        // obtener el UUID real
+        if (typeof houseId === "number") {
 
-        if (fotos.length === 0) {
+            const house = houses[houseId];
+
+            if (!house || !house.id) {
+                callback(null);
+                return;
+            }
+
+            houseUuid = house.id;
+        }
+
+        const { data: fotos, error } =
+            await supabaseClient
+                .from("house_photos")
+                .select("*")
+               .eq("house_id", houseUuid)
+.order("created_at", { ascending: false })
+.limit(1);
+
+        if (error) {
+
+            console.error(
+                "❌ Error obteniendo foto principal:",
+                error
+            );
+
             callback(null);
             return;
         }
 
-        const url = URL.createObjectURL(fotos[0].archivo);
+        if (!fotos || fotos.length === 0) {
 
-        callback(url);
-    };
+            callback(null);
+            return;
+        }
 
-    request.onerror = function() {
+        const { data: urlData, error: urlError } =
+            await supabaseClient.storage
+                .from("house-photos")
+                .createSignedUrl(
+                    fotos[0].storage_path,
+                    3600
+                );
+
+        if (urlError) {
+
+            console.error(
+                "❌ Error creando URL de foto principal:",
+                urlError
+            );
+
+            callback(null);
+            return;
+        }
+
+        callback(urlData.signedUrl);
+
+    } catch (error) {
+
+        console.error(
+            "❌ Error obteniendo foto principal:",
+            error
+        );
+
         callback(null);
-    };
+    }
 
 };
 
@@ -507,7 +557,7 @@ async function mostrarFotos(houseId) {
 
                 if (confirm("¿Querés eliminar esta foto?")) {
 
-                    deletePhoto(foto.id);
+                    deletePhoto(foto);
 
                 }
 

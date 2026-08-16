@@ -223,6 +223,62 @@ d.onclick = () => openHouse(i);
 
 c.appendChild(d);
 });
+console.log("🟢 RENDER EJECUTADO - AGREGANDO BOTÓN +");
+// Botón para agregar una nueva propiedad
+const agregar = document.createElement('div');
+
+agregar.className = 'card';
+agregar.style.display = 'flex';
+agregar.style.alignItems = 'center';
+agregar.style.justifyContent = 'center';
+agregar.style.minHeight = '100px';
+agregar.style.cursor = 'pointer';
+
+agregar.innerHTML = `
+    <div style="
+        text-align:center;
+        width:100%;
+    ">
+        <div style="
+            font-size:30px;
+            line-height:1;
+            margin-bottom:10px;
+        ">＋</div>
+
+        <div style="
+            font-size:16px;
+            font-weight:600;
+        ">
+            Agregar propiedad
+        </div>
+    </div>
+`;
+
+agregar.onclick = function() {
+
+    const nuevaCasa = {
+        nombre: "",
+        barrio: "",
+        lote: "",
+        capacidad: "",
+        rating: "",
+        estado: "Pendiente",
+        ingreso: "",
+        checklistPorcentaje: 0,
+        situacion: "Disponible"
+    };
+
+    houses.push(nuevaCasa);
+
+    const nuevoIndice = houses.length - 1;
+
+    saveData(houses);
+
+    render();
+
+    openHouse(nuevoIndice);
+};
+c.appendChild(agregar);
 }
 function openPhotos(){
 
