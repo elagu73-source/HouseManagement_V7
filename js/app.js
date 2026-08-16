@@ -522,16 +522,18 @@ if (ratingElement) {
 
         if (!confirmar) return;
 
-        // Eliminar la casa de Supabase
+        // Marcar la casa como eliminada en Supabase
 const { error } = await supabaseClient
     .from("houses")
-    .delete()
+    .update({
+        eliminada: true
+    })
     .eq("id", h.id);
 
 if (error) {
 
     console.error(
-        "❌ Error eliminando casa de Supabase:",
+        "❌ Error marcando casa como eliminada en Supabase:",
         error
     );
 
@@ -543,7 +545,7 @@ if (error) {
 }
 
 console.log(
-    "🗑️ CASA ELIMINADA DE SUPABASE:",
+    "🗑️ CASA MARCADA COMO ELIMINADA EN SUPABASE:",
     h.id
 );
 
