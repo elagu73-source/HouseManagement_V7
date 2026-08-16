@@ -163,7 +163,9 @@ function render(){
     const texto = buscador ? buscador.value.toLowerCase().trim() : '';
 
     const casasFiltradas = houses.filter(h => {
-        if (h.eliminada) return false;
+            if (h.eliminada === true) {
+        return false;
+    }
 
     const nombre = (h.nombre || '').toLowerCase();
     const barrio = (h.barrio || '').toLowerCase();
