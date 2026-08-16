@@ -1210,6 +1210,50 @@ render();
 
 let paso = 0;
 let evidencias = JSON.parse(localStorage.getItem("cb_evidencias") || "{}");
+async function guardarChecklistSupabase() {
+
+    const house = houses[current];
+
+    if (!house || !house.id) {
+        console.error("❌ La casa no tiene UUID de Supabase");
+        return;
+    }
+
+    const dataCasa = {};
+
+    ambientes.forEach((ambiente, i) => {
+
+        const key = "c" + current + "_" + i;
+
+        dataCasa[i] =
+            checks[key] ||
+            new Array(ambiente.items.length).fill(false);
+
+    });
+
+    const { error } = await supabaseClient
+        .from("house_checklists")
+        .upsert({
+            house_id: house.id,
+            data: dataCasa,
+            updated_at: new Date().toISOString()
+        });
+
+    if (error) {
+
+        console.error(
+            "❌ Error guardando checklist en Supabase:",
+            error
+        );
+
+        return;
+    }
+
+    console.log(
+        "✅ CHECKLIST GUARDADO EN SUPABASE:",
+        house.id
+    );
+}
 let checks = JSON.parse(localStorage.getItem("cb_checks") || "{}");
 function startPreparation(){
 
@@ -1244,11 +1288,13 @@ env.items.forEach((c,i)=>{
     checklist.innerHTML += `
     <label class="chk">
        <input type="checkbox" ${marcado}
-    onchange="
-        checks['${key}'][${i}] = this.checked;
-        localStorage.setItem('cb_checks', JSON.stringify(checks));
-        actualizarEstadoCasa();
-    "
+    
+       onchange="
+    checks['${key}'][${i}] = this.checked;
+    localStorage.setItem('cb_checks', JSON.stringify(checks));
+    guardarChecklistSupabase();
+    actualizarEstadoCasa();
+"
 >
         <span>${c}</span>
     </label>`;
