@@ -1,4 +1,86 @@
 let houses=loadData(),current=0;
+async function cargarCasasDesdeSupabase() {
+
+    try {
+
+        console.log("🏠 BUSCANDO CASAS EN SUPABASE...");
+
+        const { data, error } = await supabaseClient
+            .from("houses")
+            .select("*");
+
+        if (error) {
+
+            console.error(
+                "❌ Error cargando casas desde Supabase:",
+                error
+            );
+
+            return;
+        }
+
+        if (!data || data.length === 0) {
+
+            console.warn(
+                "⚠️ Supabase no devolvió casas."
+            );
+
+            return;
+        }
+
+        console.log(
+            "✅ CASAS ENCONTRADAS EN SUPABASE:",
+            data.length
+        );
+
+        // Reemplazar las casas locales por las de Supabase
+        houses = data.map(h => ({
+            ...h,
+
+            obs:
+                h.observaciones ??
+                h.obs ??
+                "",
+
+            capacidad:
+                h.capacidad ?? 0,
+
+            situacion:
+                h.situacion ??
+                "Disponible",
+
+            estado:
+                h.estado ??
+                "Pendiente",
+
+            ingreso:
+                h.ingreso ??
+                "",
+
+            rating:
+                h.rating ??
+                ""
+        }));
+
+        // Guardar también una copia local
+        saveData(houses);
+
+        console.log(
+            "💾 Casas sincronizadas con localStorage"
+        );
+
+        // Volver a dibujar la pantalla
+        render();
+
+    } catch (error) {
+
+        console.error(
+            "❌ Error inesperado cargando casas:",
+            error
+        );
+    }
+}
+cargarCasasDesdeSupabase();
 let propertyFilter='Todas';
 function setPropertyFilter(filtro){
     propertyFilter = filtro;
@@ -81,6 +163,7 @@ function render(){
     const texto = buscador ? buscador.value.toLowerCase().trim() : '';
 
     const casasFiltradas = houses.filter(h => {
+        if (h.eliminada) return false;
 
     const nombre = (h.nombre || '').toLowerCase();
     const barrio = (h.barrio || '').toLowerCase();
@@ -388,7 +471,94 @@ function openHouse(i){
         "★ " + (h.rating ?? "-");
 
     go("property");
+// Botón eliminar propiedad
+const ratingElement = document.getElementById("houseDetailRating");
 
+if (ratingElement) {
+
+    const botonExistente =
+        document.getElementById("btnEliminarPropiedad");
+
+    if (botonExistente) {
+        botonExistente.remove();
+    }
+
+    const botonEliminar =
+        document.createElement("button");
+
+    botonEliminar.id = "btnEliminarPropiedad";
+    botonEliminar.className = "btn";
+
+    botonEliminar.style.marginTop = "25px";
+    botonEliminar.style.width = "100%";
+    botonEliminar.style.background = "#8B4B4B";
+    botonEliminar.style.color = "white";
+    botonEliminar.style.border = "none";
+    botonEliminar.style.padding = "14px";
+    botonEliminar.style.borderRadius = "10px";
+    botonEliminar.style.cursor = "pointer";
+    botonEliminar.style.fontWeight = "600";
+
+    botonEliminar.innerHTML = "🗑 Eliminar propiedad";
+
+    botonEliminar.onclick = async function(event) {
+
+        event.stopPropagation();
+
+        const nombreCasa =
+            h.nombre ||
+            h.name ||
+            h.nombreCasa ||
+            h.nombre_casa ||
+            "esta propiedad";
+
+        const confirmar = confirm(
+            "¿Querés eliminar " +
+            nombreCasa +
+            " de las propiedades disponibles?"
+        );
+
+        if (!confirmar) return;
+
+        // Eliminar la casa de Supabase
+const { error } = await supabaseClient
+    .from("houses")
+    .delete()
+    .eq("id", h.id);
+
+if (error) {
+
+    console.error(
+        "❌ Error eliminando casa de Supabase:",
+        error
+    );
+
+    alert(
+        "No se pudo eliminar la propiedad. Revisá la consola."
+    );
+
+    return;
+}
+
+console.log(
+    "🗑️ CASA ELIMINADA DE SUPABASE:",
+    h.id
+);
+
+// Eliminarla también de la memoria local
+houses = houses.filter(casa => casa.id !== h.id);
+
+        saveData(houses);
+
+        current = null;
+
+        render();
+
+        go("home");
+    };
+
+    ratingElement.parentElement.appendChild(botonEliminar);
+}
 const foto = document.getElementById("houseHeroPhoto");
 
 if (!foto) return;
