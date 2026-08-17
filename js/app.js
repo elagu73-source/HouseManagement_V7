@@ -884,19 +884,210 @@ function openInfoGeneral(){
     go('infoGeneral');
 }
 
-function openInventario(){
+async function obtenerInventarioCasa(){
 
-    go('inventario');
+    const house = houses[current];
 
-    const lista = document.getElementById('listaInventario');
+    if (!house || !house.id) {
+        console.error("❌ La casa no tiene UUID de Supabase");
+        return [];
+    }
+
+    const { data, error } = await supabaseClient
+        .from("house_inventario")
+        .select("id, house_id, data, updated_at")
+        .eq("house_id", house.id)
+        .maybeSingle();
+
+    if (error) {
+
+        console.error(
+            "❌ Error cargando inventario desde Supabase:",
+            error
+        );
+
+        return null;
+    }
+
+    // ============================================
+    // SI YA EXISTE EN SUPABASE
+    // ============================================
+
+    if (data) {
+
+        console.log(
+            "✅ INVENTARIO ENCONTRADO EN SUPABASE:",
+            house.id
+        );
+
+        return Array.isArray(data.data)
+            ? data.data
+            : [];
+    }
+
+    // ============================================
+    // SI TODAVÍA NO EXISTE:
+    // BUSCAR INVENTARIO ANTIGUO EN LOCALSTORAGE
+    // ============================================
 
     const key = "c" + current + "_inventario";
 
-    let inventario = JSON.parse(
-        localStorage.getItem("cb_inventario") || "{}"
+    let inventarioLocal = {};
+
+    try {
+
+        inventarioLocal = JSON.parse(
+            localStorage.getItem("cb_inventario") || "{}"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "❌ Error leyendo inventario local:",
+            error
+        );
+
+        inventarioLocal = {};
+    }
+
+    const itemsLocales =
+        Array.isArray(inventarioLocal[key])
+            ? inventarioLocal[key]
+            : [];
+
+    // ============================================
+    // MIGRAR AUTOMÁTICAMENTE A SUPABASE
+    // ============================================
+
+    if (itemsLocales.length > 0) {
+
+        console.log(
+            "📦 MIGRANDO INVENTARIO LOCAL A SUPABASE:",
+            house.id,
+            itemsLocales
+        );
+
+        const { error: errorMigracion } =
+            await supabaseClient
+                .from("house_inventario")
+                .upsert(
+                    {
+                        house_id: house.id,
+                        data: itemsLocales,
+                        updated_at: new Date().toISOString()
+                    },
+                    {
+                        onConflict: "house_id"
+                    }
+                );
+
+        if (errorMigracion) {
+
+            console.error(
+                "❌ Error migrando inventario a Supabase:",
+                errorMigracion
+            );
+
+            return itemsLocales;
+        }
+
+        console.log(
+            "✅ INVENTARIO MIGRADO A SUPABASE:",
+            house.id
+        );
+    }
+
+    return itemsLocales;
+}
+
+
+// ============================================
+// GUARDAR INVENTARIO EN SUPABASE
+// ============================================
+
+async function guardarInventarioSupabase(items){
+
+    const house = houses[current];
+
+    if (!house || !house.id) {
+
+        console.error(
+            "❌ No se puede guardar inventario: falta UUID de la casa"
+        );
+
+        return false;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("house_inventario")
+            .upsert(
+                {
+                    house_id: house.id,
+                    data: items,
+                    updated_at: new Date().toISOString()
+                },
+                {
+                    onConflict: "house_id"
+                }
+            );
+
+    if (error) {
+
+        console.error(
+            "❌ Error guardando inventario en Supabase:",
+            error
+        );
+
+        alert(
+            "No se pudo guardar el inventario. Revisá la consola."
+        );
+
+        return false;
+    }
+
+    console.log(
+        "✅ INVENTARIO GUARDADO EN SUPABASE:",
+        house.id
     );
 
-    const items = inventario[key] || [];
+    return true;
+}
+
+
+// ============================================
+// ABRIR INVENTARIO
+// ============================================
+
+async function openInventario(){
+
+    go('inventario');
+
+    const lista =
+        document.getElementById('listaInventario');
+
+    lista.innerHTML = `
+        <div class="card">
+            <b>📦 Cargando inventario...</b>
+        </div>
+    `;
+
+    const items =
+        await obtenerInventarioCasa();
+
+    if (items === null) {
+
+        lista.innerHTML = `
+            <div class="card">
+                <b>❌ No se pudo cargar el inventario</b>
+                <div class="sub">
+                    Revisá la consola para más información.
+                </div>
+            </div>
+        `;
+
+        return;
+    }
 
     if(items.length === 0){
 
@@ -912,6 +1103,19 @@ function openInventario(){
         return;
     }
 
+    renderInventario(items);
+}
+
+
+// ============================================
+// RENDER INVENTARIO
+// ============================================
+
+function renderInventario(items){
+
+    const lista =
+        document.getElementById('listaInventario');
+
     lista.innerHTML = "";
 
     items.forEach((item, index) => {
@@ -920,220 +1124,339 @@ function openInventario(){
             <div class="card">
 
                 <div class="title">
-    <span class="cb-icon">
-        <svg viewBox="0 0 24 24">
-            <path d="M4 7L12 3L20 7L12 11L4 7Z"></path>
-            <path d="M4 7V17L12 21L20 17V7"></path>
-            <path d="M12 11V21"></path>
-        </svg>
-    </span>
-    ${item.nombre}
-</div>
+
+                    <span class="cb-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 7L12 3L20 7L12 11L4 7Z"></path>
+                            <path d="M4 7V17L12 21L20 17V7"></path>
+                            <path d="M12 11V21"></path>
+                        </svg>
+                    </span>
+
+                    ${item.nombre}
+
+                </div>
 
                 <div class="sub">
-$${item.control === "danado"
-    ? '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#0D2B45;margin-right:5px;vertical-align:middle;"></span> Dañado'
-    : item.control === "falta"
-    ? '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#DCC9A6;margin-right:5px;vertical-align:middle;"></span> Falta'
-    : '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#6B7A5A;margin-right:5px;vertical-align:middle;"></span> Está'}
+
+                    ${
+                        item.control === "danado"
+                        ? '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#0D2B45;margin-right:5px;vertical-align:middle;"></span> Dañado'
+
+                        : item.control === "falta"
+                        ? '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#DCC9A6;margin-right:5px;vertical-align:middle;"></span> Falta'
+
+                        : '<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#6B7A5A;margin-right:5px;vertical-align:middle;"></span> Está'
+                    }
+
                 </div>
+
                 <button
-    class="btn-eliminar-inventario"
-    onclick="eliminarItemInventario(${index})"
->
-    Eliminar
-</button>
+                    class="btn-eliminar-inventario"
+                    onclick="eliminarItemInventario(${index})"
+                >
+                    Eliminar
+                </button>
 
             </div>
         `;
-
     });
 }
 
-function nuevoItemInventario(){
-    const nombre = prompt("¿Qué elemento querés agregar al inventario?");
-    
+
+// ============================================
+// NUEVO ITEM
+// ============================================
+
+async function nuevoItemInventario(){
+
+    const nombre =
+        prompt("¿Qué elemento querés agregar al inventario?");
+
     if(!nombre || !nombre.trim()) return;
 
-    const key = "c" + current + "_inventario";
+    const items =
+        await obtenerInventarioCasa();
 
-    let inventario = JSON.parse(
-    localStorage.getItem("cb_inventario") || "{}"
-);
+    if(items === null) return;
 
-if (Array.isArray(inventario)) {
-    inventario = {};
-}
-
-    if(!inventario[key]){
-        inventario[key] = [];
-    }
-
-    inventario[key].push({
+    items.push({
         nombre: nombre.trim(),
-        presente: true
+        presente: true,
+        control: "presente"
     });
 
-    localStorage.setItem(
-        "cb_inventario",
-        JSON.stringify(inventario)
-    );
+    const guardado =
+        await guardarInventarioSupabase(items);
 
-    openInventario();
+    if (!guardado) return;
+
+    await openInventario();
 }
 
-function eliminarItemInventario(index){
-    if(!confirm("¿Querés eliminar este elemento del inventario?")) return;
 
-    const key = "c" + current + "_inventario";
+// ============================================
+// ELIMINAR ITEM
+// ============================================
 
-    let inventario = JSON.parse(
-        localStorage.getItem("cb_inventario") || "{}"
-    );
+async function eliminarItemInventario(index){
 
-    if(!inventario[key] || !inventario[key][index]) return;
-
-    inventario[key].splice(index, 1);
-
-    localStorage.setItem(
-        "cb_inventario",
-        JSON.stringify(inventario)
-    );
-
-    openInventario();
-}
-
-function iniciarControlInventario(){
-
-    const key = "c" + current + "_inventario";
-
-    let inventario = JSON.parse(
-        localStorage.getItem("cb_inventario") || "{}"
-    );
-
-    const items = inventario[key] || [];
-
-    if(items.length === 0){
-        alert("Esta casa todavía no tiene elementos cargados en el inventario.");
+    if(
+        !confirm(
+            "¿Querés eliminar este elemento del inventario?"
+        )
+    ) {
         return;
     }
 
-items.forEach(item => {
-    if (!item.control) {
-        item.control = "presente";
+    const items =
+        await obtenerInventarioCasa();
+
+    if(items === null) return;
+
+    if(!items[index]) return;
+
+    items.splice(index, 1);
+
+    const guardado =
+        await guardarInventarioSupabase(items);
+
+    if (!guardado) return;
+
+    await openInventario();
+}
+
+
+// ============================================
+// INICIAR CONTROL DE INVENTARIO
+// ============================================
+
+async function iniciarControlInventario(){
+
+    const items =
+        await obtenerInventarioCasa();
+
+    if(items === null) return;
+
+    if(items.length === 0){
+
+        alert(
+            "Esta casa todavía no tiene elementos cargados en el inventario."
+        );
+
+        return;
     }
-});
 
-    inventario[key] = items;
+    items.forEach(item => {
 
-    localStorage.setItem(
-        "cb_inventario",
-        JSON.stringify(inventario)
-    );
+        if (!item.control) {
+            item.control = "presente";
+        }
+
+    });
+
+    const guardado =
+        await guardarInventarioSupabase(items);
+
+    if (!guardado) return;
 
     renderControlInventario();
 }
 
-function renderControlInventario(){
 
-    const lista = document.getElementById('listaInventario');
+// ============================================
+// RENDER CONTROL DE INVENTARIO
+// ============================================
 
-    const key = "c" + current + "_inventario";
+async function renderControlInventario(){
 
-    let inventario = JSON.parse(
-        localStorage.getItem("cb_inventario") || "{}"
-    );
+    const lista =
+        document.getElementById('listaInventario');
 
-    const items = inventario[key] || [];
+    const items =
+        await obtenerInventarioCasa();
+
+    if(items === null) return;
 
     lista.innerHTML = `
-    <div class="back control-back" onclick="openInventario()">
-    <span class="cb-icon white">
-        <svg viewBox="0 0 24 24">
-            <path d="M15 5 8 12l7 7"></path>
-        </svg>
-    </span>
-    Inventario
-</div>
+
+        <div
+            class="back control-back"
+            onclick="openInventario()"
+        >
+
+            <span class="cb-icon white">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15 5 8 12l7 7"></path>
+                </svg>
+            </span>
+
+            Inventario
+
+        </div>
+
         <div class="card">
-<b>
-    <span class="cb-icon">
-        <svg viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="6"></circle>
-            <line x1="16" y1="16" x2="21" y2="21"></line>
-        </svg>
-    </span>
-    Control de salida
-</b>            <div class="sub">
-                Revisá cada elemento y marcá si está, falta o está dañado.
+
+            <b>
+
+                <span class="cb-icon">
+
+                    <svg viewBox="0 0 24 24">
+                        <circle
+                            cx="11"
+                            cy="11"
+                            r="6"
+                        ></circle>
+
+                        <line
+                            x1="16"
+                            y1="16"
+                            x2="21"
+                            y2="21"
+                        ></line>
+                    </svg>
+
+                </span>
+
+                Control de salida
+
+            </b>
+
+            <div class="sub">
+                Revisá cada elemento y marcá si está,
+                falta o está dañado.
             </div>
+
         </div>
     `;
 
     items.forEach((item, index) => {
 
-        const estado = item.control || "presente";
+        const estado =
+            item.control || "presente";
 
         lista.innerHTML += `
+
             <div class="card">
 
                 <div class="title">
-    <span class="cb-icon">
-        <svg viewBox="0 0 24 24">
-            <path d="M4 7L12 3L20 7L12 11L4 7Z"></path>
-            <path d="M4 7V17L12 21L20 17V7"></path>
-            <path d="M12 11V21"></path>
-        </svg>
-    </span>
-    ${item.nombre}
-</div>
 
-                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+                    <span class="cb-icon">
 
-                   <button
-    onclick="cambiarEstadoInventario(${index}, 'presente')"
-    style="display:flex;align-items:center;gap:7px;"
->
-   <span style="
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    display:inline-block;
-    background:#6B7A5A;
-    border:1px solid #6B7A5A;
-"></span>
-    Está
-</button>
+                        <svg viewBox="0 0 24 24">
 
-<button
-    onclick="cambiarEstadoInventario(${index}, 'falta')"
-    style="display:flex;align-items:center;gap:7px;"
->
-    <span style="
-        width:12px;
-        height:12px;
-        border-radius:50%;
-        display:inline-block;
-        background:#DCC9A6;
-        border:1px solid #DCC9A6;
-    "></span>
-    Falta
-</button>
+                            <path d="M4 7L12 3L20 7L12 11L4 7Z"></path>
 
-<button
-    onclick="cambiarEstadoInventario(${index}, 'danado')"
-    style="display:flex;align-items:center;gap:7px;"
->
-    <span style="
-        width:12px;
-        height:12px;
-        border-radius:50%;
-        display:inline-block;
-        background:#0D2B45;
-        border:1px solid #0D2B45;
-    "></span>
-    Dañado
-</button>
+                            <path d="M4 7V17L12 21L20 17V7"></path>
+
+                            <path d="M12 11V21"></path>
+
+                        </svg>
+
+                    </span>
+
+                    ${item.nombre}
+
+                </div>
+
+
+                <div
+                    style="
+                        display:flex;
+                        gap:6px;
+                        flex-wrap:wrap;
+                        margin-top:10px;
+                    "
+                >
+
+                    <button
+                        onclick="
+                            cambiarEstadoInventario(
+                                ${index},
+                                'presente'
+                            )
+                        "
+                        style="
+                            display:flex;
+                            align-items:center;
+                            gap:7px;
+                        "
+                    >
+
+                        <span
+                            style="
+                                width:12px;
+                                height:12px;
+                                border-radius:50%;
+                                display:inline-block;
+                                background:#6B7A5A;
+                                border:1px solid #6B7A5A;
+                            "
+                        ></span>
+
+                        Está
+
+                    </button>
+
+
+                    <button
+                        onclick="
+                            cambiarEstadoInventario(
+                                ${index},
+                                'falta'
+                            )
+                        "
+                        style="
+                            display:flex;
+                            align-items:center;
+                            gap:7px;
+                        "
+                    >
+
+                        <span
+                            style="
+                                width:12px;
+                                height:12px;
+                                border-radius:50%;
+                                display:inline-block;
+                                background:#DCC9A6;
+                                border:1px solid #DCC9A6;
+                            "
+                        ></span>
+
+                        Falta
+
+                    </button>
+
+
+                    <button
+                        onclick="
+                            cambiarEstadoInventario(
+                                ${index},
+                                'danado'
+                            )
+                        "
+                        style="
+                            display:flex;
+                            align-items:center;
+                            gap:7px;
+                        "
+                    >
+
+                        <span
+                            style="
+                                width:12px;
+                                height:12px;
+                                border-radius:50%;
+                                display:inline-block;
+                                background:#0D2B45;
+                                border:1px solid #0D2B45;
+                            "
+                        ></span>
+
+                        Dañado
+
+                    </button>
 
                 </div>
 
@@ -1142,24 +1465,28 @@ function renderControlInventario(){
     });
 }
 
-function cambiarEstadoInventario(index, estado){
 
-    const key = "c" + current + "_inventario";
+// ============================================
+// CAMBIAR ESTADO
+// ============================================
 
-    let inventario = JSON.parse(
-        localStorage.getItem("cb_inventario") || "{}"
-    );
+async function cambiarEstadoInventario(index, estado){
 
-    if(!inventario[key] || !inventario[key][index]) return;
+    const items =
+        await obtenerInventarioCasa();
 
-    inventario[key][index].control = estado;
+    if(items === null) return;
 
-    localStorage.setItem(
-        "cb_inventario",
-        JSON.stringify(inventario)
-    );
+    if(!items[index]) return;
 
-    renderControlInventario();
+    items[index].control = estado;
+
+    const guardado =
+        await guardarInventarioSupabase(items);
+
+    if (!guardado) return;
+
+    await renderControlInventario();
 }
 
 async function openIncidencias(){
