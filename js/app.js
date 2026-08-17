@@ -2317,6 +2317,74 @@ function ensureChecklist(){
  }
  return checklistData[key];
 }
+
+// ============================================
+// MIGRAR CONFIGURACIÓN DE CHECKLIST A SUPABASE
+// ============================================
+
+async function migrarConfiguracionChecklistSupabase(){
+
+    console.log("🔄 INICIANDO MIGRACIÓN DE CONFIGURACIÓN DE CHECKLIST...");
+
+    let cantidad = 0;
+
+    for(let i = 0; i < houses.length; i++){
+
+        const house = houses[i];
+
+        if(!house || !house.id){
+            console.warn("⚠️ Casa sin UUID:", i);
+            continue;
+        }
+
+        const key = "c" + i;
+        const configuracion = checklistData[key];
+
+        if(!configuracion){
+            console.log("ℹ️ Sin configuración local:", house.id);
+            continue;
+        }
+
+        const { error } = await supabaseClient
+            .from("house_checklist_config")
+            .upsert(
+                {
+                    house_id: house.id,
+                    data: configuracion,
+                    updated_at: new Date().toISOString()
+                },
+                {
+                    onConflict: "house_id"
+                }
+            );
+
+        if(error){
+
+            console.error(
+                "❌ ERROR MIGRANDO CHECKLIST:",
+                house.id,
+                error
+            );
+
+            continue;
+        }
+
+        cantidad++;
+
+        console.log(
+            "✅ CONFIGURACIÓN MIGRADA:",
+            house.id,
+            house.nombre || ("Casa " + (i + 1))
+        );
+    }
+
+    console.log(
+        "🏁 MIGRACIÓN TERMINADA:",
+        cantidad,
+        "casas"
+    );
+}
+
 function openChecklistEditor(){
  const sel=document.getElementById('ambienteSel');
  sel.innerHTML='';
