@@ -410,7 +410,7 @@ console.log("🟢 TERMINÓ mostrarFotos");
     input.value = "";
 }
 
-function openHouse(i){
+async function openHouse(i){
 
     current = i;
 
@@ -423,13 +423,34 @@ function openHouse(i){
         h.nombre_casa ??
         ('Casa ' + (current + 1));
 
-    const incidencias = JSON.parse(
-        localStorage.getItem('cb_incidencias') || '[]'
-    );
+    let incidenciasCasa = 0;
 
-    const incidenciasCasa = incidencias.filter(
-        item => item.casa === current
-    ).length;
+if (h.id) {
+
+    const { count, error } = await supabaseClient
+        .from("house_incidencias")
+        .select("id", {
+            count: "exact",
+            head: true
+        })
+        .eq("house_id", h.id);
+
+    if (error) {
+
+        console.error(
+            "❌ Error contando incidencias de la casa:",
+            error
+        );
+
+    } else {
+
+        incidenciasCasa = count || 0;
+
+        console.log(
+            "📊 INCIDENCIAS DE LA CASA:",
+            incidenciasCasa
+        );
+    }
 
     const checklist = h.checklistPorcentaje ?? 0;
 
