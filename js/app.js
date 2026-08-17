@@ -142,20 +142,24 @@ function cbIcon(name){
 
 initPhotoDB();
 
-function go(id){
+async function go(id){
+
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+
     document.getElementById(id).classList.add('active');
 
     const backIcon = document.getElementById('backIcon');
-    if(backIcon) backIcon.innerHTML = cbIcon('back');
+
+    if(backIcon) {
+        backIcon.innerHTML = cbIcon('back');
+    }
 
     if(id === 'home'){
-        render();
+        await render();
     }
 }
 
-function render(){
-
+async function render(){
     const c = document.getElementById('houses');
     c.innerHTML = '';
 
@@ -183,13 +187,39 @@ function render(){
     return coincideTexto && coincideSituacion;
 });
 
-casasFiltradas.forEach((h)=>{
-    const i = houses.indexOf(h);
-    const incidencias = JSON.parse(localStorage.getItem('cb_incidencias') || '[]');
+const { data: incidenciasSupabase, error: errorIncidencias } =
+    await supabaseClient
+        .from("house_incidencias")
+        .select("house_id");
 
-const incidenciasCasa = incidencias.filter(
-    item => item.casa === i
-).length;
+if (errorIncidencias) {
+
+    console.error(
+        "❌ Error cargando incidencias para Home:",
+        errorIncidencias
+    );
+
+}
+
+const incidenciasPorCasa = {};
+
+(incidenciasSupabase || []).forEach(incidencia => {
+
+    if (!incidenciasPorCasa[incidencia.house_id]) {
+        incidenciasPorCasa[incidencia.house_id] = 0;
+    }
+
+    incidenciasPorCasa[incidencia.house_id]++;
+
+});
+
+
+casasFiltradas.forEach((h)=>{
+
+    const i = houses.indexOf(h);
+
+    const incidenciasCasa =
+        incidenciasPorCasa[h.id] || 0;
 
     const d=document.createElement('div');
 
@@ -1293,9 +1323,8 @@ async function guardarIncidencia(){
 
     document.getElementById('formIncidencia').style.display = 'none';
 
-    render();
-
-    openIncidencias();
+    await render();
+await openIncidencias();
 }
 
 async function eliminarIncidencia(id){
@@ -1328,9 +1357,8 @@ async function eliminarIncidencia(id){
         id
     );
 
-    render();
-
-    openIncidencias();
+    await render();
+await openIncidencias();
 }
 
 console.log("LLEGUE A abrirManualCasa");
