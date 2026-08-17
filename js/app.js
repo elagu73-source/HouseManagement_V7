@@ -296,7 +296,10 @@ function calcularPorcentajeChecklist(datos) {
     );
 }
 
+let renderVersion = 0;
+
 async function render(){
+        const thisRender = ++renderVersion;
     const c = document.getElementById('houses');
     c.innerHTML = '';
 
@@ -329,7 +332,7 @@ const checklistPorCasa = {};
 
     const buscador = document.getElementById('searchProperty');
     const texto = buscador ? buscador.value.toLowerCase().trim() : '';
-
+    if (thisRender !== renderVersion) return;
     const casasFiltradas = houses.filter(h => {
             if (h.eliminada === true) {
         return false;
