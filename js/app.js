@@ -1906,17 +1906,6 @@ async function eliminarIncidencia(id){
 await openIncidencias();
 }
 
-console.log("LLEGUE A abrirManualCasa");
-function abrirManualCasa(){
-
-    document.getElementById("txtEmergencias").innerText =
-        manualCasa["c"+current+"_emergencias"] || "No hay información.";
-
-    document.getElementById("txtAccesos").innerText =
-        manualCasa["c"+current+"_accesos"] || "No hay información.";
-
-    const t = document.getElementById("txtTecnologia");
-
 function editCurrent(){let h=houses[current];
 document.getElementById('name').value=(h.nombre ?? h.name ?? h.nombreCasa ?? h.nombre_casa ?? '');document.getElementById('barrio').value=h.barrio;document.getElementById('lote').value=h.lote||'';document.getElementById('capacidad').value=h.capacidad;document.getElementById('wifi').value=h.wifi;document.getElementById('obs').value=h.obs;document.getElementById('situacion').value=h.situacion || 'Disponible';go('edit');}
 
