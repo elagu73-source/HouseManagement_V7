@@ -159,6 +159,109 @@ async function go(id){
     }
 }
 
+async function sincronizarChecklistsIniciales() {
+
+    console.log("🔄 INICIANDO SINCRONIZACIÓN INICIAL DE CHECKLISTS...");
+
+    const checksLocales = JSON.parse(
+        localStorage.getItem("cb_checks") || "{}"
+    );
+
+    // Traemos los checklists que YA existen en Supabase
+    const { data: existentes, error: errorExistentes } =
+        await supabaseClient
+            .from("house_checklists")
+            .select("house_id");
+
+    if (errorExistentes) {
+
+        console.error(
+            "❌ Error consultando checklists existentes:",
+            errorExistentes
+        );
+
+        return;
+    }
+
+    const idsExistentes = new Set(
+        (existentes || []).map(item => item.house_id)
+    );
+
+    let creados = 0;
+    let yaExistian = 0;
+
+    for (let houseIndex = 0; houseIndex < houses.length; houseIndex++) {
+
+        const house = houses[houseIndex];
+
+        if (!house || !house.id) {
+            continue;
+        }
+
+        // Si ya existe en Supabase, NO hacemos nada
+        if (idsExistentes.has(house.id)) {
+
+            yaExistian++;
+
+            continue;
+        }
+
+        const dataCasa = {};
+
+        ambientes.forEach((ambiente, ambienteIndex) => {
+
+            const key =
+                "c" + houseIndex + "_" + ambienteIndex;
+
+            dataCasa[ambienteIndex] =
+                checksLocales[key] ||
+                new Array(ambiente.items.length).fill(false);
+
+        });
+
+        const { error } = await supabaseClient
+            .from("house_checklists")
+            .insert({
+                house_id: house.id,
+                data: dataCasa,
+                observaciones: {},
+                updated_at: new Date().toISOString()
+            });
+
+        if (error) {
+
+            console.error(
+                "❌ Error sincronizando casa:",
+                house.nombre,
+                error
+            );
+
+        } else {
+
+            creados++;
+
+            console.log(
+                "✅ Checklist inicial creado:",
+                house.nombre
+            );
+        }
+    }
+
+    console.log(
+        "🏁 SINCRONIZACIÓN TERMINADA.",
+        "Creados:",
+        creados,
+        "Ya existentes:",
+        yaExistian
+    );
+
+    alert(
+        "Sincronización terminada.\n\n" +
+        "Checklists creados: " + creados + "\n" +
+        "Ya existentes: " + yaExistian
+    );
+}
+
 async function render(){
     const c = document.getElementById('houses');
     c.innerHTML = '';
@@ -358,7 +461,7 @@ d.innerHTML = `
             ${cbIcon('alert')}
             <span>
                 <small>Incidencias</small>
-                ${incidenciasCasa}
+${incidenciasPorCasa[h.id] ?? 0}
             </span>
         </div>
 
@@ -1951,3 +2054,4 @@ document.getElementById("manualTitulo").innerText =
 
     go("manualEdit");
 }
+sincronizarChecklistsIniciales();
