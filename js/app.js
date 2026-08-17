@@ -1409,8 +1409,15 @@ checklist.innerHTML += `
 <textarea
 id="obsPrep"
 style="width:100%;height:90px;margin-top:8px"
-
-">${observaciones[obsKey]||""}</textarea>
+oninput="
+    let obs = JSON.parse(localStorage.getItem('cb_observaciones') || '{}');
+    obs['${obsKey}'] = this.value;
+    localStorage.setItem('cb_observaciones', JSON.stringify(obs));
+"
+onblur="
+    guardarChecklistSupabase();
+"
+>${observaciones[obsKey]||""}</textarea>
 
 </div>
 `;
