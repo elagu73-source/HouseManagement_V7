@@ -1917,28 +1917,6 @@ function abrirManualCasa(){
 
     const t = document.getElementById("txtTecnologia");
 
-console.log("Tecnologia =", t);
-
-if (t) {
-    t.innerText =
-        manualCasa["c"+current+"_tecnologia"] || "No hay información.";
-}
-const e = document.getElementById("txtExterior");
-if (e) {
-    e.innerText = manualCasa["c"+current+"_exterior"] || "No hay información.";
-}
-
-const b = document.getElementById("txtBlancos");
-if (b) {
-    b.innerText = manualCasa["c"+current+"_blancos"] || "No hay información.";
-}
-
-const p = document.getElementById("txtProveedores");
-if (p) {
-    p.innerText = manualCasa["c"+current+"_proveedores"] || "No hay información.";
-}
-    go("manual");
-}
 function editCurrent(){let h=houses[current];
 document.getElementById('name').value=(h.nombre ?? h.name ?? h.nombreCasa ?? h.nombre_casa ?? '');document.getElementById('barrio').value=h.barrio;document.getElementById('lote').value=h.lote||'';document.getElementById('capacidad').value=h.capacidad;document.getElementById('wifi').value=h.wifi;document.getElementById('obs').value=h.obs;document.getElementById('situacion').value=h.situacion || 'Disponible';go('edit');}
 
@@ -2396,51 +2374,384 @@ ensureChecklist()[a].items.push(v);
  localStorage.setItem('cb_checklists',JSON.stringify(checklistData));
  loadChecklistEditor();
 }
-let manualCasa = JSON.parse(localStorage.getItem("cb_manual") || "{}");
+
+// ============================================
+// MANUAL DE LA CASA - SUPABASE
+// ============================================
+
+let manualCasa = {};
 let manualActual = "emergencias";
 
-function guardarManual(){
 
-    const clave = "c" + current + "_" + manualActual;
+// ============================================
+// CARGAR MANUAL DE LA CASA
+// ============================================
 
-    manualCasa[clave] = document.getElementById("manualTexto").value;
+async function cargarManualCasa(){
 
-    localStorage.setItem("cb_manual", JSON.stringify(manualCasa));
+    const house = houses[current];
 
-    if (manualActual == "emergencias") {
-        document.getElementById("txtEmergencias").innerText = manualCasa[clave];
+    if (!house || !house.id) {
+
+        console.error(
+            "❌ La casa no tiene UUID de Supabase"
+        );
+
+        return {};
     }
 
-    if (manualActual == "accesos") {
-        document.getElementById("txtAccesos").innerText = manualCasa[clave];
+    const { data, error } = await supabaseClient
+        .from("house_manual")
+        .select("id, house_id, data, updated_at")
+        .eq("house_id", house.id)
+        .maybeSingle();
+
+    if (error) {
+
+        console.error(
+            "❌ Error cargando manual desde Supabase:",
+            error
+        );
+
+        return {};
     }
-if (manualActual == "tecnologia") {
-    document.getElementById("txtTecnologia").innerText = manualCasa[clave];
-}
-if (manualActual == "exterior") {
-    document.getElementById("txtExterior").innerText = manualCasa[clave];
+
+    // ============================================
+    // YA EXISTE EN SUPABASE
+    // ============================================
+
+    if (data) {
+
+        console.log(
+            "✅ MANUAL ENCONTRADO EN SUPABASE:",
+            house.id
+        );
+
+        manualCasa =
+            data.data &&
+            typeof data.data === "object"
+                ? data.data
+                : {};
+
+        return manualCasa;
+    }
+
+    // ============================================
+    // NO EXISTE:
+    // BUSCAR MANUAL ANTIGUO EN LOCALSTORAGE
+    // ============================================
+
+    let manualLocal = {};
+
+    try {
+
+        manualLocal = JSON.parse(
+            localStorage.getItem("cb_manual") || "{}"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "❌ Error leyendo manual local:",
+            error
+        );
+
+        manualLocal = {};
+    }
+
+    const tipos = [
+        "emergencias",
+        "accesos",
+        "tecnologia",
+        "exterior",
+        "blancos",
+        "proveedores"
+    ];
+
+    const manualMigrado = {};
+
+    tipos.forEach(tipo => {
+
+        const clave =
+            "c" + current + "_" + tipo;
+
+        if (
+            manualLocal[clave] !== undefined &&
+            manualLocal[clave] !== null
+        ) {
+
+            manualMigrado[tipo] =
+                manualLocal[clave];
+        }
+
+    });
+
+    // ============================================
+    // MIGRAR A SUPABASE
+    // ============================================
+
+    if (Object.keys(manualMigrado).length > 0) {
+
+        console.log(
+            "📖 MIGRANDO MANUAL LOCAL A SUPABASE:",
+            house.id,
+            manualMigrado
+        );
+
+        const { error: errorMigracion } =
+            await supabaseClient
+                .from("house_manual")
+                .upsert(
+                    {
+                        house_id: house.id,
+                        data: manualMigrado,
+                        updated_at:
+                            new Date().toISOString()
+                    },
+                    {
+                        onConflict: "house_id"
+                    }
+                );
+
+        if (errorMigracion) {
+
+            console.error(
+                "❌ Error migrando manual a Supabase:",
+                errorMigracion
+            );
+
+            manualCasa = manualMigrado;
+
+            return manualCasa;
+        }
+
+        console.log(
+            "✅ MANUAL MIGRADO A SUPABASE:",
+            house.id
+        );
+    }
+
+    manualCasa = manualMigrado;
+
+    return manualCasa;
 }
 
-if (manualActual == "blancos") {
-    document.getElementById("txtBlancos").innerText = manualCasa[clave];
-}
 
-if (manualActual == "proveedores") {
-    document.getElementById("txtProveedores").innerText = manualCasa[clave];
-}
+// ============================================
+// GUARDAR MANUAL EN SUPABASE
+// ============================================
+
+async function guardarManual(){
+
+    const house = houses[current];
+
+    if (!house || !house.id) {
+
+        console.error(
+            "❌ La casa no tiene UUID de Supabase"
+        );
+
+        return;
+    }
+
+    const campo =
+        document.getElementById("manualTexto");
+
+    if (!campo) {
+
+        console.error(
+            "❌ No se encontró manualTexto"
+        );
+
+        return;
+    }
+
+    const texto = campo.value;
+
+    manualCasa[manualActual] = texto;
+
+    const { error } =
+        await supabaseClient
+            .from("house_manual")
+            .upsert(
+                {
+                    house_id: house.id,
+                    data: manualCasa,
+                    updated_at:
+                        new Date().toISOString()
+                },
+                {
+                    onConflict: "house_id"
+                }
+            );
+
+    if (error) {
+
+        console.error(
+            "❌ Error guardando manual en Supabase:",
+            error
+        );
+
+        alert(
+            "No se pudo guardar el manual. Revisá la consola."
+        );
+
+        return;
+    }
+
+    console.log(
+        "✅ MANUAL GUARDADO EN SUPABASE:",
+        house.id
+    );
+
+    if (manualActual === "emergencias") {
+
+        document.getElementById(
+            "txtEmergencias"
+        ).innerText = texto;
+
+    }
+
+    if (manualActual === "accesos") {
+
+        document.getElementById(
+            "txtAccesos"
+        ).innerText = texto;
+
+    }
+
+    if (manualActual === "tecnologia") {
+
+        document.getElementById(
+            "txtTecnologia"
+        ).innerText = texto;
+
+    }
+
+    if (manualActual === "exterior") {
+
+        document.getElementById(
+            "txtExterior"
+        ).innerText = texto;
+
+    }
+
+    if (manualActual === "blancos") {
+
+        document.getElementById(
+            "txtBlancos"
+        ).innerText = texto;
+
+    }
+
+    if (manualActual === "proveedores") {
+
+        document.getElementById(
+            "txtProveedores"
+        ).innerText = texto;
+
+    }
+
     go("manual");
 }
+
+
+// ============================================
+// ABRIR UNA SECCIÓN DEL MANUAL
+// ============================================
+
 function abrirManual(tipo){
 
-    const clave = "c" + current + "_" + tipo;
     manualActual = tipo;
 
-document.getElementById("manualTitulo").innerText =
-    tipo.charAt(0).toUpperCase() + tipo.slice(1);
+    document.getElementById(
+        "manualTitulo"
+    ).innerText =
+        tipo.charAt(0).toUpperCase() +
+        tipo.slice(1);
 
-    document.getElementById("manualTexto").value =
-        manualCasa[clave] || "";
+    document.getElementById(
+        "manualTexto"
+    ).value =
+        manualCasa[tipo] || "";
 
     go("manualEdit");
 }
+
+
+// ============================================
+// ABRIR MANUAL COMPLETO DE LA CASA
+// ============================================
+
+async function abrirManualCasa(){
+
+    console.log(
+        "📖 CARGANDO MANUAL DESDE SUPABASE..."
+    );
+
+    await cargarManualCasa();
+
+    const emergencias =
+        document.getElementById("txtEmergencias");
+
+    if (emergencias) {
+
+        emergencias.innerText =
+            manualCasa["emergencias"] ||
+            "No hay información.";
+    }
+
+    const accesos =
+        document.getElementById("txtAccesos");
+
+    if (accesos) {
+
+        accesos.innerText =
+            manualCasa["accesos"] ||
+            "No hay información.";
+    }
+
+    const tecnologia =
+        document.getElementById("txtTecnologia");
+
+    if (tecnologia) {
+
+        tecnologia.innerText =
+            manualCasa["tecnologia"] ||
+            "No hay información.";
+    }
+
+    const exterior =
+        document.getElementById("txtExterior");
+
+    if (exterior) {
+
+        exterior.innerText =
+            manualCasa["exterior"] ||
+            "No hay información.";
+    }
+
+    const blancos =
+        document.getElementById("txtBlancos");
+
+    if (blancos) {
+
+        blancos.innerText =
+            manualCasa["blancos"] ||
+            "No hay información.";
+    }
+
+    const proveedores =
+        document.getElementById("txtProveedores");
+
+    if (proveedores) {
+
+        proveedores.innerText =
+            manualCasa["proveedores"] ||
+            "No hay información.";
+    }
+
+    go("manual");
+}
+
 sincronizarChecklistsIniciales();
