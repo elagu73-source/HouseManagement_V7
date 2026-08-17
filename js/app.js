@@ -640,9 +640,81 @@ if (h.id) {
     }
 }
 
-    const checklist = h.checklistPorcentaje ?? 0;
+    // ============================================
+// CARGAR CHECKLIST REAL DESDE SUPABASE
+// ============================================
 
-    const estado = h.estado ?? "Pendiente";
+let checklist = 0;
+
+if (h.id) {
+
+    const { data: checklistSupabase, error: errorChecklist } =
+        await supabaseClient
+            .from("house_checklists")
+            .select("data")
+            .eq("house_id", h.id)
+            .maybeSingle();
+
+    if (errorChecklist) {
+
+        console.error(
+            "❌ ERROR CARGANDO CHECKLIST DE LA CASA:",
+            errorChecklist
+        );
+
+        // Si falla Supabase, usamos el valor local como respaldo
+        checklist = h.checklistPorcentaje ?? 0;
+
+    } else if (checklistSupabase && checklistSupabase.data) {
+
+        let totalChecks = 0;
+        let checksCompletados = 0;
+
+        const datos = checklistSupabase.data;
+
+        ambientes.forEach((ambiente, ambienteIndex) => {
+
+            const checksAmbiente =
+                datos[ambienteIndex] ||
+                new Array(ambiente.items.length).fill(false);
+
+            ambiente.items.forEach((item, itemIndex) => {
+
+                totalChecks++;
+
+                if (checksAmbiente[itemIndex] === true) {
+                    checksCompletados++;
+                }
+
+            });
+
+        });
+
+        checklist =
+            totalChecks > 0
+                ? Math.round(
+                    (checksCompletados / totalChecks) * 100
+                )
+                : 0;
+
+        // Actualizamos también el objeto local
+        h.checklistPorcentaje = checklist;
+
+        console.log(
+            "📋 CHECKLIST REAL:",
+            nombre,
+            checklist + "%"
+        );
+
+    } else {
+
+        // La casa no tiene checklist todavía
+        checklist = h.checklistPorcentaje ?? 0;
+
+    }
+}
+
+const estado = h.estado ?? "Pendiente";
 
     const estadoIcono =
         estado === "Pendiente" ? "●" :
