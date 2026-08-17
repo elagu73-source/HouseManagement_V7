@@ -262,6 +262,40 @@ async function sincronizarChecklistsIniciales() {
     );
 }
 
+function calcularPorcentajeChecklist(datos) {
+
+    let totalChecks = 0;
+    let checksCompletados = 0;
+
+    const checklist = datos || {};
+
+    ambientes.forEach((ambiente, ambienteIndex) => {
+
+        const checksAmbiente =
+            checklist[ambienteIndex] ||
+            new Array(ambiente.items.length).fill(false);
+
+        ambiente.items.forEach((item, itemIndex) => {
+
+            totalChecks++;
+
+            if (checksAmbiente[itemIndex] === true) {
+                checksCompletados++;
+            }
+
+        });
+
+    });
+
+    if (totalChecks === 0) {
+        return 0;
+    }
+
+    return Math.round(
+        (checksCompletados / totalChecks) * 100
+    );
+}
+
 async function render(){
     const c = document.getElementById('houses');
     c.innerHTML = '';
@@ -288,33 +322,8 @@ const checklistPorCasa = {};
 
 (checklistsSupabase || []).forEach(registro => {
 
-    let totalChecks = 0;
-    let checksCompletados = 0;
-
-    const datos = registro.data || {};
-
-    ambientes.forEach((ambiente, ambienteIndex) => {
-
-        const checksAmbiente =
-            datos[ambienteIndex] ||
-            new Array(ambiente.items.length).fill(false);
-
-        ambiente.items.forEach((item, itemIndex) => {
-
-            totalChecks++;
-
-            if (checksAmbiente[itemIndex] === true) {
-                checksCompletados++;
-            }
-
-        });
-
-    });
-
     checklistPorCasa[registro.house_id] =
-        totalChecks > 0
-            ? Math.round((checksCompletados / totalChecks) * 100)
-            : 0;
+        calcularPorcentajeChecklist(registro.data);
 
 });
 
@@ -667,35 +676,7 @@ if (h.id) {
 
     } else if (checklistSupabase && checklistSupabase.data) {
 
-        let totalChecks = 0;
-        let checksCompletados = 0;
-
-        const datos = checklistSupabase.data;
-
-        ambientes.forEach((ambiente, ambienteIndex) => {
-
-            const checksAmbiente =
-                datos[ambienteIndex] ||
-                new Array(ambiente.items.length).fill(false);
-
-            ambiente.items.forEach((item, itemIndex) => {
-
-                totalChecks++;
-
-                if (checksAmbiente[itemIndex] === true) {
-                    checksCompletados++;
-                }
-
-            });
-
-        });
-
-        checklist =
-            totalChecks > 0
-                ? Math.round(
-                    (checksCompletados / totalChecks) * 100
-                )
-                : 0;
+  checklist = calcularPorcentajeChecklist(checklistSupabase.data);
 
         // Actualizamos también el objeto local
         h.checklistPorcentaje = checklist;
