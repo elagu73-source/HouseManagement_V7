@@ -423,7 +423,7 @@ async function openHouse(i){
         h.nombre_casa ??
         ('Casa ' + (current + 1));
 
-    let incidenciasCasa = 0;
+let incidenciasCasa = 0;
 
 if (h.id) {
 
@@ -436,21 +436,23 @@ if (h.id) {
         .eq("house_id", h.id);
 
     if (error) {
-
         console.error(
-            "❌ Error contando incidencias de la casa:",
+            "❌ ERROR CONTANDO INCIDENCIAS:",
             error
         );
-
     } else {
-
         incidenciasCasa = count || 0;
 
         console.log(
-            "📊 INCIDENCIAS DE LA CASA:",
+            "📊 CASA:",
+            nombre,
+            "ID:",
+            h.id,
+            "INCIDENCIAS:",
             incidenciasCasa
         );
     }
+}
 
     const checklist = h.checklistPorcentaje ?? 0;
 
