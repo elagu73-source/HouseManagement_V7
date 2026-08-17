@@ -2150,10 +2150,6 @@ onblur="
 
 function obtenerPorcentajeChecklist(houseIndex) {
 
-    const checksActuales = JSON.parse(
-        localStorage.getItem('cb_checks') || '{}'
-    );
-
     let totalChecks = 0;
     let checksCompletados = 0;
 
@@ -2166,8 +2162,9 @@ function obtenerPorcentajeChecklist(houseIndex) {
             totalChecks++;
 
             if (
-                checksActuales[key] &&
-                checksActuales[key][itemIndex] === true
+                checklistData &&
+                checklistData[key] &&
+                checklistData[key][itemIndex] === true
             ) {
                 checksCompletados++;
             }
