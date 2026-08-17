@@ -900,189 +900,288 @@ function cambiarEstadoInventario(index, estado){
     renderControlInventario();
 }
 
-function openIncidencias(){
+async function openIncidencias(){
 
     const lista = document.getElementById('listaIncidencias');
 
-    let incidencias = JSON.parse(
-        localStorage.getItem('cb_incidencias') || '[]'
+    const house = houses[current];
+
+    if (!house || !house.id) {
+        console.error("❌ La casa no tiene UUID de Supabase");
+        return;
+    }
+
+    console.log(
+        "🚨 CARGANDO INCIDENCIAS DESDE SUPABASE:",
+        house.id
     );
 
-    const incidenciasCasa = incidencias
-        .map((incidencia, index) => ({
-            incidencia,
-            index
-        }))
-        .filter(item => item.incidencia.casa === current);
+    const { data: incidencias, error } = await supabaseClient
+        .from("house_incidencias")
+        .select("*")
+        .eq("house_id", house.id)
+        .order("created_at", { ascending: false });
 
-    if(incidenciasCasa.length === 0){
+    if (error) {
+
+        console.error(
+            "❌ Error cargando incidencias desde Supabase:",
+            error
+        );
+
+        lista.innerHTML = `
+            <div class="card">
+                <b>❌ No se pudieron cargar las incidencias</b>
+                <div class="sub">
+                    Revisá la consola para más información.
+                </div>
+            </div>
+        `;
+
+        go('incidencias');
+        return;
+    }
+
+    console.log(
+        "✅ INCIDENCIAS ENCONTRADAS EN SUPABASE:",
+        incidencias
+    );
+
+    if (!incidencias || incidencias.length === 0) {
 
         lista.innerHTML = `
             <div class="card">
                 <span class="cb-icon">
-    <svg viewBox="0 0 24 24">
-        <path d="M12 3 21 20H3L12 3Z"></path>
-        <line x1="12" y1="9" x2="12" y2="14"></line>
-        <circle cx="12" cy="17" r="0.8"></circle>
-    </svg>
-</span>
-No hay incidencias registradas
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 3 21 20H3L12 3Z"></path>
+                        <line x1="12" y1="9" x2="12" y2="14"></line>
+                        <circle cx="12" cy="17" r="0.8"></circle>
+                    </svg>
+                </span>
+
+                No hay incidencias registradas
+
                 <div class="sub">
                     Esta casa no tiene incidencias pendientes.
                 </div>
             </div>
         `;
 
-    } else {
+        go('incidencias');
+        return;
+    }
 
-        lista.innerHTML = '';
+    lista.innerHTML = '';
 
-        incidenciasCasa.forEach(item => {
+    incidencias.forEach(incidencia => {
 
-            const incidencia = item.incidencia;
-            const indice = item.index;
+        const prioridadIcono =
+            incidencia.prioridad === 'Alta' ? '🔴' :
+            incidencia.prioridad === 'Media' ? '🟡' : '🟢';
 
-            const prioridadIcono =
-                incidencia.prioridad === 'Alta' ? '🔴' :
-                incidencia.prioridad === 'Media' ? '🟡' : '🟢';
+        const estadoSemaforo =
+            incidencia.estado === 'Resuelta' ? 'resuelta' :
+            incidencia.estado === 'En curso' ? 'en-curso' :
+            'pendiente';
 
-            const estadoSemaforo =
-    incidencia.estado === 'Resuelta' ? 'resuelta' :
-    incidencia.estado === 'En curso' ? 'en-curso' :
-    'pendiente';
+        const estadoColor =
+            incidencia.estado === 'Resuelta' ? '#6B7A5A' :
+            incidencia.estado === 'En curso' ? '#DCC9A6' :
+            '#0D2B45';
 
-    const estadoColor =
-    incidencia.estado === 'Resuelta' ? '#6B7A5A' :
-    incidencia.estado === 'En curso' ? '#DCC9A6' :
-    '#0D2B45';
+        lista.innerHTML += `
+            <div class="card">
 
-            lista.innerHTML += `
-                <div class="card">
+                <div class="card-header">
 
-    <div class="card-header">
+                    <div class="title">
 
-        <div class="title">
-            <span class="cb-icon">
-
-    <svg viewBox="0 0 24 24">
-        <path d="M12 3 21 20H3L12 3Z"></path>
-        <line x1="12" y1="9" x2="12" y2="14"></line>
-        <circle cx="12" cy="17" r="0.8"></circle>
-    </svg>
-</span>
-${incidencia.ambiente || 'Sin ambiente'}
-                    </div>
-<button
-    class="btn-delete-incidencia"
-    onclick="eliminarIncidencia(${indice})"
-    title="Eliminar incidencia"
-    aria-label="Eliminar incidencia"
->
-    <span class="cb-icon">
-        <svg viewBox="0 0 24 24">
-            <path d="M6 7H18"></path>
-            <path d="M9 7V5H15V7"></path>
-            <path d="M8 7L9 20H15L16 7"></path>
-            <path d="M10 11V17"></path>
-            <path d="M14 11V17"></path>
-        </svg>
-    </span>
-</button>
-
-</div>
-                    <div class="sub">
-                        ${incidencia.descripcion}
-                    </div>
-
-                    <div class="sub">
                         <span class="cb-icon">
-    <svg viewBox="0 0 24 24">
-        <path d="M12 3 21 20H3L12 3Z"></path>
-        <line x1="12" y1="9" x2="12" y2="14"></line>
-        <circle cx="12" cy="17" r="0.8"></circle>
-    </svg>
-</span>
-Prioridad: ${incidencia.prioridad}
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 3 21 20H3L12 3Z"></path>
+                                <line x1="12" y1="9" x2="12" y2="14"></line>
+                                <circle cx="12" cy="17" r="0.8"></circle>
+                            </svg>
+                        </span>
+
+                        ${incidencia.ambiente || 'Sin ambiente'}
+
                     </div>
 
-             <div class="sub estado-incidencia">
- <span class="semaforo">
-    <span style="${estadoSemaforo === 'pendiente' ? `background:${estadoColor}; border-color:${estadoColor};` : ''}"></span>
-    <span style="${estadoSemaforo === 'en-curso' ? `background:${estadoColor}; border-color:${estadoColor};` : ''}"></span>
-    <span style="${estadoSemaforo === 'resuelta' ? `background:${estadoColor}; border-color:${estadoColor};` : ''}"></span>
-</span>
-    Estado: ${incidencia.estado}
-</div>
+                    <button
+                        class="btn-delete-incidencia"
+                        onclick="eliminarIncidencia('${incidencia.id}')"
+                        title="Eliminar incidencia"
+                        aria-label="Eliminar incidencia"
+                    >
 
-                    <div class="sub">
-                       <span class="cb-icon">
-    <svg viewBox="0 0 24 24">
-        <circle cx="12" cy="8" r="3"></circle>
-        <path d="M5 20c0-4 3-6 7-6s7 2 7 6"></path>
-    </svg>
-</span>
-${incidencia.responsable || 'Sin responsable'}
-                    </div>
-
-                    <div class="sub">
                         <span class="cb-icon">
-    <svg viewBox="0 0 24 24">
-        <rect x="4" y="5" width="16" height="15" rx="2"></rect>
-        <line x1="8" y1="3" x2="8" y2="7"></line>
-        <line x1="16" y1="3" x2="16" y2="7"></line>
-        <line x1="4" y1="10" x2="20" y2="10"></line>
-    </svg>
-</span>
-${incidencia.fecha}
-                    </div>
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 7H18"></path>
+                                <path d="M9 7V5H15V7"></path>
+                                <path d="M8 7L9 20H15L16 7"></path>
+                                <path d="M10 11V17"></path>
+                                <path d="M14 11V17"></path>
+                            </svg>
+                        </span>
 
-                    <div class="btn"
-                         onclick="cambiarEstadoIncidencia(${indice})">
-                        <span class="cb-icon white">
-    <svg viewBox="0 0 24 24">
-        <path d="M20 11a8 8 0 0 0-14.9-3"></path>
-        <polyline points="5,4 5,9 10,9"></polyline>
-        <path d="M4 13a8 8 0 0 0 14.9 3"></path>
-        <polyline points="19,20 19,15 14,15"></polyline>
-    </svg>
-</span>
-Cambiar estado
-                    </div>
+                    </button>
 
                 </div>
-            `;
-        });
-    }
+
+                <div class="sub">
+                    ${incidencia.descripcion || ''}
+                </div>
+
+                <div class="sub">
+
+                    <span class="cb-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 3 21 20H3L12 3Z"></path>
+                            <line x1="12" y1="9" x2="12" y2="14"></line>
+                            <circle cx="12" cy="17" r="0.8"></circle>
+                        </svg>
+                    </span>
+
+                    Prioridad: ${incidencia.prioridad || ''}
+
+                </div>
+
+                <div class="sub estado-incidencia">
+
+                    <span class="semaforo">
+
+                        <span style="${estadoSemaforo === 'pendiente'
+                            ? `background:${estadoColor}; border-color:${estadoColor};`
+                            : ''}">
+                        </span>
+
+                        <span style="${estadoSemaforo === 'en-curso'
+                            ? `background:${estadoColor}; border-color:${estadoColor};`
+                            : ''}">
+                        </span>
+
+                        <span style="${estadoSemaforo === 'resuelta'
+                            ? `background:${estadoColor}; border-color:${estadoColor};`
+                            : ''}">
+                        </span>
+
+                    </span>
+
+                    Estado: ${incidencia.estado || ''}
+
+                </div>
+
+                <div class="sub">
+
+                    <span class="cb-icon">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="8" r="3"></circle>
+                            <path d="M5 20c0-4 3-6 7-6s7 2 7 6"></path>
+                        </svg>
+                    </span>
+
+                    ${incidencia.responsable || 'Sin responsable'}
+
+                </div>
+
+                <div class="sub">
+
+                    <span class="cb-icon">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="4" y="5" width="16" height="15" rx="2"></rect>
+                            <line x1="8" y1="3" x2="8" y2="7"></line>
+                            <line x1="16" y1="3" x2="16" y2="7"></line>
+                            <line x1="4" y1="10" x2="20" y2="10"></line>
+                        </svg>
+                    </span>
+
+                    ${incidencia.fecha || ''}
+
+                </div>
+
+                <div
+                    class="btn"
+                    onclick="cambiarEstadoIncidencia('${incidencia.id}')"
+                >
+
+                    <span class="cb-icon white">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20 11a8 8 0 0 0-14.9-3"></path>
+                            <polyline points="5,4 5,9 10,9"></polyline>
+                            <path d="M4 13a8 8 0 0 0 14.9 3"></path>
+                            <polyline points="19,20 19,15 14,15"></polyline>
+                        </svg>
+                    </span>
+
+                    Cambiar estado
+
+                </div>
+
+            </div>
+        `;
+    });
+
     go('incidencias');
 }
  
-function cambiarEstadoIncidencia(indice){
+async function cambiarEstadoIncidencia(id){
 
-    let incidencias = JSON.parse(
-        localStorage.getItem('cb_incidencias') || '[]'
-    );
+    const { data: incidencia, error: errorCarga } = await supabaseClient
+        .from("house_incidencias")
+        .select("estado")
+        .eq("id", id)
+        .single();
 
-    const incidencia = incidencias[indice];
+    if (errorCarga) {
 
-    if(!incidencia) return;
+        console.error(
+            "❌ Error buscando incidencia:",
+            errorCarga
+        );
 
-    if(incidencia.estado === 'Abierta'){
+        return;
+    }
 
-        incidencia.estado = 'En curso';
+    if (!incidencia) return;
 
-    } else if(incidencia.estado === 'En curso'){
+    let nuevoEstado;
 
-        incidencia.estado = 'Resuelta';
+    if (incidencia.estado === 'Abierta') {
+
+        nuevoEstado = 'En curso';
+
+    } else if (incidencia.estado === 'En curso') {
+
+        nuevoEstado = 'Resuelta';
 
     } else {
 
-        incidencia.estado = 'Abierta';
+        nuevoEstado = 'Abierta';
 
     }
 
-    localStorage.setItem(
-        'cb_incidencias',
-        JSON.stringify(incidencias)
+    const { error } = await supabaseClient
+        .from("house_incidencias")
+        .update({
+            estado: nuevoEstado
+        })
+        .eq("id", id);
+
+    if (error) {
+
+        console.error(
+            "❌ Error actualizando estado de incidencia:",
+            error
+        );
+
+        return;
+    }
+
+    console.log(
+        "✅ ESTADO DE INCIDENCIA ACTUALIZADO:",
+        id,
+        nuevoEstado
     );
 
     openIncidencias();
@@ -1101,50 +1200,112 @@ function nuevaIncidencia(){
     document.getElementById('incResponsable').value='';
 }
 
-function guardarIncidencia(){
+async function guardarIncidencia(){
+
+    const house = houses[current];
+
+    if (!house || !house.id) {
+
+        console.error(
+            "❌ La casa no tiene UUID de Supabase"
+        );
+
+        return;
+    }
 
     const incidencia = {
-        casa: current,
-        ambiente: document.getElementById('incAmbiente').value,
-        descripcion: document.getElementById('incDescripcion').value,
-        prioridad: document.getElementById('incPrioridad').value,
-        estado: document.getElementById('incEstado').value,
-        responsable: document.getElementById('incResponsable').value,
-        fecha: new Date().toLocaleDateString()
+
+        house_id: house.id,
+
+        ambiente:
+            document.getElementById('incAmbiente').value,
+
+        descripcion:
+            document.getElementById('incDescripcion').value,
+
+        prioridad:
+            document.getElementById('incPrioridad').value,
+
+        estado:
+            document.getElementById('incEstado').value,
+
+        responsable:
+            document.getElementById('incResponsable').value,
+
+        fecha:
+            new Date().toISOString().split('T')[0]
     };
 
-    let incidencias = JSON.parse(
-        localStorage.getItem('cb_incidencias') || '[]'
+    console.log(
+        "🚨 GUARDANDO INCIDENCIA EN SUPABASE:",
+        incidencia
     );
 
-    incidencias.push(incidencia);
+    const { data, error } = await supabaseClient
+        .from("house_incidencias")
+        .insert(incidencia)
+        .select()
+        .single();
 
-    localStorage.setItem(
-        'cb_incidencias',
-        JSON.stringify(incidencias)
+    if (error) {
+
+        console.error(
+            "❌ Error guardando incidencia en Supabase:",
+            error
+        );
+
+        alert(
+            "No se pudo guardar la incidencia. Revisá la consola."
+        );
+
+        return;
+    }
+
+    console.log(
+        "✅ INCIDENCIA GUARDADA EN SUPABASE:",
+        data
     );
 
     alert('Incidencia guardada');
 
-    document.getElementById('formIncidencia').style.display='none';
+    document.getElementById('formIncidencia').style.display = 'none';
 
-render();
-openIncidencias();
+    render();
+
+    openIncidencias();
 }
 
-function eliminarIncidencia(index){
-    let incidencias = JSON.parse(
-        localStorage.getItem('cb_incidencias') || '[]'
+async function eliminarIncidencia(id){
+
+    if(!confirm('¿Eliminar esta incidencia?')) {
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from("house_incidencias")
+        .delete()
+        .eq("id", id);
+
+    if (error) {
+
+        console.error(
+            "❌ Error eliminando incidencia de Supabase:",
+            error
+        );
+
+        alert(
+            "No se pudo eliminar la incidencia. Revisá la consola."
+        );
+
+        return;
+    }
+
+    console.log(
+        "🗑️ INCIDENCIA ELIMINADA DE SUPABASE:",
+        id
     );
 
-    if(!confirm('¿Eliminar esta incidencia?')) return;
-
-    incidencias.splice(index, 1);
-
-    localStorage.setItem(
-        'cb_incidencias',
-        JSON.stringify(incidencias)
-    );
+    render();
 
     openIncidencias();
 }
