@@ -163,6 +163,58 @@ async function render(){
     const c = document.getElementById('houses');
     c.innerHTML = '';
 
+    // ============================================
+// CHECKLISTS DESDE SUPABASE PARA HOME
+// ============================================
+
+const { data: checklistsSupabase, error: errorChecklists } =
+    await supabaseClient
+        .from("house_checklists")
+        .select("house_id, data");
+
+if (errorChecklists) {
+
+    console.error(
+        "❌ Error cargando checklists para Home:",
+        errorChecklists
+    );
+
+}
+
+const checklistPorCasa = {};
+
+(checklistsSupabase || []).forEach(registro => {
+
+    let totalChecks = 0;
+    let checksCompletados = 0;
+
+    const datos = registro.data || {};
+
+    ambientes.forEach((ambiente, ambienteIndex) => {
+
+        const checksAmbiente =
+            datos[ambienteIndex] ||
+            new Array(ambiente.items.length).fill(false);
+
+        ambiente.items.forEach((item, itemIndex) => {
+
+            totalChecks++;
+
+            if (checksAmbiente[itemIndex] === true) {
+                checksCompletados++;
+            }
+
+        });
+
+    });
+
+    checklistPorCasa[registro.house_id] =
+        totalChecks > 0
+            ? Math.round((checksCompletados / totalChecks) * 100)
+            : 0;
+
+});
+
     const buscador = document.getElementById('searchProperty');
     const texto = buscador ? buscador.value.toLowerCase().trim() : '';
 
@@ -218,9 +270,10 @@ casasFiltradas.forEach((h)=>{
 
     const i = houses.indexOf(h);
 
-    const incidenciasCasa =
-        incidenciasPorCasa[h.id] || 0;
-
+const checklistCasa =
+    checklistPorCasa[h.id] ??
+    h.checklistPorcentaje ??
+    0;
     const d=document.createElement('div');
 
    d.className = 'card';
@@ -297,7 +350,7 @@ d.innerHTML = `
             ${cbIcon('check')}
             <span>
                 <small>Checklist</small>
-                ${h.checklistPorcentaje ?? 0}%
+                ${checklistCasa}%
             </span>
         </div>
 
