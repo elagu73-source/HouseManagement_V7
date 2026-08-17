@@ -1562,6 +1562,7 @@ if (obs) {
     console.log("GUARDANDO:", obs.value);
     observaciones["c" + current + "_" + paso] = obs.value;
     localStorage.setItem("cb_observaciones", JSON.stringify(observaciones));
+    guardarChecklistSupabase();
 }
 
     if(paso < ambientes.length-1){
