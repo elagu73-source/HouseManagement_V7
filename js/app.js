@@ -1938,6 +1938,8 @@ render();
 
 let paso = 0;
 let evidencias = JSON.parse(localStorage.getItem("cb_evidencias") || "{}");
+let observaciones = {};
+
 async function guardarChecklistSupabase() {
 
     const house = houses[current];
@@ -1946,10 +1948,6 @@ async function guardarChecklistSupabase() {
         console.error("❌ La casa no tiene UUID de Supabase");
         return;
     }
-
-const observaciones = JSON.parse(
-    localStorage.getItem("cb_observaciones") || "{}"
-);
 
     const dataCasa = {};
 
@@ -2134,12 +2132,9 @@ checklist.innerHTML += `
 id="obsPrep"
 style="width:100%;height:90px;margin-top:8px"
 oninput="
-    let obs = JSON.parse(localStorage.getItem('cb_observaciones') || '{}');
-    obs['${obsKey}'] = this.value;
-    localStorage.setItem('cb_observaciones', JSON.stringify(obs));
-"
-onblur="
-    guardarChecklistSupabase();
+ observaciones['${obsKey}'] = this.value;
+
+guardarChecklistSupabase();
 "
 >${observaciones[obsKey]||""}</textarea>
 
