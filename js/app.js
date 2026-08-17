@@ -2308,14 +2308,145 @@ if (obs) {
 
 }
 
-let checklistData=JSON.parse(localStorage.getItem('cb_checklists')||'{}');
+let checklistData =
+    JSON.parse(localStorage.getItem('cb_checklists') || '{}');
+
+
+// ============================================
+// CARGAR CONFIGURACIÓN DEL CHECKLIST DESDE SUPABASE
+// ============================================
+
+async function cargarConfiguracionChecklistCasa(){
+
+    const house = houses[current];
+
+    if (!house || !house.id) {
+
+        console.error(
+            "❌ La casa no tiene UUID de Supabase"
+        );
+
+        return;
+    }
+
+    console.log(
+        "☁️ CARGANDO CONFIGURACIÓN CHECKLIST:",
+        house.id
+    );
+
+    const { data, error } =
+        await supabaseClient
+            .from("house_checklist_config")
+            .select("data")
+            .eq("house_id", house.id)
+            .maybeSingle();
+
+    if (error) {
+
+        console.error(
+            "❌ ERROR CARGANDO CONFIGURACIÓN CHECKLIST:",
+            error
+        );
+
+        return;
+    }
+
+    const key = "c" + current;
+
+    // ============================================
+    // SI EXISTE EN SUPABASE
+    // ============================================
+
+    if (data && data.data) {
+
+        checklistData[key] =
+            JSON.parse(JSON.stringify(data.data));
+
+        localStorage.setItem(
+            "cb_checklists",
+            JSON.stringify(checklistData)
+        );
+
+        console.log(
+            "✅ CONFIGURACIÓN CHECKLIST CARGADA DESDE SUPABASE:",
+            house.id
+        );
+
+        return;
+    }
+
+    // ============================================
+    // SI NO EXISTE:
+    // USAR CONFIGURACIÓN LOCAL O ESTÁNDAR
+    // ============================================
+
+    if (!checklistData[key]) {
+
+        checklistData[key] =
+            JSON.parse(JSON.stringify(ambientes));
+
+    }
+
+    // ============================================
+    // GUARDAR CONFIGURACIÓN INICIAL EN SUPABASE
+    // ============================================
+
+    const { error: errorGuardar } =
+        await supabaseClient
+            .from("house_checklist_config")
+            .upsert(
+                {
+                    house_id: house.id,
+                    data: checklistData[key],
+                    updated_at: new Date().toISOString()
+                },
+                {
+                    onConflict: "house_id"
+                }
+            );
+
+    if (errorGuardar) {
+
+        console.error(
+            "❌ ERROR GUARDANDO CONFIGURACIÓN INICIAL:",
+            errorGuardar
+        );
+
+        return;
+    }
+
+    localStorage.setItem(
+        "cb_checklists",
+        JSON.stringify(checklistData)
+    );
+
+    console.log(
+        "✅ CONFIGURACIÓN INICIAL GUARDADA EN SUPABASE:",
+        house.id
+    );
+}
+
+
+// ============================================
+// CHECKLIST LOCAL — RESPALDO
+// ============================================
+
 function ensureChecklist(){
- const key='c'+current;
- if(!checklistData[key]){
-  checklistData[key]=JSON.parse(JSON.stringify(ambientes));
-  localStorage.setItem('cb_checklists',JSON.stringify(checklistData));
- }
- return checklistData[key];
+
+    const key = "c" + current;
+
+    if(!checklistData[key]){
+
+        checklistData[key] =
+            JSON.parse(JSON.stringify(ambientes));
+
+        localStorage.setItem(
+            "cb_checklists",
+            JSON.stringify(checklistData)
+        );
+    }
+
+    return checklistData[key];
 }
 
 // ============================================
@@ -2385,14 +2516,29 @@ async function migrarConfiguracionChecklistSupabase(){
     );
 }
 
-function openChecklistEditor(){
- const sel=document.getElementById('ambienteSel');
- sel.innerHTML='';
-ensureChecklist().forEach((a,i)=>{
-    sel.innerHTML+=`<option value="${i}">${a.title}</option>`
-});
- loadChecklistEditor(); go('editChecklist');
+async function openChecklistEditor(){
+
+    // Primero cargamos la configuración real desde Supabase
+    await cargarConfiguracionChecklistCasa();
+
+    const sel =
+        document.getElementById("ambienteSel");
+
+    sel.innerHTML = "";
+
+    ensureChecklist().forEach((a, i) => {
+
+        sel.innerHTML +=
+            `<option value="${i}">
+                ${a.title}
+            </option>`;
+    });
+
+    loadChecklistEditor();
+
+    go("editChecklist");
 }
+
 function loadChecklistEditor(){
  const data=ensureChecklist();
  const idx=parseInt(document.getElementById('ambienteSel').value||0);
@@ -2417,19 +2563,102 @@ box.innerHTML += `<div style="display:flex;gap:6px;margin:4px 0"><input value="$
 </div>`;
 });
 }
-function editItem(a,i,v){
-    ensureChecklist()[a].items[i]=v;
-    localStorage.setItem('cb_checklists',JSON.stringify(checklistData));
+
+async function guardarConfiguracionChecklist(){
+
+    const house = houses[current];
+
+    if (!house || !house.id) {
+
+        console.error(
+            "❌ La casa no tiene UUID de Supabase"
+        );
+
+        return;
+    }
+
+    const key = "c" + current;
+
+    const { error } =
+        await supabaseClient
+            .from("house_checklist_config")
+            .upsert(
+                {
+                    house_id: house.id,
+                    data: checklistData[key],
+                    updated_at: new Date().toISOString()
+                },
+                {
+                    onConflict: "house_id"
+                }
+            );
+
+    if (error) {
+
+        console.error(
+            "❌ ERROR GUARDANDO CONFIGURACIÓN CHECKLIST:",
+            error
+        );
+
+        alert(
+            "No se pudo guardar el checklist. Revisá la consola."
+        );
+
+        return;
+    }
+
+    localStorage.setItem(
+        "cb_checklists",
+        JSON.stringify(checklistData)
+    );
+
+    console.log(
+        "✅ CONFIGURACIÓN CHECKLIST GUARDADA EN SUPABASE:",
+        house.id
+    );
 }
-function delItem(a,i){ensureChecklist()[a].items.splice(i,1);localStorage.setItem('cb_checklists',JSON.stringify(checklistData));loadChecklistEditor();}
-function addItem(){
- const a=parseInt(document.getElementById('ambienteSel').value||0);
- const v=document.getElementById('nuevoItem').value.trim();
- if(!v)return;
-ensureChecklist()[a].items.push(v);
- document.getElementById('nuevoItem').value='';
- localStorage.setItem('cb_checklists',JSON.stringify(checklistData));
- loadChecklistEditor();
+
+
+async function editItem(a, i, v){
+
+    ensureChecklist()[a].items[i] = v;
+
+    await guardarConfiguracionChecklist();
+}
+
+
+async function delItem(a, i){
+
+    ensureChecklist()[a].items.splice(i, 1);
+
+    await guardarConfiguracionChecklist();
+
+    loadChecklistEditor();
+}
+
+
+async function addItem(){
+
+    const a =
+        parseInt(
+            document.getElementById("ambienteSel").value || 0
+        );
+
+    const v =
+        document
+            .getElementById("nuevoItem")
+            .value
+            .trim();
+
+    if(!v) return;
+
+    ensureChecklist()[a].items.push(v);
+
+    document.getElementById("nuevoItem").value = "";
+
+    await guardarConfiguracionChecklist();
+
+    loadChecklistEditor();
 }
 
 // ============================================
