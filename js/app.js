@@ -888,6 +888,15 @@ async function obtenerInventarioCasa(){
 
     const house = houses[current];
 
+console.log(
+    "🏠 INVENTARIO - CASA ACTUAL:",
+            house?.nombre,
+    "INDEX:",
+    current,
+    "UUID:",
+    house?.id
+);
+
     if (!house || !house.id) {
         console.error("❌ La casa no tiene UUID de Supabase");
         return [];
