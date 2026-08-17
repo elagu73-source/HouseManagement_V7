@@ -884,6 +884,60 @@ function openInfoGeneral(){
     go('infoGeneral');
 }
 
+async function guardarInfoGeneral() {
+
+    const h = houses[current];
+
+    if (!h || !h.id) {
+        console.error("❌ La casa no tiene UUID de Supabase");
+        return;
+    }
+
+    h.nombre = document.getElementById("infoNombre").value;
+    h.name = h.nombre;
+    h.nombreCasa = h.nombre;
+    h.nombre_casa = h.nombre;
+
+    h.direccion =
+        document.getElementById("infoDireccion").value;
+
+    h.propietario =
+        document.getElementById("infoPropietario").value;
+
+    h.telefono =
+        document.getElementById("infoTelefono").value;
+
+    h.capacidad =
+        document.getElementById("infoCapacidad").value;
+
+    h.habitaciones =
+        document.getElementById("infoHabitaciones").value;
+
+    h.banios =
+        document.getElementById("infoBanios").value;
+
+    h.wifi =
+        document.getElementById("infoWifi").value;
+
+    h.alarma =
+        document.getElementById("infoAlarma").value;
+
+    h.obs =
+        document.getElementById("infoObservaciones").value;
+
+
+    await saveHouseToSupabase(h);
+
+    saveData(houses);
+
+    console.log(
+        "✅ INFORMACIÓN GENERAL GUARDADA:",
+        h.id
+    );
+
+    go("infoGeneral");
+}
+
 async function obtenerInventarioCasa(){
 
     const house = houses[current];
