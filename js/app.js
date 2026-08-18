@@ -991,81 +991,15 @@ console.log(
             : [];
     }
 
-    // ============================================
-    // SI TODAVÍA NO EXISTE:
-    // BUSCAR INVENTARIO ANTIGUO EN LOCALSTORAGE
-    // ============================================
+// ============================================
+// NO HAY INVENTARIO EN SUPABASE
+// ============================================
 
-    const key = "c" + current + "_inventario";
+console.log(
+    "ℹ️ No hay inventario en Supabase para esta casa."
+);
 
-    let inventarioLocal = {};
-
-    try {
-
-        inventarioLocal = JSON.parse(
-            localStorage.getItem("cb_inventario") || "{}"
-        );
-
-    } catch (error) {
-
-        console.error(
-            "❌ Error leyendo inventario local:",
-            error
-        );
-
-        inventarioLocal = {};
-    }
-
-    const itemsLocales =
-        Array.isArray(inventarioLocal[key])
-            ? inventarioLocal[key]
-            : [];
-
-    // ============================================
-    // MIGRAR AUTOMÁTICAMENTE A SUPABASE
-    // ============================================
-
-    if (itemsLocales.length > 0) {
-
-        console.log(
-            "📦 MIGRANDO INVENTARIO LOCAL A SUPABASE:",
-            house.id,
-            itemsLocales
-        );
-
-        const { error: errorMigracion } =
-            await supabaseClient
-                .from("house_inventario")
-                .upsert(
-                    {
-                        house_id: house.id,
-                        data: itemsLocales,
-                        updated_at: new Date().toISOString()
-                    },
-                    {
-                        onConflict: "house_id"
-                    }
-                );
-
-        if (errorMigracion) {
-
-            console.error(
-                "❌ Error migrando inventario a Supabase:",
-                errorMigracion
-            );
-
-            return itemsLocales;
-        }
-
-        console.log(
-            "✅ INVENTARIO MIGRADO A SUPABASE:",
-            house.id
-        );
-    }
-
-    return itemsLocales;
-}
-
+return [];
 
 // ============================================
 // GUARDAR INVENTARIO EN SUPABASE
