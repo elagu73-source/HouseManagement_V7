@@ -1000,6 +1000,7 @@ console.log(
 );
 
 return [];
+}
 
 // ============================================
 // GUARDAR INVENTARIO EN SUPABASE
