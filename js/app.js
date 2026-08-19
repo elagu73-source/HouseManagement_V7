@@ -1,4 +1,6 @@
-let houses=loadData(),current=0;
+let houses = [];
+let current = 0;
+
 async function cargarCasasDesdeSupabase() {
 
     try {
@@ -157,109 +159,6 @@ async function go(id){
     if(id === 'home'){
         await render();
     }
-}
-
-async function sincronizarChecklistsIniciales() {
-
-    console.log("🔄 INICIANDO SINCRONIZACIÓN INICIAL DE CHECKLISTS...");
-
-    const checksLocales = JSON.parse(
-        localStorage.getItem("cb_checks") || "{}"
-    );
-
-    // Traemos los checklists que YA existen en Supabase
-    const { data: existentes, error: errorExistentes } =
-        await supabaseClient
-            .from("house_checklists")
-            .select("house_id");
-
-    if (errorExistentes) {
-
-        console.error(
-            "❌ Error consultando checklists existentes:",
-            errorExistentes
-        );
-
-        return;
-    }
-
-    const idsExistentes = new Set(
-        (existentes || []).map(item => item.house_id)
-    );
-
-    let creados = 0;
-    let yaExistian = 0;
-
-    for (let houseIndex = 0; houseIndex < houses.length; houseIndex++) {
-
-        const house = houses[houseIndex];
-
-        if (!house || !house.id) {
-            continue;
-        }
-
-        // Si ya existe en Supabase, NO hacemos nada
-        if (idsExistentes.has(house.id)) {
-
-            yaExistian++;
-
-            continue;
-        }
-
-        const dataCasa = {};
-
-        ambientes.forEach((ambiente, ambienteIndex) => {
-
-            const key =
-                "c" + houseIndex + "_" + ambienteIndex;
-
-            dataCasa[ambienteIndex] =
-                checksLocales[key] ||
-                new Array(ambiente.items.length).fill(false);
-
-        });
-
-        const { error } = await supabaseClient
-            .from("house_checklists")
-            .insert({
-                house_id: house.id,
-                data: dataCasa,
-                observaciones: {},
-                updated_at: new Date().toISOString()
-            });
-
-        if (error) {
-
-            console.error(
-                "❌ Error sincronizando casa:",
-                house.nombre,
-                error
-            );
-
-        } else {
-
-            creados++;
-
-            console.log(
-                "✅ Checklist inicial creado:",
-                house.nombre
-            );
-        }
-    }
-
-    console.log(
-        "🏁 SINCRONIZACIÓN TERMINADA.",
-        "Creados:",
-        creados,
-        "Ya existentes:",
-        yaExistian
-    );
-
-    alert(
-        "Sincronización terminada.\n\n" +
-        "Checklists creados: " + creados + "\n" +
-        "Ya existentes: " + yaExistian
-    );
 }
 
 function calcularPorcentajeChecklist(datos) {
@@ -1925,11 +1824,11 @@ const ambientes=[
 {title:"Control Final",items:["Fotos","Alarma","Internet","Casa lista"]}
 ];
 
+let checks = {};
 actualizarEstadosTodasLasCasas();
 render();
 
 let paso = 0;
-let evidencias = JSON.parse(localStorage.getItem("cb_evidencias") || "{}");
 let observaciones = {};
 
 async function guardarChecklistSupabase() {
@@ -1977,7 +1876,6 @@ async function guardarChecklistSupabase() {
         house.id
     );
 }
-let checks = JSON.parse(localStorage.getItem("cb_checks") || "{}");
 
 async function startPreparation(){
 
@@ -2033,23 +1931,16 @@ if (diagnostico) {
 
         });
 
-        localStorage.setItem(
-            "cb_checks",
-            JSON.stringify(checks)
-        );
+observaciones =
+    data.observaciones &&
+    typeof data.observaciones === "object"
+        ? data.observaciones
+        : {};
 
-if (data.observaciones) {
-
-    localStorage.setItem(
-        "cb_observaciones",
-        JSON.stringify(data.observaciones)
-    );
-
-    console.log(
-        "📝 OBSERVACIONES ENCONTRADAS EN SUPABASE:",
-        data.observaciones
-    );
-}
+console.log(
+    "📝 OBSERVACIONES ENCONTRADAS EN SUPABASE:",
+    observaciones
+);
 
     } else {
 
@@ -2074,7 +1965,6 @@ function renderPrep(){
 const env = ensureChecklist()[paso];
 const key = "c"+current+"_"+paso;
 
-let observaciones = JSON.parse(localStorage.getItem("cb_observaciones") || "{}");
 const obsKey = "c" + current + "_" + paso;
 
 if(!checks[key]){
@@ -2094,10 +1984,10 @@ env.items.forEach((c,i)=>{
        <input type="checkbox" ${marcado}
     
        onchange="
-    checks['${key}'][${i}] = this.checked;
-    localStorage.setItem('cb_checks', JSON.stringify(checks));
-    guardarChecklistSupabase();
-    actualizarEstadoCasa();
+    
+       checks['${key}'][${i}] = this.checked;
+guardarChecklistSupabase();
+actualizarEstadoCasa();
 "
 >
         <span>${c}</span>
@@ -2171,9 +2061,7 @@ function obtenerPorcentajeChecklist(houseIndex) {
 
 function actualizarEstadoCasa() {
 
-    const checksActuales = JSON.parse(
-        localStorage.getItem("cb_checks") || "{}"
-    );
+    const checksActuales = checks || {};
 
     let totalChecks = 0;
     let checksCompletados = 0;
@@ -2197,9 +2085,12 @@ function actualizarEstadoCasa() {
 
     });
 
-    houses[current].checklistPorcentaje = totalChecks > 0
-    ? Math.round((checksCompletados / totalChecks) * 100)
-    : 0;
+    houses[current].checklistPorcentaje =
+        totalChecks > 0
+            ? Math.round(
+                (checksCompletados / totalChecks) * 100
+            )
+            : 0;
 
     if (checksCompletados === 0) {
 
@@ -2215,14 +2106,17 @@ function actualizarEstadoCasa() {
 
     }
 
-    saveData(houses);
+    console.log(
+        "🏠 ESTADO ACTUALIZADO:",
+        houses[current].nombre,
+        houses[current].estado,
+        houses[current].checklistPorcentaje + "%"
+    );
 }
 
 function actualizarEstadosTodasLasCasas() {
 
-    const checksActuales = JSON.parse(
-        localStorage.getItem("cb_checks") || "{}"
-    );
+    const checksActuales = checks || {};
 
     houses.forEach((house, houseIndex) => {
 
@@ -2269,32 +2163,31 @@ function actualizarEstadosTodasLasCasas() {
 
 function nextStep(){
 
-    const observaciones = JSON.parse(localStorage.getItem("cb_observaciones") || "{}");
+    const obs = document.getElementById("obsPrep");
 
-const obs = document.getElementById("obsPrep");
+    if (obs) {
 
-if (obs) {
-    console.log("GUARDANDO:", obs.value);
-    observaciones["c" + current + "_" + paso] = obs.value;
-    localStorage.setItem("cb_observaciones", JSON.stringify(observaciones));
-    guardarChecklistSupabase();
-}
+        console.log("📝 GUARDANDO OBSERVACIÓN:", obs.value);
 
-    if(paso < ambientes.length-1){
+        observaciones["c" + current + "_" + paso] = obs.value;
+
+        guardarChecklistSupabase();
+    }
+
+    if (paso < ambientes.length - 1) {
+
         paso++;
         renderPrep();
+
+    } else {
+
+        actualizarEstadoCasa();
+        render();
+        go("property");
     }
-    else{
-    actualizarEstadoCasa();
-    render();
-    go('property');
 }
 
-}
-
-let checklistData =
-    JSON.parse(localStorage.getItem('cb_checklists') || '{}');
-
+let checklistData = {};
 
 // ============================================
 // CARGAR CONFIGURACIÓN DEL CHECKLIST DESDE SUPABASE
@@ -2346,11 +2239,6 @@ async function cargarConfiguracionChecklistCasa(){
         checklistData[key] =
             JSON.parse(JSON.stringify(data.data));
 
-        localStorage.setItem(
-            "cb_checklists",
-            JSON.stringify(checklistData)
-        );
-
         console.log(
             "✅ CONFIGURACIÓN CHECKLIST CARGADA DESDE SUPABASE:",
             house.id
@@ -2360,9 +2248,9 @@ async function cargarConfiguracionChecklistCasa(){
     }
 
     // ============================================
-    // SI NO EXISTE:
-    // USAR CONFIGURACIÓN LOCAL O ESTÁNDAR
-    // ============================================
+// SI NO EXISTE:
+// USAR CONFIGURACIÓN ESTÁNDAR
+// ============================================
 
     if (!checklistData[key]) {
 
@@ -2399,11 +2287,6 @@ async function cargarConfiguracionChecklistCasa(){
         return;
     }
 
-    localStorage.setItem(
-        "cb_checklists",
-        JSON.stringify(checklistData)
-    );
-
     console.log(
         "✅ CONFIGURACIÓN INICIAL GUARDADA EN SUPABASE:",
         house.id
@@ -2423,11 +2306,6 @@ function ensureChecklist(){
 
         checklistData[key] =
             JSON.parse(JSON.stringify(ambientes));
-
-        localStorage.setItem(
-            "cb_checklists",
-            JSON.stringify(checklistData)
-        );
     }
 
     return checklistData[key];
@@ -2436,69 +2314,6 @@ function ensureChecklist(){
 // ============================================
 // MIGRAR CONFIGURACIÓN DE CHECKLIST A SUPABASE
 // ============================================
-
-async function migrarConfiguracionChecklistSupabase(){
-
-    console.log("🔄 INICIANDO MIGRACIÓN DE CONFIGURACIÓN DE CHECKLIST...");
-
-    let cantidad = 0;
-
-    for(let i = 0; i < houses.length; i++){
-
-        const house = houses[i];
-
-        if(!house || !house.id){
-            console.warn("⚠️ Casa sin UUID:", i);
-            continue;
-        }
-
-        const key = "c" + i;
-        const configuracion = checklistData[key];
-
-        if(!configuracion){
-            console.log("ℹ️ Sin configuración local:", house.id);
-            continue;
-        }
-
-        const { error } = await supabaseClient
-            .from("house_checklist_config")
-            .upsert(
-                {
-                    house_id: house.id,
-                    data: configuracion,
-                    updated_at: new Date().toISOString()
-                },
-                {
-                    onConflict: "house_id"
-                }
-            );
-
-        if(error){
-
-            console.error(
-                "❌ ERROR MIGRANDO CHECKLIST:",
-                house.id,
-                error
-            );
-
-            continue;
-        }
-
-        cantidad++;
-
-        console.log(
-            "✅ CONFIGURACIÓN MIGRADA:",
-            house.id,
-            house.nombre || ("Casa " + (i + 1))
-        );
-    }
-
-    console.log(
-        "🏁 MIGRACIÓN TERMINADA:",
-        cantidad,
-        "casas"
-    );
-}
 
 async function openChecklistEditor(){
 
@@ -2591,11 +2406,6 @@ async function guardarConfiguracionChecklist(){
         return;
     }
 
-    localStorage.setItem(
-        "cb_checklists",
-        JSON.stringify(checklistData)
-    );
-
     console.log(
         "✅ CONFIGURACIÓN CHECKLIST GUARDADA EN SUPABASE:",
         house.id
@@ -2686,7 +2496,7 @@ async function cargarManualCasa(){
         return {};
     }
 
-    // ============================================
+        // ============================================
     // YA EXISTE EN SUPABASE
     // ============================================
 
@@ -2707,222 +2517,17 @@ async function cargarManualCasa(){
     }
 
     // ============================================
-    // NO EXISTE:
-    // BUSCAR MANUAL ANTIGUO EN LOCALSTORAGE
+    // NO HAY MANUAL EN SUPABASE
     // ============================================
-
-    let manualLocal = {};
-
-    try {
-
-        manualLocal = JSON.parse(
-            localStorage.getItem("cb_manual") || "{}"
-        );
-
-    } catch (error) {
-
-        console.error(
-            "❌ Error leyendo manual local:",
-            error
-        );
-
-        manualLocal = {};
-    }
-
-    const tipos = [
-        "emergencias",
-        "accesos",
-        "tecnologia",
-        "exterior",
-        "blancos",
-        "proveedores"
-    ];
-
-    const manualMigrado = {};
-
-    tipos.forEach(tipo => {
-
-        const clave =
-            "c" + current + "_" + tipo;
-
-        if (
-            manualLocal[clave] !== undefined &&
-            manualLocal[clave] !== null
-        ) {
-
-            manualMigrado[tipo] =
-                manualLocal[clave];
-        }
-
-    });
-
-    // ============================================
-    // MIGRAR A SUPABASE
-    // ============================================
-
-    if (Object.keys(manualMigrado).length > 0) {
-
-        console.log(
-            "📖 MIGRANDO MANUAL LOCAL A SUPABASE:",
-            house.id,
-            manualMigrado
-        );
-
-        const { error: errorMigracion } =
-            await supabaseClient
-                .from("house_manual")
-                .upsert(
-                    {
-                        house_id: house.id,
-                        data: manualMigrado,
-                        updated_at:
-                            new Date().toISOString()
-                    },
-                    {
-                        onConflict: "house_id"
-                    }
-                );
-
-        if (errorMigracion) {
-
-            console.error(
-                "❌ Error migrando manual a Supabase:",
-                errorMigracion
-            );
-
-            manualCasa = manualMigrado;
-
-            return manualCasa;
-        }
-
-        console.log(
-            "✅ MANUAL MIGRADO A SUPABASE:",
-            house.id
-        );
-    }
-
-    manualCasa = manualMigrado;
-
-    return manualCasa;
-}
-
-
-// ============================================
-// GUARDAR MANUAL EN SUPABASE
-// ============================================
-
-async function guardarManual(){
-
-    const house = houses[current];
-
-    if (!house || !house.id) {
-
-        console.error(
-            "❌ La casa no tiene UUID de Supabase"
-        );
-
-        return;
-    }
-
-    const campo =
-        document.getElementById("manualTexto");
-
-    if (!campo) {
-
-        console.error(
-            "❌ No se encontró manualTexto"
-        );
-
-        return;
-    }
-
-    const texto = campo.value;
-
-    manualCasa[manualActual] = texto;
-
-    const { error } =
-        await supabaseClient
-            .from("house_manual")
-            .upsert(
-                {
-                    house_id: house.id,
-                    data: manualCasa,
-                    updated_at:
-                        new Date().toISOString()
-                },
-                {
-                    onConflict: "house_id"
-                }
-            );
-
-    if (error) {
-
-        console.error(
-            "❌ Error guardando manual en Supabase:",
-            error
-        );
-
-        alert(
-            "No se pudo guardar el manual. Revisá la consola."
-        );
-
-        return;
-    }
 
     console.log(
-        "✅ MANUAL GUARDADO EN SUPABASE:",
-        house.id
+        "ℹ️ No hay manual en Supabase para esta casa."
     );
 
-    if (manualActual === "emergencias") {
+    manualCasa = {};
 
-        document.getElementById(
-            "txtEmergencias"
-        ).innerText = texto;
+    return manualCasa;
 
-    }
-
-    if (manualActual === "accesos") {
-
-        document.getElementById(
-            "txtAccesos"
-        ).innerText = texto;
-
-    }
-
-    if (manualActual === "tecnologia") {
-
-        document.getElementById(
-            "txtTecnologia"
-        ).innerText = texto;
-
-    }
-
-    if (manualActual === "exterior") {
-
-        document.getElementById(
-            "txtExterior"
-        ).innerText = texto;
-
-    }
-
-    if (manualActual === "blancos") {
-
-        document.getElementById(
-            "txtBlancos"
-        ).innerText = texto;
-
-    }
-
-    if (manualActual === "proveedores") {
-
-        document.getElementById(
-            "txtProveedores"
-        ).innerText = texto;
-
-    }
-
-    go("manual");
 }
 
 
@@ -3023,5 +2628,3 @@ async function abrirManualCasa(){
 
     go("manual");
 }
-
-sincronizarChecklistsIniciales();
