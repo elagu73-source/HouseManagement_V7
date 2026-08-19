@@ -64,13 +64,6 @@ async function cargarCasasDesdeSupabase() {
                 ""
         }));
 
-        // Guardar también una copia local
-        saveData(houses);
-
-        console.log(
-            "💾 Casas sincronizadas con localStorage"
-        );
-
         // Volver a dibujar la pantalla
         render();
 
@@ -454,8 +447,6 @@ agregar.onclick = function() {
 
     const nuevoIndice = houses.length - 1;
 
-    saveData(houses);
-
     render();
 
     openHouse(nuevoIndice);
@@ -716,8 +707,6 @@ console.log(
 // Eliminarla también de la memoria local
 houses = houses.filter(casa => casa.id !== h.id);
 
-        saveData(houses);
-
         current = null;
 
         render();
@@ -829,8 +818,6 @@ async function guardarInfoGeneral() {
 
 
     await saveHouseToSupabase(h);
-
-    saveData(houses);
 
     console.log(
         "✅ INFORMACIÓN GENERAL GUARDADA:",
@@ -1803,7 +1790,6 @@ document.getElementById('name').value=(h.nombre ?? h.name ?? h.nombreCasa ?? h.n
 async function saveCurrent(){let h=houses[current];
 h.nombre=document.getElementById('name').value; h.name=document.getElementById('name').value; h.nombreCasa=document.getElementById('name').value; h.nombre_casa=document.getElementById('name').value;h.barrio=document.getElementById('barrio').value;h.lote=document.getElementById('lote').value;h.capacidad=document.getElementById('capacidad').value;h.wifi=document.getElementById('wifi').value;h.obs=document.getElementById('obs').value;h.situacion=document.getElementById('situacion').value;
 await saveHouseToSupabase(h);
-saveData(houses);
 const title = document.getElementById('title');
 if (title) title.textContent = h.nombre;
 render();
@@ -2158,7 +2144,6 @@ function actualizarEstadosTodasLasCasas() {
 
     });
 
-    saveData(houses);
 }
 
 function nextStep(){

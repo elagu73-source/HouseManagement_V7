@@ -104,18 +104,17 @@ if (typeof houseId === "number") {
 
     } else {
 
-        // La casa existe en localStorage pero todavía
-        // no tiene ID en Supabase.
-        console.log(
-            "🏠 La casa no tiene UUID. Creándola en Supabase..."
-        );
+    // La casa todavía no tiene ID en Supabase.
+    console.log(
+        "🏠 La casa no tiene UUID. Creándola en Supabase..."
+    );
 
-        await saveHouseToSupabase(house);
+    await saveHouseToSupabase(house);
 
-        // Después de guardar debería tener su UUID
-        houseUuid = house.id;
+    // Después de guardar debería tener su UUID
+    houseUuid = house.id;
 
-    }
+}
 }
 
 if (!houseUuid) {
