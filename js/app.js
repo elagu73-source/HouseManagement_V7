@@ -814,10 +814,10 @@ botonValoracion.onclick = function(event) {
     const caja = document.createElement("div");
 
     caja.style.background = "#F7F3EA";
-    caja.style.borderRadius = "18px";
-    caja.style.padding = "28px";
-    caja.style.width = "calc(100% - 40px)";
+caja.style.borderRadius = "18px";
+caja.style.padding = "24px 20px";
 caja.style.maxWidth = "360px";
+caja.style.width = "calc(100% - 40px)";
 caja.style.boxSizing = "border-box";
 caja.style.textAlign = "center";
     caja.style.boxShadow = "0 20px 60px rgba(0,0,0,0.25)";
@@ -840,10 +840,13 @@ caja.style.textAlign = "center";
     const qrContenedor = document.createElement("div");
 
     qrContenedor.style.background = "white";
-    qrContenedor.style.borderRadius = "14px";
-    qrContenedor.style.padding = "16px";
-    qrContenedor.style.display = "inline-block";
-    qrContenedor.style.marginBottom = "18px";
+qrContenedor.style.borderRadius = "14px";
+qrContenedor.style.padding = "10px";
+qrContenedor.style.width = "100%";
+qrContenedor.style.maxWidth = "260px";
+qrContenedor.style.boxSizing = "border-box";
+qrContenedor.style.display = "block";
+qrContenedor.style.margin = "0 auto 18px";
 
     const qr = document.createElement("img");
 
@@ -852,9 +855,12 @@ caja.style.textAlign = "center";
         encodeURIComponent(link) +
         "&size=260";
 
-    qr.style.width = "min(260px, 70vw)";
-qr.style.height = "min(260px, 70vw)";
-    qr.style.display = "block";
+    qr.style.width = "100%";
+qr.style.maxWidth = "240px";
+qr.style.height = "auto";
+qr.style.aspectRatio = "1 / 1";
+qr.style.display = "block";
+qr.style.margin = "0 auto";
 
     qr.alt = "QR de valoración";
 
