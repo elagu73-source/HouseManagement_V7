@@ -1,6 +1,36 @@
 let houses = [];
 let current = 0;
 
+let valoraciones = {};
+
+const URL_VALORACIONES =
+    "https://script.google.com/macros/s/AKfycbwS6PlI756K21HxlohFoLtXcfzhUK9W5S60aa5rW-11fbSaUUm1Wow7t59KwPZbsSuIXw/exec";
+
+async function cargarValoraciones() {
+
+    try {
+
+        const respuesta = await fetch(URL_VALORACIONES);
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudieron cargar las valoraciones");
+        }
+
+        valoraciones = await respuesta.json();
+
+        console.log("⭐ VALORACIONES CARGADAS:", valoraciones);
+
+    } catch (error) {
+
+        console.error(
+            "❌ Error cargando valoraciones:",
+            error
+        );
+
+        valoraciones = {};
+    }
+}
+
 async function cargarCasasDesdeSupabase() {
 
     try {
@@ -64,8 +94,11 @@ async function cargarCasasDesdeSupabase() {
                 ""
         }));
 
-        // Volver a dibujar la pantalla
-        render();
+// Cargar valoraciones desde Google Sheets
+await cargarValoraciones();
+
+// Volver a dibujar la pantalla
+render();
 
     } catch (error) {
 
@@ -321,9 +354,11 @@ d.innerHTML = `
                 </div>
 
                 <div class="property-rating">
-                    ${cbIcon('star')}
-                    <span>${h.rating ?? '-'}</span>
-                </div>
+    ${cbIcon('star')}
+<span>${
+    valoraciones[h.nombre]?.promedio ?? '-'
+}</span>
+</div>
 
             </div>
 
@@ -624,8 +659,11 @@ const estado = h.estado ?? "Pendiente";
     document.getElementById("houseDetailIncidencias").textContent =
         "Incidencias: " + incidenciasCasa;
 
-    document.getElementById("houseDetailRating").textContent =
-        "★ " + (h.rating ?? "-");
+   document.getElementById("houseDetailRating").textContent =
+    "★ " +
+    (
+        valoraciones[h.nombre]?.promedio ?? "-"
+    );
 
     go("property");
 // Botón eliminar propiedad
