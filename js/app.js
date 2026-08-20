@@ -816,9 +816,10 @@ botonValoracion.onclick = function(event) {
     caja.style.background = "#F7F3EA";
     caja.style.borderRadius = "18px";
     caja.style.padding = "28px";
-    caja.style.maxWidth = "360px";
-    caja.style.width = "100%";
-    caja.style.textAlign = "center";
+    caja.style.width = "calc(100% - 40px)";
+caja.style.maxWidth = "360px";
+caja.style.boxSizing = "border-box";
+caja.style.textAlign = "center";
     caja.style.boxShadow = "0 20px 60px rgba(0,0,0,0.25)";
 
     const titulo = document.createElement("div");
@@ -851,8 +852,8 @@ botonValoracion.onclick = function(event) {
         encodeURIComponent(link) +
         "&size=260";
 
-    qr.style.width = "260px";
-    qr.style.height = "260px";
+    qr.style.width = "min(260px, 70vw)";
+qr.style.height = "min(260px, 70vw)";
     qr.style.display = "block";
 
     qr.alt = "QR de valoración";
