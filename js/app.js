@@ -716,7 +716,7 @@ houses = houses.filter(casa => casa.id !== h.id);
 
    ratingElement.parentElement.appendChild(botonEliminar);
 
-   // ============================================
+// ============================================
 // BOTÓN VALORACIÓN + QR
 // ============================================
 
@@ -778,26 +778,13 @@ botonValoracion.onclick = function(event) {
         h.nombre_casa ||
         "";
 
-    const link =
-        linksValoracion[nombreCasa];
+    const link = linksValoracion[nombreCasa];
 
     if (!link) {
-
-        alert(
-            "No encontramos el formulario de valoración para esta casa."
-        );
-
-        console.error(
-            "❌ No existe link de valoración para:",
-            nombreCasa
-        );
-
+        alert("No encontramos el formulario de valoración para esta casa.");
+        console.error("❌ No existe link de valoración para:", nombreCasa);
         return;
     }
-
-    // ============================================
-    // MOSTRAR QR
-    // ============================================
 
     const modalExistente =
         document.getElementById("modalQRValoracion");
@@ -812,106 +799,113 @@ botonValoracion.onclick = function(event) {
     modal.id = "modalQRValoracion";
 
     modal.style.position = "fixed";
-    modal.style.inset = "0";
+    modal.style.top = "0";
+    modal.style.left = "0";
+    modal.style.right = "0";
+    modal.style.bottom = "0";
     modal.style.background = "rgba(0,0,0,0.55)";
     modal.style.display = "flex";
     modal.style.alignItems = "center";
     modal.style.justifyContent = "center";
     modal.style.zIndex = "99999";
     modal.style.padding = "20px";
+    modal.style.boxSizing = "border-box";
 
-    modal.innerHTML = `
-        <div style="
-            background:#F7F3EA;
-            border-radius:18px;
-            padding:28px;
-            max-width:360px;
-            width:100%;
-            text-align:center;
-            box-shadow:0 20px 60px rgba(0,0,0,0.25);
-        ">
+    const caja = document.createElement("div");
 
-            <div style="
-                font-family:Georgia,serif;
-                font-size:24px;
-                color:#0D2B45;
-                margin-bottom:8px;
-            ">
-                Valoración de estadía
-            </div>
+    caja.style.background = "#F7F3EA";
+    caja.style.borderRadius = "18px";
+    caja.style.padding = "28px";
+    caja.style.maxWidth = "360px";
+    caja.style.width = "100%";
+    caja.style.textAlign = "center";
+    caja.style.boxShadow = "0 20px 60px rgba(0,0,0,0.25)";
 
-            <div style="
-                font-size:15px;
-                color:#556B4F;
-                margin-bottom:18px;
-            ">
-                ${nombreCasa}
-            </div>
+    const titulo = document.createElement("div");
 
-            <div style="
-                background:white;
-                border-radius:14px;
-                padding:16px;
-                display:inline-block;
-                margin-bottom:18px;
-            ">
-                <img
-                    src="https://quickchart.io/qr?text=${encodeURIComponent(link)}&size=260"
-                    style="
-                        width:260px;
-                        height:260px;
-                        display:block;
-                    "
-                    alt="QR de valoración"
-                >
-            </div>
+    titulo.innerText = "Valoración de estadía";
+    titulo.style.fontFamily = "Georgia, serif";
+    titulo.style.fontSize = "24px";
+    titulo.style.color = "#0D2B45";
+    titulo.style.marginBottom = "8px";
 
-            <div style="
-                font-size:14px;
-                color:#555;
-                line-height:1.4;
-                margin-bottom:18px;
-            ">
-                Escaneá este código QR con el celular
-                para dejar tu valoración.
-            </div>
+    const casa = document.createElement("div");
 
-            <button
-                id="cerrarModalQR"
-                class="btn"
-                style="
-                    width:100%;
-                    background:#0D2B45;
-                    color:white;
-                    border:none;
-                    padding:13px;
-                    border-radius:10px;
-                    cursor:pointer;
-                    font-weight:600;
-                "
-            >
-                Cerrar
-            </button>
+    casa.innerText = nombreCasa;
+    casa.style.fontSize = "15px";
+    casa.style.color = "#556B4F";
+    casa.style.marginBottom = "18px";
 
-        </div>
-    `;
+    const qrContenedor = document.createElement("div");
+
+    qrContenedor.style.background = "white";
+    qrContenedor.style.borderRadius = "14px";
+    qrContenedor.style.padding = "16px";
+    qrContenedor.style.display = "inline-block";
+    qrContenedor.style.marginBottom = "18px";
+
+    const qr = document.createElement("img");
+
+    qr.src =
+        "https://quickchart.io/qr?text=" +
+        encodeURIComponent(link) +
+        "&size=260";
+
+    qr.style.width = "260px";
+    qr.style.height = "260px";
+    qr.style.display = "block";
+
+    qr.alt = "QR de valoración";
+
+    qrContenedor.appendChild(qr);
+
+    const texto = document.createElement("div");
+
+    texto.innerText =
+        "Escaneá este código QR con el celular para dejar tu valoración.";
+
+    texto.style.fontSize = "14px";
+    texto.style.color = "#555";
+    texto.style.lineHeight = "1.4";
+    texto.style.marginBottom = "18px";
+
+    const cerrar = document.createElement("button");
+
+    cerrar.innerText = "Cerrar";
+    cerrar.className = "btn";
+    cerrar.style.width = "100%";
+    cerrar.style.background = "#0D2B45";
+    cerrar.style.color = "white";
+    cerrar.style.border = "none";
+    cerrar.style.padding = "13px";
+    cerrar.style.borderRadius = "10px";
+    cerrar.style.cursor = "pointer";
+    cerrar.style.fontWeight = "600";
+
+    cerrar.onclick = function() {
+        modal.remove();
+    };
+
+    caja.appendChild(titulo);
+    caja.appendChild(casa);
+    caja.appendChild(qrContenedor);
+    caja.appendChild(texto);
+    caja.appendChild(cerrar);
+
+    modal.appendChild(caja);
 
     document.body.appendChild(modal);
 
-    document
-        .getElementById("cerrarModalQR")
-        .onclick = function() {
-            modal.remove();
-        };
-
-    modal.onclick = function(e) {
-        if (e.target === modal) {
+    modal.onclick = function(event) {
+        if (event.target === modal) {
             modal.remove();
         }
     };
 };
 
 ratingElement.parentElement.appendChild(botonValoracion);
+
+}
 
 const foto = document.getElementById("houseHeroPhoto");
 
