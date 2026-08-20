@@ -714,7 +714,91 @@ houses = houses.filter(casa => casa.id !== h.id);
         go("home");
     };
 
-    ratingElement.parentElement.appendChild(botonEliminar);
+   ratingElement.parentElement.appendChild(botonEliminar);
+
+// ============================================
+// BOTÓN VALORACIÓN
+// ============================================
+
+const linksValoracion = {
+    "CASA GOSO": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+GOSO",
+    "CASA MORRISON": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+MORRISON",
+    "AMANECER MARINO": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=AMANECER+MARINO",
+    "CASA LA HUELLA": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+LA+HUELLA",
+    "CASA OCEANO": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+OCEANO",
+    "CASA EL ENSUEÑO": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+EL+ENSUE%C3%91O",
+    "EL DESCANSO": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=EL+DESCANSO",
+    "LA MANSA Y LA BRAVA": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=LA+MANSA+Y+LA+BRAVA",
+    "CASA HUNT": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+HUNT",
+    "CASA FILIPPA": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+FILIPPA",
+    "CASA OASIS": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+OASIS",
+    "CASA COSTA": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+COSTA",
+    "CASA CHULA": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+CHULA",
+    "CASA AL MAR": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+AL+MAR",
+    "CASA MIRADOR": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+MIRADOR",
+    "CASA CABO SUELTO": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+CABO+SUELTO",
+    "CASA CORDOBA": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+CORDOBA",
+    "CASA DEL MEDANO": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=CASA+DEL+MEDANO",
+    "COMO PEZ EN EL AGUA": "https://docs.google.com/forms/d/e/1FAIpQLScOz4UmYr9cznGdpskZXq016bjD1p1N2bWiN-12PeGDMHCCgg/viewform?usp=pp_url&entry.918470101=COMO+PEZ+EN+EL+AGUA"
+};
+
+const botonValoracionExistente =
+    document.getElementById("btnValoracionPropiedad");
+
+if (botonValoracionExistente) {
+    botonValoracionExistente.remove();
+}
+
+const botonValoracion =
+    document.createElement("button");
+
+botonValoracion.id = "btnValoracionPropiedad";
+botonValoracion.className = "btn";
+
+botonValoracion.style.marginTop = "12px";
+botonValoracion.style.width = "100%";
+botonValoracion.style.background = "#556B4F";
+botonValoracion.style.color = "white";
+botonValoracion.style.border = "none";
+botonValoracion.style.padding = "14px";
+botonValoracion.style.borderRadius = "10px";
+botonValoracion.style.cursor = "pointer";
+botonValoracion.style.fontWeight = "600";
+
+botonValoracion.innerHTML = "⭐ Valorar estadía";
+
+botonValoracion.onclick = function(event) {
+
+    event.stopPropagation();
+
+    const nombreCasa =
+        h.nombre ||
+        h.name ||
+        h.nombreCasa ||
+        h.nombre_casa ||
+        "";
+
+    const link =
+        linksValoracion[nombreCasa];
+
+    if (!link) {
+
+        alert(
+            "No encontramos el formulario de valoración para esta casa."
+        );
+
+        console.error(
+            "❌ No existe link de valoración para:",
+            nombreCasa
+        );
+
+        return;
+    }
+
+    window.open(link, "_blank");
+};
+
+ratingElement.parentElement.appendChild(botonValoracion);
 }
 const foto = document.getElementById("houseHeroPhoto");
 
