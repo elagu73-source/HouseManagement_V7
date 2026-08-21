@@ -1,0 +1,22 @@
+{
+  "name": "Costa Boutique House Management",
+  "short_name": "House Management",
+  "description": "Gestión de propiedades Costa Boutique",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F7F3EA",
+  "theme_color": "#0D2B45",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

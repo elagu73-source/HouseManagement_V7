@@ -305,6 +305,40 @@ const incidenciasPorCasa = {};
 
 });
 
+// ============================================
+// CARGAR RESERVAS PARA MOSTRAR EN HOME
+// ============================================
+
+const hoy = new Date().toISOString().split("T")[0];
+
+const { data: reservasSupabase, error: errorReservas } =
+    await supabaseClient
+        .from("house_reservations")
+        .select("house_id, check_in, check_out")
+        .gte("check_out", hoy)
+        .order("check_in", { ascending: true });
+
+if (errorReservas) {
+
+    console.error(
+        "❌ Error cargando reservas para Home:",
+        errorReservas
+    );
+
+}
+
+const proximaReservaPorCasa = {};
+
+(reservasSupabase || []).forEach(reserva => {
+
+    if (!proximaReservaPorCasa[reserva.house_id]) {
+
+        proximaReservaPorCasa[reserva.house_id] =
+            reserva;
+
+    }
+
+});
 
 casasFiltradas.forEach((h)=>{
 
@@ -380,13 +414,37 @@ d.innerHTML = `
             <span>${h.estado ?? "Pendiente"}</span>
         </div>
 
-        <div class="property-stat">
-            ${cbIcon('calendar')}
-            <span>
-                <small>Próximo ingreso</small>
-                ${h.ingreso ?? '-'}
-            </span>
-        </div>
+      <div class="property-stat">
+    ${cbIcon('calendar')}
+    <span>
+        <small>Ingreso</small>
+        ${
+            proximaReservaPorCasa[h.id]
+                ? formatearFecha(
+                    fechaDesdeISO(
+                        proximaReservaPorCasa[h.id].check_in
+                    )
+                  )
+                : '-'
+        }
+    </span>
+</div>
+
+<div class="property-stat">
+    ${cbIcon('calendar')}
+    <span>
+        <small>Egreso</small>
+        ${
+            proximaReservaPorCasa[h.id]
+                ? formatearFecha(
+                    fechaDesdeISO(
+                        proximaReservaPorCasa[h.id].check_out
+                    )
+                  )
+                : '-'
+        }
+    </span>
+</div>
 
         <div class="property-stat">
             ${cbIcon('check')}
@@ -533,6 +591,731 @@ console.log("🟢 TERMINÓ mostrarFotos");
     input.value = "";
 }
 
+// ============================================
+// CALENDARIO DE LA CASA
+// ============================================
+
+let calendarioFechaActual = new Date();
+let calendarioIngreso = null;
+let calendarioEgreso = null;
+let calendarioCasaActual = null;
+let calendarioReservas = [];
+
+async function cargarReservasCasa(houseId) {
+
+    calendarioReservas = [];
+
+    if (!houseId) return;
+
+    const { data, error } =
+        await supabaseClient
+            .from("house_reservations")
+            .select("id, check_in, check_out")
+            .eq("house_id", houseId)
+            .order("check_in", { ascending: true });
+
+    if (error) {
+
+        console.error(
+            "❌ Error cargando reservas:",
+            error
+        );
+
+        return;
+    }
+
+    calendarioReservas = data || [];
+
+    console.log(
+        "📅 RESERVAS CARGADAS:",
+        calendarioReservas
+    );
+}
+
+async function abrirCalendarioCasa(h) {
+
+    calendarioCasaActual = h;
+
+    const modalExistente =
+        document.getElementById("modalCalendarioCasa");
+
+    if (modalExistente) {
+        modalExistente.remove();
+    }
+
+    calendarioIngreso = null;
+    calendarioEgreso = null;
+    calendarioFechaActual = new Date();
+
+    const modal = document.createElement("div");
+
+    modal.id = "modalCalendarioCasa";
+
+    modal.style.position = "fixed";
+    modal.style.top = "0";
+    modal.style.left = "0";
+    modal.style.right = "0";
+    modal.style.bottom = "0";
+    modal.style.background = "rgba(0,0,0,0.55)";
+    modal.style.display = "flex";
+    modal.style.alignItems = "center";
+    modal.style.justifyContent = "center";
+    modal.style.zIndex = "99999";
+    modal.style.padding = "20px";
+    modal.style.boxSizing = "border-box";
+
+    const caja = document.createElement("div");
+
+    caja.style.background = "#F7F3EA";
+    caja.style.borderRadius = "18px";
+    caja.style.padding = "22px";
+    caja.style.width = "100%";
+    caja.style.maxWidth = "390px";
+    caja.style.maxHeight = "90vh";
+    caja.style.overflowY = "auto";
+    caja.style.boxSizing = "border-box";
+    caja.style.boxShadow =
+        "0 20px 60px rgba(0,0,0,0.25)";
+
+    const titulo = document.createElement("div");
+
+    titulo.innerText = "Calendario";
+
+    titulo.style.fontFamily = "Georgia, serif";
+    titulo.style.fontSize = "24px";
+    titulo.style.color = "#0D2B45";
+    titulo.style.textAlign = "center";
+    titulo.style.marginBottom = "4px";
+
+    const nombreCasa = document.createElement("div");
+
+    nombreCasa.innerText =
+        h.nombre ||
+        h.name ||
+        h.nombreCasa ||
+        h.nombre_casa ||
+        "";
+
+    nombreCasa.style.textAlign = "center";
+    nombreCasa.style.color = "#556B4F";
+    nombreCasa.style.fontSize = "14px";
+    nombreCasa.style.marginBottom = "20px";
+
+    const calendario = document.createElement("div");
+
+    calendario.id = "calendarioCasaContenido";
+
+    caja.appendChild(titulo);
+    caja.appendChild(nombreCasa);
+    caja.appendChild(calendario);
+
+    modal.appendChild(caja);
+
+    document.body.appendChild(modal);
+
+await cargarReservasCasa(
+    calendarioCasaActual.id ||
+    calendarioCasaActual.house_id
+);
+
+renderCalendarioCasa();
+
+    modal.onclick = function(event) {
+
+        if (event.target === modal) {
+            modal.remove();
+        }
+
+    };
+}
+
+function renderCalendarioCasa() {
+
+    const contenedor =
+        document.getElementById("calendarioCasaContenido");
+
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+
+    const año =
+        calendarioFechaActual.getFullYear();
+
+    const mes =
+        calendarioFechaActual.getMonth();
+
+    const primerDia =
+        new Date(año, mes, 1);
+
+    const ultimoDia =
+        new Date(año, mes + 1, 0);
+
+    const diasMes =
+        ultimoDia.getDate();
+
+    const nombreMes =
+        calendarioFechaActual.toLocaleDateString(
+            "es-AR",
+            {
+                month: "long",
+                year: "numeric"
+            }
+        );
+
+    const encabezado =
+        document.createElement("div");
+
+    encabezado.style.display = "flex";
+    encabezado.style.alignItems = "center";
+    encabezado.style.justifyContent = "space-between";
+    encabezado.style.marginBottom = "14px";
+
+    const anterior =
+        document.createElement("button");
+
+    anterior.innerText = "‹";
+
+    anterior.style.border = "none";
+    anterior.style.background = "transparent";
+    anterior.style.color = "#0D2B45";
+    anterior.style.fontSize = "28px";
+    anterior.style.cursor = "pointer";
+
+    anterior.onclick = function() {
+
+        calendarioFechaActual =
+            new Date(año, mes - 1, 1);
+
+        renderCalendarioCasa();
+
+    };
+
+    const mesTitulo =
+        document.createElement("div");
+
+    mesTitulo.innerText =
+        nombreMes.charAt(0).toUpperCase() +
+        nombreMes.slice(1);
+
+    mesTitulo.style.fontWeight = "600";
+    mesTitulo.style.color = "#0D2B45";
+
+    const siguiente =
+        document.createElement("button");
+
+    siguiente.innerText = "›";
+
+    siguiente.style.border = "none";
+    siguiente.style.background = "transparent";
+    siguiente.style.color = "#0D2B45";
+    siguiente.style.fontSize = "28px";
+    siguiente.style.cursor = "pointer";
+
+    siguiente.onclick = function() {
+
+        calendarioFechaActual =
+            new Date(año, mes + 1, 1);
+
+        renderCalendarioCasa();
+
+    };
+
+    encabezado.appendChild(anterior);
+    encabezado.appendChild(mesTitulo);
+    encabezado.appendChild(siguiente);
+
+    contenedor.appendChild(encabezado);
+
+
+    const diasSemana =
+        document.createElement("div");
+
+    diasSemana.style.display = "grid";
+    diasSemana.style.gridTemplateColumns =
+        "repeat(7, 1fr)";
+    diasSemana.style.gap = "4px";
+    diasSemana.style.marginBottom = "5px";
+
+    [
+        "L",
+        "M",
+        "M",
+        "J",
+        "V",
+        "S",
+        "D"
+    ].forEach(dia => {
+
+        const celda =
+            document.createElement("div");
+
+        celda.innerText = dia;
+
+        celda.style.textAlign = "center";
+        celda.style.fontSize = "12px";
+        celda.style.fontWeight = "600";
+        celda.style.color = "#556B4F";
+        celda.style.padding = "5px";
+
+        diasSemana.appendChild(celda);
+
+    });
+
+    contenedor.appendChild(diasSemana);
+
+
+    const dias =
+        document.createElement("div");
+
+    dias.style.display = "grid";
+    dias.style.gridTemplateColumns =
+        "repeat(7, 1fr)";
+    dias.style.gap = "4px";
+
+
+    let primerDiaSemana =
+        primerDia.getDay();
+
+    primerDiaSemana =
+        primerDiaSemana === 0
+            ? 6
+            : primerDiaSemana - 1;
+
+
+    for (let i = 0; i < primerDiaSemana; i++) {
+
+        const vacio =
+            document.createElement("div");
+
+        dias.appendChild(vacio);
+
+    }
+
+
+    for (
+        let numeroDia = 1;
+        numeroDia <= diasMes;
+        numeroDia++
+    ) {
+
+        const fecha =
+            new Date(
+                año,
+                mes,
+                numeroDia
+            );
+
+        const celda =
+            document.createElement("button");
+
+        celda.innerText = numeroDia;
+
+        celda.style.border = "none";
+        celda.style.background = "white";
+        celda.style.borderRadius = "8px";
+        celda.style.padding = "9px 4px";
+        celda.style.cursor = "pointer";
+        celda.style.color = "#0D2B45";
+        celda.style.fontSize = "14px";
+
+        // ============================================
+// RESERVAS YA GUARDADAS
+// ============================================
+
+calendarioReservas.forEach(reserva => {
+
+    const ingreso =
+        fechaDesdeISO(reserva.check_in);
+
+    const egreso =
+        fechaDesdeISO(reserva.check_out);
+
+    if (
+        fecha >= ingreso &&
+        fecha < egreso
+    ) {
+
+        // Días ocupados
+        celda.style.background =
+            "#0D2B45";
+
+        celda.style.color =
+            "white";
+
+    }
+
+    if (
+        mismaFecha(fecha, egreso)
+    ) {
+
+        // Día de checkout
+        celda.style.background =
+            "#B8DDE8";
+
+        celda.style.color =
+            "#0D2B45";
+
+    }
+
+});
+
+        if (
+            calendarioIngreso &&
+            mismaFecha(fecha, calendarioIngreso)
+        ) {
+
+            celda.style.background =
+                "#0D2B45";
+
+            celda.style.color =
+                "white";
+
+        }
+
+        if (
+            calendarioEgreso &&
+            mismaFecha(fecha, calendarioEgreso)
+        ) {
+
+            celda.style.background =
+                "#B8DDE8";
+
+            celda.style.color =
+                "#0D2B45";
+
+        }
+
+        if (
+    calendarioIngreso &&
+    calendarioEgreso &&
+    fecha > calendarioIngreso &&
+    fecha < calendarioEgreso
+) {
+
+    celda.style.background =
+        "#0D2B45";
+
+    celda.style.color =
+        "white";
+}
+
+        celda.onclick = function() {
+
+            seleccionarFechaCalendario(
+                fecha
+            );
+
+        };
+
+        dias.appendChild(celda);
+
+    }
+
+    contenedor.appendChild(dias);
+
+
+    const info =
+        document.createElement("div");
+
+    info.style.marginTop = "18px";
+    info.style.padding = "12px";
+    info.style.background = "white";
+    info.style.borderRadius = "10px";
+    info.style.fontSize = "14px";
+    info.style.color = "#0D2B45";
+
+    info.innerHTML =
+
+        "<b>Ingreso:</b> " +
+        (
+            calendarioIngreso
+                ? formatearFecha(calendarioIngreso)
+                : "Seleccionar"
+        ) +
+        "<br>" +
+        "<b>Egreso:</b> " +
+        (
+            calendarioEgreso
+                ? formatearFecha(calendarioEgreso)
+                : "Seleccionar"
+        );
+
+    contenedor.appendChild(info);
+
+
+    const acciones =
+        document.createElement("div");
+
+    acciones.style.display = "flex";
+    acciones.style.gap = "10px";
+    acciones.style.marginTop = "14px";
+
+
+    const cancelar =
+        document.createElement("button");
+
+    cancelar.innerText = "Cancelar";
+
+    cancelar.style.flex = "1";
+    cancelar.style.padding = "12px";
+    cancelar.style.border = "none";
+    cancelar.style.borderRadius = "10px";
+    cancelar.style.background = "#E7E1D6";
+    cancelar.style.color = "#0D2B45";
+    cancelar.style.cursor = "pointer";
+
+    cancelar.onclick = function() {
+
+        document
+            .getElementById("modalCalendarioCasa")
+            .remove();
+
+    };
+
+
+    const guardar =
+        document.createElement("button");
+
+    guardar.innerText = "OK";
+
+    guardar.style.flex = "1";
+    guardar.style.padding = "12px";
+    guardar.style.border = "none";
+    guardar.style.borderRadius = "10px";
+    guardar.style.background = "#0D2B45";
+    guardar.style.color = "white";
+    guardar.style.cursor = "pointer";
+    guardar.style.fontWeight = "600";
+
+   guardar.onclick = async function() {
+
+    if (
+        !calendarioIngreso ||
+        !calendarioEgreso
+    ) {
+
+        alert(
+            "Seleccioná fecha de ingreso y egreso."
+        );
+
+        return;
+
+    }
+
+    if (
+        calendarioEgreso <
+        calendarioIngreso
+    ) {
+
+        alert(
+            "La fecha de egreso debe ser posterior al ingreso."
+        );
+
+        return;
+
+    }
+
+    const houseId =
+    calendarioCasaActual.id ||
+    calendarioCasaActual.house_id;
+
+if (!houseId) {
+
+    alert(
+        "No pudimos identificar esta casa."
+    );
+
+    console.error(
+        "❌ No se encontró house_id:",
+        h
+    );
+
+    return;
+
+}
+
+// ============================================
+// VERIFICAR SUPERPOSICIÓN DE RESERVAS
+// ============================================
+
+const { data: reservasExistentes, error: errorReservas } =
+    await supabaseClient
+        .from("house_reservations")
+        .select("check_in, check_out")
+        .eq("house_id", houseId);
+
+if (errorReservas) {
+
+    console.error(
+        "❌ Error verificando reservas existentes:",
+        errorReservas
+    );
+
+    alert(
+        "No pudimos verificar las reservas existentes."
+    );
+
+    return;
+
+}
+
+const nuevaEntrada = calendarioIngreso;
+const nuevaSalida = calendarioEgreso;
+
+const reservaSuperpuesta =
+    (reservasExistentes || []).some(reserva => {
+
+        const entradaExistente =
+            fechaDesdeISO(reserva.check_in);
+
+        const salidaExistente =
+            fechaDesdeISO(reserva.check_out);
+
+        return (
+            nuevaEntrada <= salidaExistente &&
+            nuevaSalida >= entradaExistente
+        );
+
+    });
+
+if (reservaSuperpuesta) {
+
+    alert(
+        "Las fechas seleccionadas se superponen con una reserva existente."
+    );
+
+    return;
+
+}
+
+const { data, error } =
+    await supabaseClient
+        .from("house_reservations")
+        .insert([{
+            house_id: houseId,
+            check_in:
+                calendarioIngreso
+                    .toISOString()
+                    .split("T")[0],
+            check_out:
+                calendarioEgreso
+                    .toISOString()
+                    .split("T")[0]
+        }])
+        .select();
+
+if (error) {
+
+    console.error(
+        "❌ Error guardando reserva:",
+        error
+    );
+
+    alert(
+        "No pudimos guardar la reserva."
+    );
+
+    return;
+
+}
+
+console.log(
+    "✅ Reserva guardada:",
+    data
+);
+
+document
+    .getElementById("modalCalendarioCasa")
+    .remove();
+    await openHouse(current);
+
+};
+
+    acciones.appendChild(cancelar);
+    acciones.appendChild(guardar);
+
+    contenedor.appendChild(acciones);
+}
+
+
+function seleccionarFechaCalendario(fecha) {
+
+    if (
+        !calendarioIngreso ||
+        (
+            calendarioIngreso &&
+            calendarioEgreso
+        )
+    ) {
+
+        calendarioIngreso =
+            fecha;
+
+        calendarioEgreso =
+            null;
+
+    } else {
+
+        if (
+            fecha < calendarioIngreso
+        ) {
+
+            calendarioEgreso =
+                calendarioIngreso;
+
+            calendarioIngreso =
+                fecha;
+
+        } else {
+
+            calendarioEgreso =
+                fecha;
+
+        }
+
+    }
+
+    renderCalendarioCasa();
+
+}
+
+
+function mismaFecha(a, b) {
+
+    return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()
+    );
+
+}
+
+function fechaDesdeISO(fechaISO) {
+
+    const partes =
+        fechaISO.split("-");
+
+    return new Date(
+        Number(partes[0]),
+        Number(partes[1]) - 1,
+        Number(partes[2])
+    );
+
+}
+
+function formatearFecha(fecha) {
+
+    return fecha.toLocaleDateString(
+        "es-AR",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        }
+    );
+
+}
+
 async function openHouse(i){
 
     current = i;
@@ -650,8 +1433,92 @@ const estado = h.estado ?? "Pendiente";
         '</span> ' +
         estado;
 
+    const { data: reservasCasa, error: errorReservasCasa } =
+    await supabaseClient
+        .from("house_reservations")
+        .select("check_in, check_out")
+        .eq("house_id", h.id)
+        .gte("check_out", new Date().toISOString().split("T")[0])
+        .order("check_in", { ascending: true });
+
+if (errorReservasCasa) {
+
+    console.error(
+        "❌ Error cargando reservas de la casa:",
+        errorReservasCasa
+    );
+
+}
+
+const proximaReserva =
+    reservasCasa && reservasCasa.length > 0
+        ? reservasCasa[0]
+        : null;
+
+if (proximaReserva) {
+
+    // ============================================
+// PRÓXIMA RESERVA DE LA CASA
+// ============================================
+
+const { data: reservasCasa, error: errorReservasCasa } =
+    await supabaseClient
+        .from("house_reservations")
+        .select("check_in, check_out")
+        .eq("house_id", h.id)
+        .gte(
+            "check_out",
+            new Date().toISOString().split("T")[0]
+        )
+        .order("check_in", { ascending: true });
+
+if (errorReservasCasa) {
+
+    console.error(
+        "❌ Error cargando reservas de la casa:",
+        errorReservasCasa
+    );
+
+}
+
+const proximaReserva =
+    reservasCasa && reservasCasa.length > 0
+        ? reservasCasa[0]
+        : null;
+
+if (proximaReserva) {
+
     document.getElementById("houseDetailIngreso").textContent =
-        "Próximo ingreso: " + (h.ingreso ?? "-");
+        "Próximo ingreso: " +
+        formatearFecha(
+            fechaDesdeISO(proximaReserva.check_in)
+        ) +
+        " · Egreso: " +
+        formatearFecha(
+            fechaDesdeISO(proximaReserva.check_out)
+        );
+
+} else {
+
+    document.getElementById("houseDetailIngreso").textContent =
+        "Próximo ingreso: -";
+
+}
+
+        formatearFecha(
+            fechaDesdeISO(proximaReserva.check_in)
+        ) +
+        " · Egreso: " +
+        formatearFecha(
+            fechaDesdeISO(proximaReserva.check_out)
+        );
+
+} else {
+
+    document.getElementById("houseDetailIngreso").textContent =
+        "Próximo ingreso: -";
+
+}
 
     document.getElementById("houseDetailChecklist").textContent =
         "Checklist: " + checklist + "%";
@@ -949,6 +1816,51 @@ qr.style.margin = "0 auto";
 };
 
 ratingElement.parentElement.appendChild(botonValoracion);
+
+
+// ============================================
+// BOTÓN CALENDARIO
+// ============================================
+
+const botonCalendarioExistente =
+    document.getElementById("btnCalendarioPropiedad");
+
+if (botonCalendarioExistente) {
+    botonCalendarioExistente.remove();
+}
+
+const botonCalendario =
+    document.createElement("button");
+
+botonCalendario.id = "btnCalendarioPropiedad";
+botonCalendario.className = "btn";
+
+botonCalendario.style.marginTop = "12px";
+botonCalendario.style.width = "100%";
+botonCalendario.style.background = "#0D2B45";
+botonCalendario.style.color = "white";
+botonCalendario.style.border = "none";
+botonCalendario.style.padding = "14px";
+botonCalendario.style.borderRadius = "10px";
+botonCalendario.style.cursor = "pointer";
+botonCalendario.style.fontWeight = "600";
+botonCalendario.style.display = "flex";
+botonCalendario.style.alignItems = "center";
+botonCalendario.style.justifyContent = "center";
+botonCalendario.style.gap = "8px";
+
+botonCalendario.innerHTML =
+    cbIcon("calendar") + " Calendario";
+
+botonCalendario.onclick = function(event) {
+
+    event.stopPropagation();
+
+    abrirCalendarioCasa(h);
+
+};
+
+ratingElement.parentElement.appendChild(botonCalendario);
 
 }
 
