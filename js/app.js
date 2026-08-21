@@ -108,7 +108,6 @@ render();
         );
     }
 }
-cargarCasasDesdeSupabase();
 let propertyFilter='Todas';
 function setPropertyFilter(filtro){
     propertyFilter = filtro;
@@ -171,6 +170,12 @@ function cbIcon(name){
 initPhotoDB();
 
 async function go(id){
+
+    console.log("🚨 GO EJECUTADO:", id, new Error().stack);
+
+    if (id === 'home' && window.usuarioAutenticado !== true) {
+        return;
+    }
 
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
 

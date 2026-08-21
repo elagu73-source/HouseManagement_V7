@@ -9,8 +9,27 @@ const supabaseClient = window.supabase.createClient(
 window.supabaseClient = supabaseClient;
 
 async function probarLogin() {
+
+    alert("ESTOY EJECUTANDO EL SUPABASE.JS NUEVO");
+
+    window.usuarioAutenticado = false;
+
+    console.log(
+        "🔴 LOGIN INICIADO - AUTENTICADO:",
+        window.usuarioAutenticado
+    );
+
     const email = prompt('Email de prueba:');
+
+    if (!email) {
+        return false;
+    }
+
     const password = prompt('Contraseña de prueba:');
+
+    if (!password) {
+        return false;
+    }
 
     const { data, error } =
         await supabaseClient.auth.signInWithPassword({
@@ -19,14 +38,20 @@ async function probarLogin() {
         });
 
     console.log('RESULTADO LOGIN:', { data, error });
-}
 
-probarLogin().then(() => {
-    supabaseClient
-        .from('profiles')
-        .select('id, nombre, rol')
-        .limit(1)
-        .then(({ data, error }) => {
-            console.log('PERFIL SUPABASE:', { data, error });
-        });
-});
+    if (error) {
+
+        alert('Usuario o contraseña incorrectos.');
+
+        return false;
+    }
+
+    window.usuarioAutenticado = true;
+
+    console.log(
+        "🟢 LOGIN CORRECTO - AUTENTICADO:",
+        window.usuarioAutenticado
+    );
+
+    return true;
+}

@@ -1,5 +1,4 @@
-const CACHE_NAME = "house-management-v1";
-
+const CACHE_NAME = "house-management-v2";
 const ARCHIVOS = [
     "./",
     "./index.html",

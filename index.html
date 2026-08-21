@@ -15,11 +15,11 @@
 
         <div class="cover-brand">COSTA BOUTIQUE</div>
 
-        <p>EXPERIENCIAS QUE SE CUIDAN<br>EN CADA DETALLE</p>
+ <p>EXPERIENCIAS QUE SE CUIDAN<br>EN CADA DETALLE</p>
 
-        <div class="cover-btn" onclick="go('home')">
-            INGRESAR
-        </div>
+<div class="cover-btn" onclick="probarLogin().then(ok => { if (ok) go('home'); })">
+    INGRESAR
+</div>
 
     </div>
 
@@ -1000,10 +1000,10 @@ onclick="cerrarVisorFoto()">
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase.js"></script>
+<script src="js/supabase.js?v=100"></script>
 <script src="js/storage.js"></script>
 <script src="js/photos.js"></script>
-<script src="js/app.js?v=3"></script>
+<script src="js/app.js?v=100"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
