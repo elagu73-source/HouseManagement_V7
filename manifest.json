@@ -4,7 +4,7 @@
   "description": "Gestión de propiedades Costa Boutique",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#F7F3EA",
+  "background_color": "#0D2B45",
   "theme_color": "#0D2B45",
   "orientation": "portrait",
   "icons": [

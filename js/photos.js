@@ -1,5 +1,3 @@
-alert("photos.js cargado");
-
 const PHOTO_DB = "houseManagementDB";
 const PHOTO_VERSION = 1;
 
