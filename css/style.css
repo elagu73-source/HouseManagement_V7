@@ -509,8 +509,8 @@ button:hover {
     /* Información inferior */
 #houses .property-card-stats {
     display: grid !important;
-    grid-template-columns: 1.15fr 1fr 1fr 1fr !important;
-    gap: 6px !important;
+    grid-template-columns:1.15fr 1fr 1fr 1fr 1fr!important;
+gap:4px!important;
     width: 100% !important;
     margin-top: 12px !important;
     padding-top: 10px !important;

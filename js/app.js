@@ -416,7 +416,7 @@ d.innerHTML = `
                         : "ready"
             }"></span>
 
-            <span>${h.estado ?? "Pendiente"}</span>
+            <span>${h.estado === "Lista para entregar" ? "Listo" : (h.estado ?? "Pendiente")}</span>
         </div>
 
       <div class="property-stat">
