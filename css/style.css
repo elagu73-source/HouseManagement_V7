@@ -1961,3 +1961,17 @@ top: 20px !important;
 #editChecklist .btn .cb-icon svg path {
     stroke: #FFFFFF !important;
 }
+
+.property-top-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 14px;
+}
+
+.property-top-bar .btn {
+    flex: 0 0 auto;
+}

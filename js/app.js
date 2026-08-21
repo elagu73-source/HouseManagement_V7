@@ -1556,16 +1556,21 @@ if (ratingElement) {
     botonEliminar.id = "btnEliminarPropiedad";
     botonEliminar.className = "btn";
 
-    botonEliminar.style.marginTop = "0";
+ botonEliminar.style.marginTop = "0";
 botonEliminar.style.width = "auto";
+botonEliminar.style.height = document.querySelector(".back").offsetHeight + "px";
+botonEliminar.style.minHeight = "0";
+botonEliminar.style.boxSizing = "border-box";
 botonEliminar.style.background = "#8B4B4B";
 botonEliminar.style.color = "white";
 botonEliminar.style.border = "none";
-botonEliminar.style.padding = "6px 12px";
-botonEliminar.style.borderRadius = "8px";
-botonEliminar.style.position = "absolute";
-botonEliminar.style.top = "0";
-botonEliminar.style.right = "0";
+botonEliminar.style.padding = "0 16px";
+botonEliminar.style.borderRadius = "10px";
+botonEliminar.style.position = "static";
+botonEliminar.style.display = "flex";
+botonEliminar.style.alignItems = "center";
+botonEliminar.style.justifyContent = "center";
+botonEliminar.style.transform = "translateY(-8px)";
 
     botonEliminar.innerHTML = "🗑 Eliminar propiedad";
 
@@ -1625,7 +1630,7 @@ houses = houses.filter(casa => casa.id !== h.id);
         go("home");
     };
 
-   ratingElement.parentElement.appendChild(botonEliminar);
+   document.querySelector(".property-top-bar").appendChild(botonEliminar);
 
 // ============================================
 // BOTÓN VALORACIÓN + QR
