@@ -1556,15 +1556,16 @@ if (ratingElement) {
     botonEliminar.id = "btnEliminarPropiedad";
     botonEliminar.className = "btn";
 
-    botonEliminar.style.marginTop = "25px";
-    botonEliminar.style.width = "100%";
-    botonEliminar.style.background = "#8B4B4B";
-    botonEliminar.style.color = "white";
-    botonEliminar.style.border = "none";
-    botonEliminar.style.padding = "14px";
-    botonEliminar.style.borderRadius = "10px";
-    botonEliminar.style.cursor = "pointer";
-    botonEliminar.style.fontWeight = "600";
+    botonEliminar.style.marginTop = "0";
+botonEliminar.style.width = "auto";
+botonEliminar.style.background = "#8B4B4B";
+botonEliminar.style.color = "white";
+botonEliminar.style.border = "none";
+botonEliminar.style.padding = "6px 12px";
+botonEliminar.style.borderRadius = "8px";
+botonEliminar.style.position = "absolute";
+botonEliminar.style.top = "0";
+botonEliminar.style.right = "0";
 
     botonEliminar.innerHTML = "🗑 Eliminar propiedad";
 
