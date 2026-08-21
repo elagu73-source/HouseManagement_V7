@@ -187,9 +187,9 @@ async function go(id){
         backIcon.innerHTML = cbIcon('back');
     }
 
-    if(id === 'home'){
-        await render();
-    }
+ if(id === 'home'){
+    await cargarCasasDesdeSupabase();
+}
 }
 
 function calcularPorcentajeChecklist(datos) {
