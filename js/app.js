@@ -3028,7 +3028,7 @@ async function startPreparation(){
     }
 
     console.log("🏠 Cargando checklist de Supabase:", house.id);
-alert("ESTOY CARGANDO CHECKLIST DESDE SUPABASE");
+
     const diagnostico = document.getElementById("diagnosticoChecklist");
 
 if (diagnostico) {

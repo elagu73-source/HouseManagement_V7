@@ -10,8 +10,6 @@ window.supabaseClient = supabaseClient;
 
 async function probarLogin() {
 
-    alert("ESTOY EJECUTANDO EL SUPABASE.JS NUEVO");
-
     window.usuarioAutenticado = false;
 
     console.log(
