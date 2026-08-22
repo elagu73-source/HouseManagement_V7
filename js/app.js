@@ -3948,6 +3948,39 @@ async function cargarActividadReciente() {
     return data || [];
 }
 
+async function cargarHistorialActividad(pagina = 0) {
+
+    const porPagina = 50;
+
+    const desde = pagina * porPagina;
+    const hasta = desde + porPagina - 1;
+
+    const { data, error } = await supabaseClient
+        .from("audit_logs")
+        .select(`
+            id,
+            created_at,
+            action,
+            entity_type,
+            entity_id,
+            details,
+            house_id,
+            user_id
+        `)
+        .order("created_at", { ascending: false })
+        .range(desde, hasta);
+
+    if (error) {
+        console.error(
+            "❌ Error cargando historial:",
+            error
+        );
+        return [];
+    }
+
+    return data || [];
+}
+
 async function mostrarDashboardActividad() {
 
     const contenedor =
@@ -4072,7 +4105,7 @@ contenido.innerHTML += `
     </div>
 `;
 
-window.abrirHistorialActividad = async function() {
+window.abrirHistorialActividad = async function(pagina = 0) {
 
     const contenedor =
         document.getElementById("activityHistoryContent");
@@ -4085,13 +4118,17 @@ window.abrirHistorialActividad = async function() {
         "Cargando historial...";
 
     const actividad =
-        await cargarActividadReciente();
+        await cargarHistorialActividad(pagina);
 
     if (!actividad.length) {
         contenedor.innerHTML =
             "No hay actividad registrada.";
         return;
     }
+
+    // ============================================
+    // CASAS
+    // ============================================
 
     const nombresCasas = {};
 
@@ -4101,6 +4138,10 @@ window.abrirHistorialActividad = async function() {
                 house.nombre || "Propiedad";
         }
     });
+
+    // ============================================
+    // USUARIOS
+    // ============================================
 
     const { data: perfiles } =
         await supabaseClient
@@ -4113,6 +4154,10 @@ window.abrirHistorialActividad = async function() {
         nombresUsuarios[perfil.id] =
             perfil.nombre || "Usuario";
     });
+
+    // ============================================
+    // NOMBRES LEGIBLES
+    // ============================================
 
     const nombresAccion = {
         insert: "Agregado",
@@ -4130,39 +4175,248 @@ window.abrirHistorialActividad = async function() {
         foto: "Foto"
     };
 
-    contenedor.innerHTML = actividad
-        .map(item => {
+    // ============================================
+    // FILTROS
+    // ============================================
 
-            const casa =
-                nombresCasas[item.house_id] ||
-                "Propiedad";
+    const filtroCasa =
+        document.getElementById("activityFilterHouse");
 
-            const tipo =
-                nombresTipo[item.entity_type] ||
-                item.entity_type;
+    const filtroUsuario =
+        document.getElementById("activityFilterUser");
 
-            const accion =
-                nombresAccion[item.action] ||
-                item.action;
+    const filtroTipo =
+        document.getElementById("activityFilterType");
 
-            const usuario =
-                nombresUsuarios[item.user_id] ||
-                "Usuario";
+        const filtroFecha =
+    document.getElementById("activityFilterDate");
 
-            const fecha =
-                new Date(item.created_at)
-                    .toLocaleString("es-AR");
+    // Cargar casas en el filtro
+    if (filtroCasa) {
 
-            return `
-                <div class="activity-history-item">
-                    <strong>${casa}</strong>
-                    · ${tipo} ${accion.toLowerCase()}
-                    · ${usuario}
-                    · ${fecha}
-                </div>
-            `;
-        })
-        .join("");
+        filtroCasa.innerHTML =
+            `<option value="">Todas las casas</option>`;
+
+        houses
+            .filter(h => h.id && h.eliminada !== true)
+            .sort((a, b) =>
+                (a.nombre || "").localeCompare(b.nombre || "")
+            )
+            .forEach(house => {
+
+                filtroCasa.innerHTML += `
+                    <option value="${house.id}">
+                        ${house.nombre}
+                    </option>
+                `;
+            });
+    }
+
+
+    // Cargar usuarios en el filtro
+    if (filtroUsuario) {
+
+        filtroUsuario.innerHTML =
+            `<option value="">Todos los usuarios</option>`;
+
+        (perfiles || [])
+            .sort((a, b) =>
+                (a.nombre || "").localeCompare(b.nombre || "")
+            )
+            .forEach(perfil => {
+
+                filtroUsuario.innerHTML += `
+                    <option value="${perfil.id}">
+                        ${perfil.nombre}
+                    </option>
+                `;
+            });
+    }
+
+    // ============================================
+    // MOSTRAR HISTORIAL
+    // ============================================
+
+    function renderHistorial() {
+
+        const casaSeleccionada =
+            filtroCasa?.value || "";
+
+        const usuarioSeleccionado =
+            filtroUsuario?.value || "";
+
+        const tipoSeleccionado =
+            filtroTipo?.value || "";
+
+            const fechaSeleccionada =
+    filtroFecha?.value || "";
+
+        const filtrados =
+            actividad.filter(item => {
+
+                const coincideCasa =
+                    !casaSeleccionada ||
+                    item.house_id === casaSeleccionada;
+
+                const coincideUsuario =
+                    !usuarioSeleccionado ||
+                    item.user_id === usuarioSeleccionado;
+
+                const coincideTipo =
+                    !tipoSeleccionado ||
+                    item.entity_type === tipoSeleccionado;
+
+                    let coincideFecha = true;
+
+if (fechaSeleccionada) {
+
+    const fechaItem = new Date(item.created_at);
+    const ahora = new Date();
+
+    if (fechaSeleccionada === "today") {
+
+        coincideFecha =
+            fechaItem.toDateString() ===
+            ahora.toDateString();
+
+    } else {
+
+        const dias =
+            Number(fechaSeleccionada);
+
+        const limite =
+            new Date();
+
+        limite.setDate(
+            limite.getDate() - dias
+        );
+
+        coincideFecha =
+            fechaItem >= limite;
+    }
+}
+
+             return (
+    coincideCasa &&
+    coincideUsuario &&
+    coincideTipo &&
+    coincideFecha
+);
+            });
+
+
+        if (!filtrados.length) {
+
+            contenedor.innerHTML =
+                `<div class="activity-history-item">
+                    No hay movimientos para estos filtros.
+                </div>`;
+
+            return;
+        }
+
+
+        contenedor.innerHTML =
+            filtrados
+                .map(item => {
+
+                    const casa =
+                        nombresCasas[item.house_id] ||
+                        "Propiedad";
+
+                    const tipo =
+                        nombresTipo[item.entity_type] ||
+                        item.entity_type;
+
+                    const accion =
+                        nombresAccion[item.action] ||
+                        item.action;
+
+                    const usuario =
+                        nombresUsuarios[item.user_id] ||
+                        "Usuario";
+
+                    const fecha =
+                        new Date(item.created_at)
+                            .toLocaleString("es-AR");
+
+                    return `
+                        <div class="activity-history-item">
+                            <strong>${casa}</strong>
+                            · ${tipo} ${accion.toLowerCase()}
+                            · ${usuario}
+                            · ${fecha}
+                        </div>
+                    `;
+                })
+                .join("");
+    }
+
+
+    // ============================================
+    // EVENTOS DE LOS FILTROS
+    // ============================================
+
+    if (filtroCasa) {
+        filtroCasa.onchange = renderHistorial;
+    }
+
+    if (filtroUsuario) {
+        filtroUsuario.onchange = renderHistorial;
+    }
+
+    if (filtroTipo) {
+        filtroTipo.onchange = renderHistorial;
+    }
+
+    if (filtroFecha) {
+    filtroFecha.onchange = renderHistorial;
+}
+
+    // Primera carga
+    renderHistorial();
+
+   // ============================================
+// PAGINACIÓN
+// ============================================
+
+const botonAnterior =
+    document.getElementById("activityPrevBtn");
+
+const botonSiguiente =
+    document.getElementById("activityNextBtn");
+
+const infoPagina =
+    document.getElementById("activityPageInfo");
+
+if (infoPagina) {
+    infoPagina.textContent =
+        `Página ${pagina + 1}`;
+}
+
+if (botonAnterior) {
+
+    botonAnterior.disabled =
+        pagina === 0;
+
+    botonAnterior.onclick = function() {
+
+        if (pagina > 0) {
+            abrirHistorialActividad(pagina - 1);
+        }
+    };
+}
+
+if (botonSiguiente) {
+
+    botonSiguiente.disabled =
+        actividad.length < 50;
+
+    botonSiguiente.onclick = function() {
+
+        abrirHistorialActividad(pagina + 1);
+    };
+}
+
 };
-
 }

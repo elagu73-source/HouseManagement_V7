@@ -61,17 +61,17 @@
 >
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:16px;width:100%;box-sizing:border-box;">
 
-    <button style="width:100%;padding:3px 2px;font-size:11px;"
-        onclick="setPropertyFilter('Todas')">Todas</button>
+    <button style="width:100%;height:34px;min-height:34px;padding:0 2px;font-size:12px;"
+    onclick="setPropertyFilter('Todas')">Todas</button>
 
-    <button style="width:100%;padding:5px 2px;font-size:11px;"
-        onclick="setPropertyFilter('Disponible')">Disponibles</button>
+<button style="width:100%;height:34px;min-height:34px;padding:0 2px;font-size:12px;"
+    onclick="setPropertyFilter('Disponible')">Disponibles</button>
 
-    <button style="width:100%;padding:5px 2px;font-size:11px;"
-        onclick="setPropertyFilter('Ocupada')">Ocupadas</button>
+<button style="width:100%;height:34px;min-height:34px;padding:0 2px;font-size:12px;"
+    onclick="setPropertyFilter('Ocupada')">Ocupadas</button>
 
-    <button style="width:100%;padding:5px 2px;font-size:9px;"
-        onclick="setPropertyFilter('Mantenimiento')">Mantenimiento</button>
+<button style="width:100%;height:34px;min-height:34px;padding:0 2px;font-size:12px;"
+    onclick="setPropertyFilter('Mantenimiento')">Mantenimiento</button>
 
 </div>
 
@@ -86,9 +86,55 @@
 
     <h2>Historial de actividad</h2>
 
+    <div class="activity-history-filters">
+
+    <select id="activityFilterHouse">
+        <option value="">Todas las casas</option>
+    </select>
+
+    <select id="activityFilterUser">
+        <option value="">Todos los usuarios</option>
+    </select>
+
+    <select id="activityFilterType">
+        <option value="">Todos los tipos</option>
+        <option value="propiedad">Propiedad</option>
+        <option value="incidencia">Incidencia</option>
+        <option value="checklist">Checklist</option>
+        <option value="reserva">Reserva</option>
+        <option value="inventario">Inventario</option>
+        <option value="manual">Manual</option>
+        <option value="foto">Foto</option>
+    </select>
+
+    <select id="activityFilterDate">
+    <option value="">Todas las fechas</option>
+    <option value="today">Hoy</option>
+    <option value="7">Últimos 7 días</option>
+    <option value="30">Últimos 30 días</option>
+</select>
+
+</div>
+
     <div id="activityHistoryContent">
         Cargando historial...
     </div>
+
+<div class="activity-history-pagination">
+
+    <button id="activityPrevBtn">
+        ← Anterior
+    </button>
+
+    <span id="activityPageInfo">
+        Página 1
+    </span>
+
+    <button id="activityNextBtn">
+        Siguiente →
+    </button>
+
+</div>
 
 </section>
 
