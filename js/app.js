@@ -556,7 +556,39 @@ agregar.onclick = function() {
     openHouse(nuevoIndice);
 };
 c.appendChild(agregar);
+
+await mostrarDashboardActividad();
+
 }
+
+window.abrirActividad = function() {
+
+    const contenido =
+        document.getElementById("activityDashboardContent");
+
+    const boton =
+        document.querySelector(
+            ".activity-dashboard-header button"
+        );
+
+    if (!contenido) return;
+
+    const estaOculto =
+        contenido.style.display === "none";
+
+    contenido.style.display =
+        estaOculto ? "block" : "none";
+
+    if (boton) {
+        boton.textContent =
+            estaOculto
+                ? "Ocultar actividad"
+                : "Ver actividad";
+    }
+};
+
+
+
 function openPhotos(){
 
     const selector = document.getElementById("photoAmbiente");
@@ -3914,4 +3946,121 @@ async function cargarActividadReciente() {
     }
 
     return data || [];
+}
+
+async function mostrarDashboardActividad() {
+
+    const contenedor =
+        document.getElementById("activityDashboard");
+
+    const contenido =
+        document.getElementById("activityDashboardContent");
+
+    if (!contenedor || !contenido) return;
+
+    const rol = await supabaseClient
+        .rpc("current_organization_role");
+
+    if (
+        rol.error ||
+        !["admin", "supervisor"].includes(rol.data)
+    ) {
+        contenedor.style.display = "none";
+        return;
+    }
+
+    const actividad =
+        await cargarActividadReciente();
+
+        const { data: perfiles, error: errorPerfiles } =
+    await supabaseClient
+        .from("profiles")
+        .select("id, nombre");
+
+if (errorPerfiles) {
+    console.error(
+        "❌ Error cargando perfiles para actividad:",
+        errorPerfiles
+    );
+}
+
+const nombresUsuarios = {};
+
+(perfiles || []).forEach(perfil => {
+    nombresUsuarios[perfil.id] =
+        perfil.nombre || "Usuario";
+});
+
+    contenedor.style.display = "block";
+
+    if (!actividad.length) {
+        contenido.innerHTML =
+            "No hay actividad reciente.";
+        return;
+    }
+
+    const nombresCasas = {};
+
+houses.forEach(house => {
+    if (house.id) {
+        nombresCasas[house.id] =
+            house.nombre || "Propiedad";
+    }
+});
+
+const nombresAccion = {
+    insert: "Agregado",
+    update: "Actualizado",
+    delete: "Eliminado"
+};
+
+const nombresTipo = {
+    propiedad: "Propiedad",
+    incidencia: "Incidencia",
+    checklist: "Checklist",
+    reserva: "Reserva",
+    inventario: "Inventario",
+    manual: "Manual",
+    foto: "Foto"
+};
+
+contenido.innerHTML = actividad
+    .slice(0, 10)
+    .map(item => {
+
+        const casa =
+            nombresCasas[item.house_id] ||
+            "Propiedad";
+
+        const tipo =
+            nombresTipo[item.entity_type] ||
+            item.entity_type;
+
+        const accion =
+            nombresAccion[item.action] ||
+            item.action;
+
+            const usuario =
+        nombresUsuarios[item.user_id] ||
+        "Usuario";
+
+        const fecha =
+            new Date(item.created_at)
+                .toLocaleString("es-AR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+
+     return `
+    <div class="activity-item">
+        <strong>${casa}</strong>
+        · ${tipo} ${accion.toLowerCase()}
+        · ${usuario}
+        · ${fecha}
+    </div>
+`;
+    })
+    .join("");
 }
