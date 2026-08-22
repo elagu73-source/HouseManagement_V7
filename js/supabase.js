@@ -8,6 +8,79 @@ const supabaseClient = window.supabase.createClient(
 
 window.supabaseClient = supabaseClient;
 
+function pedirPassword() {
+    return new Promise((resolve) => {
+
+        const overlay = document.createElement("div");
+
+        overlay.style.position = "fixed";
+        overlay.style.inset = "0";
+        overlay.style.background = "rgba(0,0,0,0.45)";
+        overlay.style.display = "flex";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.zIndex = "99999";
+
+        const box = document.createElement("div");
+
+        box.style.background = "#FFFFFF";
+        box.style.padding = "24px";
+        box.style.borderRadius = "14px";
+        box.style.width = "min(360px, 85vw)";
+        box.style.boxSizing = "border-box";
+
+        const title = document.createElement("div");
+        title.textContent = "Contraseña";
+        title.style.fontSize = "18px";
+        title.style.fontWeight = "600";
+        title.style.marginBottom = "12px";
+        title.style.color = "#0D2B45";
+
+        const input = document.createElement("input");
+
+        input.type = "password";
+        input.autocomplete = "current-password";
+        input.style.width = "100%";
+        input.style.boxSizing = "border-box";
+        input.style.padding = "12px";
+        input.style.border = "1px solid #D8D8D2";
+        input.style.borderRadius = "8px";
+        input.style.fontSize = "16px";
+
+        const button = document.createElement("button");
+
+        button.textContent = "Aceptar";
+        button.style.marginTop = "14px";
+        button.style.width = "100%";
+        button.style.padding = "11px";
+        button.style.border = "none";
+        button.style.borderRadius = "8px";
+        button.style.background = "#0D2B45";
+        button.style.color = "#FFFFFF";
+        button.style.fontWeight = "600";
+
+        button.onclick = () => {
+            const value = input.value;
+            overlay.remove();
+            resolve(value);
+        };
+
+        input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                button.click();
+            }
+        });
+
+        box.appendChild(title);
+        box.appendChild(input);
+        box.appendChild(button);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+
+        input.focus();
+    });
+}
+
 async function probarLogin() {
 
     window.usuarioAutenticado = false;
@@ -23,11 +96,11 @@ async function probarLogin() {
         return false;
     }
 
-    const password = prompt('Contraseña de prueba:');
+ const password = await pedirPassword();
 
-    if (!password) {
-        return false;
-    }
+if (!password) {
+    return false;
+}
 
     const { data, error } =
         await supabaseClient.auth.signInWithPassword({
