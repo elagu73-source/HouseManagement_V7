@@ -114,7 +114,7 @@ function setPropertyFilter(filtro){
     render();
 }
 
-function cbIcon(name){
+function cbIcon(name, extraClass = ""){
 
     const icons = {
 
@@ -142,6 +142,15 @@ function cbIcon(name){
                 <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"></path>
             </svg>`,
 
+            trash: `
+    <svg viewBox="0 0 24 24">
+        <path d="M4 7h16"></path>
+        <path d="M9 7V4h6v3"></path>
+        <path d="M7 7l1 13h8l1-13"></path>
+        <line x1="10" y1="10" x2="10.5" y2="17"></line>
+        <line x1="14" y1="10" x2="13.5" y2="17"></line>
+    </svg>`,
+
         calendar: `
     <svg viewBox="0 0 24 24">
         <rect x="4" y="5" width="16" height="15" rx="2"></rect>
@@ -164,7 +173,7 @@ function cbIcon(name){
             </svg>`
     };
 
-    return `<span class="cb-icon">${icons[name] || ''}</span>`;
+   return `<span class="cb-icon ${extraClass}">${icons[name] || ''}</span>`;
 }
 
 initPhotoDB();
@@ -1569,11 +1578,9 @@ if (proximaReserva) {
     document.getElementById("houseDetailIncidencias").textContent =
         "Incidencias: " + incidenciasCasa;
 
-   document.getElementById("houseDetailRating").textContent =
-    "★ " +
-    (
-        valoraciones[h.nombre]?.promedio ?? "-"
-    );
+   document.getElementById("houseDetailRating").innerHTML =
+    cbIcon("star") +
+    `<span>${valoraciones[h.nombre]?.promedio ?? "-"}</span>`;
 
     go("property");
 // Botón eliminar propiedad
@@ -1610,7 +1617,7 @@ botonEliminar.style.alignItems = "center";
 botonEliminar.style.justifyContent = "center";
 botonEliminar.style.transform = "translateY(-8px)";
 
-    botonEliminar.innerHTML = "🗑";
+    botonEliminar.innerHTML = cbIcon("trash", "white");
 
     botonEliminar.onclick = async function(event) {
 
@@ -1719,7 +1726,9 @@ botonValoracion.style.borderRadius = "10px";
 botonValoracion.style.cursor = "pointer";
 botonValoracion.style.fontWeight = "600";
 
-botonValoracion.innerHTML = "⭐ Valorar estadía";
+botonValoracion.innerHTML =
+    cbIcon("star", "white") +
+    "<span>Valorar estadía</span>";
 
 botonValoracion.onclick = function(event) {
 
@@ -4419,4 +4428,89 @@ if (botonSiguiente) {
 }
 
 };
+}
+
+async function cargarNotificaciones() {
+
+    const { data, error } = await supabaseClient
+        .from("notifications")
+        .select(`
+            id,
+            created_at,
+            house_id,
+            type,
+            title,
+            message,
+            read,
+            entity_type,
+            entity_id
+        `)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+    if (error) {
+        console.error(
+            "❌ Error cargando notificaciones:",
+            error
+        );
+        return [];
+    }
+
+    return data || [];
+}
+
+async function mostrarNotificaciones() {
+
+    const contenedor =
+        document.getElementById("notificationsContent");
+
+    const badge =
+        document.getElementById("notificationsBadge");
+
+    if (!contenedor || !badge) return;
+
+    const notificaciones =
+        await cargarNotificaciones();
+
+    const noLeidas =
+        notificaciones.filter(n => !n.read);
+
+    badge.textContent =
+        noLeidas.length > 0
+            ? noLeidas.length
+            : "";
+
+    contenedor.innerHTML =
+        notificaciones.length
+            ? notificaciones
+                .slice(0, 10)
+                .map(n => `
+                    <div class="notification-item ${n.read ? "read" : "unread"}">
+                        <strong>${n.title}</strong>
+                        <span>${n.message || ""}</span>
+                    </div>
+                `)
+                .join("")
+            : "No hay notificaciones.";
+}
+
+// ============================================
+// ABRIR / CERRAR NOTIFICACIONES
+// ============================================
+
+async function abrirNotificaciones() {
+
+    const contenido =
+        document.getElementById("notificationsContent");
+
+    if (!contenido) return;
+
+    if (contenido.style.display === "block") {
+        contenido.style.display = "none";
+        return;
+    }
+
+    contenido.style.display = "block";
+
+    await mostrarNotificaciones();
 }
