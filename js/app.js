@@ -4063,4 +4063,106 @@ contenido.innerHTML = actividad
 `;
     })
     .join("");
+
+contenido.innerHTML += `
+    <div class="activity-history-link">
+        <button onclick="abrirHistorialActividad()">
+            Ver historial completo
+        </button>
+    </div>
+`;
+
+window.abrirHistorialActividad = async function() {
+
+    const contenedor =
+        document.getElementById("activityHistoryContent");
+
+    if (!contenedor) return;
+
+    go("activityHistory");
+
+    contenedor.innerHTML =
+        "Cargando historial...";
+
+    const actividad =
+        await cargarActividadReciente();
+
+    if (!actividad.length) {
+        contenedor.innerHTML =
+            "No hay actividad registrada.";
+        return;
+    }
+
+    const nombresCasas = {};
+
+    houses.forEach(house => {
+        if (house.id) {
+            nombresCasas[house.id] =
+                house.nombre || "Propiedad";
+        }
+    });
+
+    const { data: perfiles } =
+        await supabaseClient
+            .from("profiles")
+            .select("id, nombre");
+
+    const nombresUsuarios = {};
+
+    (perfiles || []).forEach(perfil => {
+        nombresUsuarios[perfil.id] =
+            perfil.nombre || "Usuario";
+    });
+
+    const nombresAccion = {
+        insert: "Agregado",
+        update: "Actualizado",
+        delete: "Eliminado"
+    };
+
+    const nombresTipo = {
+        propiedad: "Propiedad",
+        incidencia: "Incidencia",
+        checklist: "Checklist",
+        reserva: "Reserva",
+        inventario: "Inventario",
+        manual: "Manual",
+        foto: "Foto"
+    };
+
+    contenedor.innerHTML = actividad
+        .map(item => {
+
+            const casa =
+                nombresCasas[item.house_id] ||
+                "Propiedad";
+
+            const tipo =
+                nombresTipo[item.entity_type] ||
+                item.entity_type;
+
+            const accion =
+                nombresAccion[item.action] ||
+                item.action;
+
+            const usuario =
+                nombresUsuarios[item.user_id] ||
+                "Usuario";
+
+            const fecha =
+                new Date(item.created_at)
+                    .toLocaleString("es-AR");
+
+            return `
+                <div class="activity-history-item">
+                    <strong>${casa}</strong>
+                    · ${tipo} ${accion.toLowerCase()}
+                    · ${usuario}
+                    · ${fecha}
+                </div>
+            `;
+        })
+        .join("");
+};
+
 }
