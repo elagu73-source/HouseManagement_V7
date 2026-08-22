@@ -567,6 +567,7 @@ agregar.onclick = function() {
 c.appendChild(agregar);
 
 await mostrarDashboardActividad();
+await mostrarNotificaciones();
 
 }
 
@@ -4485,11 +4486,14 @@ async function mostrarNotificaciones() {
             ? notificaciones
                 .slice(0, 10)
                 .map(n => `
-                    <div class="notification-item ${n.read ? "read" : "unread"}">
-                        <strong>${n.title}</strong>
-                        <span>${n.message || ""}</span>
-                    </div>
-                `)
+    <div
+        class="notification-item ${n.read ? "read" : "unread"}"
+        onclick="marcarNotificacionLeida('${n.id}')"
+    >
+        <strong>${n.title}</strong>
+        <span>${n.message || ""}</span>
+    </div>
+`)
                 .join("")
             : "No hay notificaciones.";
 }
@@ -4514,3 +4518,29 @@ async function abrirNotificaciones() {
 
     await mostrarNotificaciones();
 }
+
+// ============================================
+// MARCAR NOTIFICACIÓN COMO LEÍDA
+// ============================================
+
+window.marcarNotificacionLeida = async function(id) {
+
+    const { error } = await supabaseClient
+        .from("notifications")
+        .update({
+            read: true,
+            read_at: new Date().toISOString()
+        })
+        .eq("id", id);
+
+    if (error) {
+        console.error(
+            "❌ Error marcando notificación como leída:",
+            error
+        );
+        return;
+    }
+
+    // Actualiza panel + contador
+    await mostrarNotificaciones();
+};

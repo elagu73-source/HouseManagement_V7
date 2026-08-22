@@ -2344,3 +2344,34 @@ top: 20px !important;
 
     z-index: 100;
 }
+
+.notification-item {
+    padding: 9px 6px;
+    border-bottom: 1px solid #E4E5DF;
+    cursor: pointer;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item strong {
+    display: block;
+    font-size: 12px;
+    color: #0D2B45;
+}
+
+.notification-item span {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: #59636A;
+}
+
+.notification-item.unread {
+    font-weight: 600;
+}
+
+.notification-item.read {
+    opacity: 0.55;
+}
