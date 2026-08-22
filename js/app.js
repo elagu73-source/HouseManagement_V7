@@ -4443,6 +4443,7 @@ async function cargarNotificaciones() {
             title,
             message,
             read,
+            read_at,
             entity_type,
             entity_id
         `)
@@ -4457,7 +4458,19 @@ async function cargarNotificaciones() {
         return [];
     }
 
-    return data || [];
+    const limiteLeidas = new Date();
+limiteLeidas.setDate(limiteLeidas.getDate() - 7);
+
+return (data || []).filter(n => {
+
+    // Las no leídas siempre se muestran
+    if (!n.read) return true;
+
+    // Las leídas se muestran durante 7 días
+    if (!n.read_at) return false;
+
+    return new Date(n.read_at) >= limiteLeidas;
+});
 }
 
 async function mostrarNotificaciones() {
@@ -4544,3 +4557,31 @@ window.marcarNotificacionLeida = async function(id) {
     // Actualiza panel + contador
     await mostrarNotificaciones();
 };
+
+// ============================================
+// CERRAR NOTIFICACIONES AL HACER CLIC AFUERA
+// ============================================
+
+document.addEventListener("click", function(event) {
+
+    const boton =
+        document.getElementById("notificationsButton");
+
+    const panel =
+        document.getElementById("notificationsContent");
+
+    if (!boton || !panel) return;
+
+    const clicDentroBoton =
+        boton.contains(event.target);
+
+    const clicDentroPanel =
+        panel.contains(event.target);
+
+    if (
+        !clicDentroBoton &&
+        !clicDentroPanel
+    ) {
+        panel.style.display = "none";
+    }
+});
