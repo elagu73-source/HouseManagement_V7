@@ -411,7 +411,7 @@ d.innerHTML = `
             <span class="property-status-dot ${
                 h.estado === "Pendiente"
                     ? "pending"
-                    : h.estado === "En preparación"
+                    : h.estado === "Preparación"
                         ? "preparing"
                         : "ready"
             }"></span>
@@ -1415,7 +1415,7 @@ const estado = h.estado ?? "Pendiente";
 
     const estadoIcono =
         estado === "Pendiente" ? "●" :
-        estado === "En preparación" ? "●" :
+        estado === "Preparación" ? "●" :
         "●";
 
     document.getElementById("houseDetailName").textContent = nombre;
@@ -3243,7 +3243,7 @@ function actualizarEstadoCasa() {
 
     } else if (checksCompletados < totalChecks) {
 
-        houses[current].estado = "En preparación";
+        houses[current].estado = "Preparación";
 
     } else {
 
@@ -3293,7 +3293,7 @@ function actualizarEstadosTodasLasCasas() {
 
         } else if (checksCompletados < totalChecks) {
 
-            house.estado = "En preparación";
+            house.estado = "Preparación";
 
         } else {
 
