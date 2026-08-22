@@ -1572,7 +1572,7 @@ botonEliminar.style.alignItems = "center";
 botonEliminar.style.justifyContent = "center";
 botonEliminar.style.transform = "translateY(-8px)";
 
-    botonEliminar.innerHTML = "🗑 Eliminar propiedad";
+    botonEliminar.innerHTML = "🗑";
 
     botonEliminar.onclick = async function(event) {
 
