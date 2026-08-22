@@ -438,15 +438,17 @@ d.innerHTML = `
     ${cbIcon('calendar')}
     <span>
         <small>Ingreso</small>
-        ${
-            proximaReservaPorCasa[h.id]
-                ? formatearFecha(
-                    fechaDesdeISO(
-                        proximaReservaPorCasa[h.id].check_in
-                    )
-                  )
-                : '-'
-        }
+        
+${
+    proximaReservaPorCasa[h.id]
+        ? formatearFechaCorta(
+            fechaDesdeISO(
+                proximaReservaPorCasa[h.id].check_in
+            )
+          )
+        : '-'
+}
+        
     </span>
 </div>
 
@@ -454,15 +456,17 @@ d.innerHTML = `
     ${cbIcon('calendar')}
     <span>
         <small>Egreso</small>
-        ${
-            proximaReservaPorCasa[h.id]
-                ? formatearFecha(
-                    fechaDesdeISO(
-                        proximaReservaPorCasa[h.id].check_out
-                    )
-                  )
-                : '-'
-        }
+        
+${
+    proximaReservaPorCasa[h.id]
+        ? formatearFechaCorta(
+            fechaDesdeISO(
+                proximaReservaPorCasa[h.id].check_out
+            )
+          )
+        : '-'
+}
+
     </span>
 </div>
 
@@ -1367,6 +1371,17 @@ function formatearFecha(fecha) {
         }
     );
 
+}
+
+function formatearFechaCorta(fecha) {
+
+    if (!fecha) return "-";
+
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = String(fecha.getFullYear()).slice(-2);
+
+    return `${dia}/${mes}/${anio}`;
 }
 
 async function openHouse(i){
