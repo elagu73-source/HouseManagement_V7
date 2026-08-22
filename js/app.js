@@ -3680,6 +3680,114 @@ async function cargarManualCasa(){
 
 }
 
+async function guardarManual() {
+
+    const house = houses[current];
+
+    if (!house || !house.id) {
+        console.error("❌ La casa no tiene UUID de Supabase");
+        return;
+    }
+
+    const titulo =
+        document.getElementById("manualTitulo");
+
+    const texto =
+        document.getElementById("manualTexto");
+
+    if (!titulo || !texto) {
+        console.error("❌ No se encontró el formulario del manual");
+        return;
+    }
+
+    let seccion = "";
+
+    const tituloTexto =
+        titulo.innerText
+            .toLowerCase()
+            .trim();
+
+    if (tituloTexto.includes("emergencias")) {
+        seccion = "emergencias";
+    } else if (tituloTexto.includes("accesos")) {
+        seccion = "accesos";
+    } else if (tituloTexto.includes("tecnologia")) {
+        seccion = "tecnologia";
+    } else if (tituloTexto.includes("exterior")) {
+        seccion = "exterior";
+    } else if (tituloTexto.includes("blancos")) {
+        seccion = "blancos";
+    } else if (tituloTexto.includes("proveedores")) {
+        seccion = "proveedores";
+    }
+
+    if (!seccion) {
+        console.error("❌ No se pudo identificar la sección del manual");
+        return;
+    }
+
+    // Actualizamos el objeto local
+    manualCasa[seccion] = texto.value;
+
+    const { data: existente, error: errorBuscar } =
+        await supabaseClient
+            .from("house_manual")
+            .select("id")
+            .eq("house_id", house.id)
+            .maybeSingle();
+
+    if (errorBuscar) {
+        console.error(
+            "❌ Error buscando manual existente:",
+            errorBuscar
+        );
+        return;
+    }
+
+    let errorGuardar;
+
+    if (existente) {
+
+        const { error } =
+            await supabaseClient
+                .from("house_manual")
+                .update({
+                    data: manualCasa,
+                    updated_at: new Date().toISOString()
+                })
+                .eq("house_id", house.id);
+
+        errorGuardar = error;
+
+    } else {
+
+        const { error } =
+            await supabaseClient
+                .from("house_manual")
+                .insert({
+                    house_id: house.id,
+                    data: manualCasa
+                });
+
+        errorGuardar = error;
+    }
+
+    if (errorGuardar) {
+        console.error(
+            "❌ Error guardando manual:",
+            errorGuardar
+        );
+        return;
+    }
+
+    console.log(
+        "✅ MANUAL GUARDADO:",
+        house.nombre,
+        seccion
+    );
+
+    await abrirManualCasa();
+}
 
 // ============================================
 // ABRIR UNA SECCIÓN DEL MANUAL
@@ -3777,4 +3885,33 @@ async function abrirManualCasa(){
     }
 
     go("manual");
+}
+
+// ============================================
+// ACTIVIDAD RECIENTE
+// ============================================
+
+async function cargarActividadReciente() {
+
+    const { data, error } = await supabaseClient
+        .from("audit_logs")
+        .select(`
+            id,
+            created_at,
+            action,
+            entity_type,
+            entity_id,
+            details,
+            house_id,
+            user_id
+        `)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+    if (error) {
+        console.error("❌ Error cargando actividad:", error);
+        return [];
+    }
+
+    return data || [];
 }
