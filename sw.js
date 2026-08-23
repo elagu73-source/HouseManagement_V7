@@ -43,3 +43,39 @@ self.addEventListener("fetch", event => {
     );
 
 });
+
+// ============================================
+// NOTIFICACIONES PUSH
+// ============================================
+
+self.addEventListener("push", event => {
+
+    let data = {
+        title: "House Management",
+        message: "Tenés una nueva notificación."
+    };
+
+    if (event.data) {
+        try {
+            data = event.data.json();
+        } catch (error) {
+            console.error(
+                "Error leyendo notificación push:",
+                error
+            );
+        }
+    }
+
+    const options = {
+        body: data.message,
+        icon: "./icon-192.png",
+        badge: "./icon-192.png"
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(
+            data.title || "House Management",
+            options
+        )
+    );
+});
