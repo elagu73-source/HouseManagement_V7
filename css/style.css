@@ -2375,3 +2375,25 @@ top: 20px !important;
 .notification-item.read {
     opacity: 0.55;
 }
+
+/* =========================================
+   NOTIFICACIONES - AJUSTE MOBILE
+   ========================================= */
+
+@media (max-width: 600px) {
+
+    .notifications-content {
+        position: fixed !important;
+
+        top: 155px !important;
+        left: 20px !important;
+        right: 20px !important;
+
+        width: auto !important;
+        max-width: none !important;
+
+        box-sizing: border-box !important;
+        z-index: 9999 !important;
+    }
+
+}
