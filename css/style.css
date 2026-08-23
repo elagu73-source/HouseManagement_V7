@@ -2380,7 +2380,7 @@ top: 20px !important;
    NOTIFICACIONES - AJUSTE MOBILE
    ========================================= */
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
 
     .notifications-content {
         position: fixed !important;
