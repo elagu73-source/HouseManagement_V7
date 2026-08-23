@@ -4600,3 +4600,136 @@ document.addEventListener("click", function(event) {
         panel.style.display = "none";
     }
 });
+
+// ============================================
+// SUSCRIPCIÓN A NOTIFICACIONES PUSH
+// ============================================
+
+function convertirVapidKey(base64String) {
+
+    const padding =
+        "=".repeat((4 - base64String.length % 4) % 4);
+
+    const base64 =
+        (base64String + padding)
+            .replace(/-/g, "+")
+            .replace(/_/g, "/");
+
+    const rawData = window.atob(base64);
+
+    return Uint8Array.from(
+        [...rawData].map(char => char.charCodeAt(0))
+    );
+}
+
+const VAPID_PUBLIC_KEY = "BC_TH6w5DO2yxHs_j9GFys5347KX4pRKFaZcTjXg_uznFVSPy358glap8MaWU2RIgNuEMlzMbPKF30babJcYyGo";
+window.activarNotificacionesPush = async function() {
+
+    try {
+
+        if (!("serviceWorker" in navigator)) {
+            console.error("Service Worker no disponible.");
+            return;
+        }
+
+        if (!("PushManager" in window)) {
+            console.error("Push notifications no disponibles.");
+            return;
+        }
+
+        const permiso =
+            await Notification.requestPermission();
+
+        if (permiso !== "granted") {
+            console.log("Permiso de notificaciones no concedido.");
+            return;
+        }
+
+        console.log("✅ Permiso de notificaciones concedido");
+
+// Esperar al Service Worker activo
+const registration =
+    await navigator.serviceWorker.ready;
+
+// Buscar si este dispositivo ya está suscripto
+let subscription =
+    await registration.pushManager.getSubscription();
+
+// Si todavía no está suscripto, crear suscripción
+if (!subscription) {
+
+    subscription =
+        await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey:
+                convertirVapidKey(VAPID_PUBLIC_KEY)
+        });
+}
+
+// Usuario actualmente logueado
+const {
+    data: { user }
+} = await supabaseClient.auth.getUser();
+
+if (!user) {
+    console.error("❌ No hay usuario autenticado.");
+    return;
+}
+
+// Organización actual
+const { data: organizationId, error: organizationError } =
+    await supabaseClient.rpc(
+        "current_organization_id"
+    );
+
+if (organizationError || !organizationId) {
+    console.error(
+        "❌ No se pudo obtener la organización:",
+        organizationError
+    );
+    return;
+}
+
+// Convertir suscripción a objeto normal
+const pushData = subscription.toJSON();
+
+// Guardarla en Supabase
+const { error: saveError } =
+    await supabaseClient
+        .from("push_subscriptions")
+        .upsert(
+            {
+                user_id: user.id,
+                organization_id: organizationId,
+                endpoint: pushData.endpoint,
+                p256dh: pushData.keys.p256dh,
+                auth: pushData.keys.auth,
+                updated_at: new Date().toISOString()
+            },
+            {
+                onConflict: "endpoint"
+            }
+        );
+
+if (saveError) {
+
+    console.error(
+        "❌ Error guardando suscripción push:",
+        saveError
+    );
+
+    return;
+}
+
+console.log(
+    "✅ Dispositivo suscripto a notificaciones push"
+);
+
+    } catch (error) {
+
+        console.error(
+            "❌ Error activando notificaciones push:",
+            error
+        );
+    }
+};
