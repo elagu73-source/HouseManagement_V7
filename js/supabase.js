@@ -117,12 +117,21 @@ if (!password) {
         return false;
     }
 
-    window.usuarioAutenticado = true;
+window.usuarioAutenticado = true;
 
-    console.log(
-        "🟢 LOGIN CORRECTO - AUTENTICADO:",
-        window.usuarioAutenticado
-    );
+console.log(
+    "🟢 LOGIN CORRECTO - AUTENTICADO:",
+    window.usuarioAutenticado
+);
 
-    return true;
+// Activar notificaciones push en este dispositivo
+if (typeof activarNotificacionesPush === "function") {
+    try {
+        await activarNotificacionesPush();
+    } catch (error) {
+        console.error("❌ No se pudieron activar las notificaciones push:", error);
+    }
+}
+
+return true;
 }
