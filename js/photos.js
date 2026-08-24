@@ -343,6 +343,16 @@ async function mostrarFotos(houseId) {
     const container = document.getElementById("photosContainer");
 
     if (!container) return;
+    
+    const { data: rolActual, error: rolError } =
+    await supabaseClient.rpc("current_organization_role");
+
+if (rolError) {
+    console.error(
+        "❌ Error obteniendo rol actual:",
+        rolError
+    );
+}
 
     // Obtener UUID real de la casa
     let houseUuid = houseId;
@@ -531,36 +541,40 @@ async function mostrarFotos(houseId) {
 
             div.appendChild(img);
 
-            // Botón eliminar
-            const botonEliminar =
-                document.createElement("div");
+           // Botón eliminar SOLO para admin y supervisor
+if (
+    rolActual === "admin" ||
+    rolActual === "supervisor"
+) {
 
-            botonEliminar.className = "btn";
+    const botonEliminar =
+        document.createElement("div");
 
-            botonEliminar.innerHTML = `
-                <span class="cb-icon white">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M4 7H20"></path>
-                        <path d="M9 7V5H15V7"></path>
-                        <path d="M7 7L8 20H16L17 7"></path>
-                        <path d="M10 11V17"></path>
-                        <path d="M14 11V17"></path>
-                    </svg>
-                </span>
-                Eliminar
-            `;
+    botonEliminar.className = "btn";
 
-            botonEliminar.onclick = function() {
+    botonEliminar.innerHTML = `
+        <span class="cb-icon white">
+            <svg viewBox="0 0 24 24">
+                <path d="M4 7H20"></path>
+                <path d="M9 7V5H15V7"></path>
+                <path d="M7 7L8 20H16L17 7"></path>
+                <path d="M10 11V17"></path>
+                <path d="M14 11V17"></path>
+            </svg>
+        </span>
+        Eliminar
+    `;
 
-                if (confirm("¿Querés eliminar esta foto?")) {
+    botonEliminar.onclick = function() {
 
-                    deletePhoto(foto);
+        if (confirm("¿Querés eliminar esta foto?")) {
+            deletePhoto(foto);
+        }
 
-                }
+    };
 
-            };
-
-            div.appendChild(botonEliminar);
+    div.appendChild(botonEliminar);
+}
 
             grid.appendChild(div);
         }
