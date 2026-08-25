@@ -270,6 +270,83 @@ async function abrirUsuarios() {
     });
 }
 
+async function nuevoUsuario() {
+
+    const email = prompt(
+        "Email del nuevo usuario:"
+    );
+
+    if (!email) return;
+
+    const nombre = prompt(
+        "Nombre del nuevo usuario:"
+    );
+
+    if (!nombre) return;
+
+    const rol = prompt(
+        "Rol:\n\nadmin\nsupervisor\ncolaborador",
+        "colaborador"
+    );
+
+    if (!rol) return;
+
+    const rolNormalizado =
+        rol.toLowerCase().trim();
+
+    if (
+        !["admin", "supervisor", "colaborador"]
+            .includes(rolNormalizado)
+    ) {
+        alert(
+            "El rol debe ser admin, supervisor o colaborador."
+        );
+        return;
+    }
+
+    const { data, error } =
+        await supabaseClient.functions.invoke(
+            "invite-user",
+            {
+                body: {
+                    email: email.trim(),
+                    nombre: nombre.trim(),
+                    rol: rolNormalizado
+                }
+            }
+        );
+
+    if (error) {
+        console.error(
+            "❌ Error invitando usuario:",
+            error
+        );
+
+        alert(
+            "No se pudo invitar al usuario."
+        );
+
+        return;
+    }
+
+    if (data?.error) {
+        console.error(
+            "❌ invite-user:",
+            data.error
+        );
+
+        alert(data.error);
+
+        return;
+    }
+
+    alert(
+        "Invitación enviada correctamente."
+    );
+
+    await abrirUsuarios();
+}
+
 async function editarUsuario(userId) {
 
     const { data: miembro, error } =

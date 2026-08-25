@@ -2587,3 +2587,18 @@ top: 20px !important;
     display: block;
     margin: 0;
 }
+
+.usuario-nuevo-btn {
+    width: auto !important;
+    min-height: 0 !important;
+    height: 34px !important;
+    padding: 0 16px !important;
+    margin: 0 0 20px 0;
+    background: #70805f !important;
+    color: #fff !important;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px !important;
+    font-weight: 600;
+    cursor: pointer;
+}
