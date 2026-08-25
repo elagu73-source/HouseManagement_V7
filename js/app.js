@@ -243,6 +243,37 @@ async function render(){
     c.innerHTML = '';
 
     // ============================================
+// ACCESO ADMINISTRACIÓN DE USUARIOS
+// ============================================
+
+const usersAdminAccess =
+    document.getElementById("usersAdminAccess");
+
+if (usersAdminAccess) {
+
+    const { data: rolActual, error: rolError } =
+        await supabaseClient.rpc(
+            "current_organization_role"
+        );
+
+    if (rolError) {
+        console.error(
+            "❌ Error obteniendo rol para Usuarios:",
+            rolError
+        );
+
+        usersAdminAccess.style.display = "none";
+
+    } else {
+
+        usersAdminAccess.style.display =
+            rolActual === "admin"
+                ? "block"
+                : "none";
+    }
+}
+
+    // ============================================
 // CHECKLISTS DESDE SUPABASE PARA HOME
 // ============================================
 

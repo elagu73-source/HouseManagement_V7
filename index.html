@@ -58,17 +58,32 @@
 <div id="notificationsContent"
      class="notifications-content"
      style="display:none;">
-</div>
+</div
 
 <div id="activityDashboard" class="activity-dashboard" style="display:none;">
+
     <div class="activity-dashboard-header">
+
         <span>Actividad reciente</span>
-        <button onclick="abrirActividad()">Ver actividad</button>
+
+        <button onclick="abrirActividad()">
+            Ver actividad
+        </button>
+
+        <button
+            id="usersAdminAccess"
+            type="button"
+            onclick="abrirUsuarios()"
+            style="display:none;">
+            Usuarios
+        </button>
+
     </div>
 
     <div id="activityDashboardContent" style="display:none;">
         Cargando actividad...
     </div>
+
 </div>
 
 <div class="property-search">
@@ -86,7 +101,7 @@
         oninput="render()"
     >
 </div>
->
+
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:16px;width:100%;box-sizing:border-box;">
 
     <button style="width:100%;height:34px;min-height:34px;padding:0 2px;font-size:12px;"
@@ -1193,4 +1208,22 @@ if ("serviceWorker" in navigator) {
     });
 }
 </script>
+
+<section id="usuarios" class="screen">
+
+    <button
+    type="button"
+    onclick="go('home')"
+    class="btn usuarios-back-btn">
+    ← Propiedades
+</button>
+
+    <h2>Administración de usuarios</h2>
+
+    <div id="usuariosContent">
+        Cargando usuarios...
+    </div>
+
+</section>
+
 </body></html>

@@ -115,6 +115,154 @@ async function recuperarPassword() {
     );
 }
 
+async function abrirUsuarios() {
+
+    const { data: rolActual, error: rolError } =
+        await supabaseClient.rpc(
+            "current_organization_role"
+        );
+
+    if (rolError) {
+        console.error(
+            "❌ Error verificando acceso a Usuarios:",
+            rolError
+        );
+        return;
+    }
+
+    if (rolActual !== "admin") {
+        alert("No tenés permisos para administrar usuarios.");
+        return;
+    }
+
+    go("usuarios");
+
+    const contenedor =
+        document.getElementById("usuariosContent");
+
+    if (!contenedor) {
+        console.error("❌ No existe usuariosContent");
+        return;
+    }
+
+    contenedor.innerHTML = "Cargando usuarios...";
+
+    // Obtener usuario logueado
+    const { data: userData, error: userError } =
+        await supabaseClient.auth.getUser();
+
+    if (userError || !userData?.user) {
+        console.error(
+            "❌ No se pudo obtener el usuario actual:",
+            userError
+        );
+        return;
+    }
+
+    // Obtener organización activa
+    const { data: perfil, error: perfilError } =
+        await supabaseClient
+            .from("profiles")
+            .select("active_organization_id")
+            .eq("id", userData.user.id)
+            .single();
+
+    if (perfilError || !perfil?.active_organization_id) {
+        console.error(
+            "❌ No se pudo obtener la organización:",
+            perfilError
+        );
+
+        contenedor.innerHTML =
+            "No se pudo determinar la organización.";
+
+        return;
+    }
+
+    // Obtener miembros de esa organización
+    const { data: miembros, error: miembrosError } =
+        await supabaseClient
+            .from("organization_members")
+            .select(`
+                user_id,
+                rol,
+                activo
+            `)
+            .eq(
+                "organization_id",
+                perfil.active_organization_id
+            )
+            .order("created_at", { ascending: true });
+
+    if (miembrosError) {
+        console.error(
+            "❌ Error cargando usuarios:",
+            miembrosError
+        );
+
+        contenedor.innerHTML =
+            "No se pudieron cargar los usuarios.";
+
+        return;
+    }
+
+    // Obtener perfiles
+    const idsUsuarios =
+        miembros.map(miembro => miembro.user_id);
+
+    const { data: perfiles, error: perfilesError } =
+        await supabaseClient
+            .from("profiles")
+            .select("id, nombre")
+            .in("id", idsUsuarios);
+
+    if (perfilesError) {
+        console.error(
+            "❌ Error cargando perfiles:",
+            perfilesError
+        );
+
+        contenedor.innerHTML =
+            "No se pudieron cargar los perfiles.";
+
+        return;
+    }
+
+    contenedor.innerHTML = "";
+
+    miembros.forEach(miembro => {
+
+        const perfilUsuario =
+            perfiles.find(
+                p => p.id === miembro.user_id
+            );
+
+        const tarjeta =
+            document.createElement("div");
+
+        tarjeta.className = "usuario-card";
+
+      tarjeta.innerHTML = `
+    <div class="usuario-card-nombre">
+        ${perfilUsuario?.nombre || "Usuario"}
+    </div>
+
+    <div class="usuario-card-info">
+        <strong>Rol:</strong> ${miembro.rol}
+    </div>
+
+    <div class="usuario-card-info">
+        <strong>Estado:</strong>
+        <span class="${miembro.activo ? "usuario-activo" : "usuario-inactivo"}">
+            ${miembro.activo ? "Activo" : "Inactivo"}
+        </span>
+    </div>
+`;
+
+        contenedor.appendChild(tarjeta);
+    });
+}
+
 async function detectarRecuperacionPassword() {
 
     supabaseClient.auth.onAuthStateChange(
