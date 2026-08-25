@@ -2486,3 +2486,77 @@ top: 20px !important;
     color: #8B4B4B;
     font-weight: 700;
 }
+
+.usuario-edit-btn {
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 28px !important;
+    padding: 0 12px !important;
+    margin-top: 10px;
+    background: #70805f !important;
+    color: white !important;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px !important;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.usuario-editor {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #ddd8ce;
+}
+
+.usuario-editor-campo {
+    margin-bottom: 10px;
+}
+
+.usuario-editor-campo label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0D2B45;
+    margin-bottom: 4px;
+}
+
+.usuario-editor-campo select {
+    width: 180px;
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid #ccc7bd;
+    border-radius: 6px;
+    background: white;
+    color: #0D2B45;
+    font-size: 13px;
+}
+
+.usuario-editor-acciones {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.usuario-guardar-btn,
+.usuario-cancelar-btn {
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 28px !important;
+    padding: 0 12px !important;
+    border-radius: 6px;
+    font-size: 12px !important;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.usuario-guardar-btn {
+    background: #70805f !important;
+    color: white !important;
+}
+
+.usuario-cancelar-btn {
+    background: #e8e5de !important;
+    color: #0D2B45 !important;
+}

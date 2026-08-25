@@ -257,10 +257,176 @@ async function abrirUsuarios() {
             ${miembro.activo ? "Activo" : "Inactivo"}
         </span>
     </div>
+
+    <button
+        type="button"
+        class="usuario-edit-btn"
+        onclick="editarUsuario('${miembro.user_id}')">
+        Editar
+    </button>
 `;
 
         contenedor.appendChild(tarjeta);
     });
+}
+
+async function editarUsuario(userId) {
+
+    const { data: miembro, error } =
+        await supabaseClient
+            .from("organization_members")
+            .select("user_id, rol, activo")
+            .eq("user_id", userId)
+            .single();
+
+    if (error || !miembro) {
+        console.error(
+            "❌ Error obteniendo usuario:",
+            error
+        );
+
+        alert("No se pudo abrir el usuario.");
+        return;
+    }
+
+    const boton =
+        document.querySelector(
+            `.usuario-edit-btn[onclick="editarUsuario('${userId}')"]`
+        );
+
+    if (!boton) return;
+
+    const tarjeta = boton.closest(".usuario-card");
+
+    if (!tarjeta) return;
+
+    // Evitar abrir dos veces la edición
+    if (tarjeta.querySelector(".usuario-editor")) {
+        return;
+    }
+
+    boton.style.display = "none";
+
+    const editor = document.createElement("div");
+    editor.className = "usuario-editor";
+
+    editor.innerHTML = `
+        <div class="usuario-editor-campo">
+            <label>Rol</label>
+
+            <select id="usuarioRol-${userId}">
+                <option value="admin"
+                    ${miembro.rol === "admin" ? "selected" : ""}>
+                    Admin
+                </option>
+
+                <option value="supervisor"
+                    ${miembro.rol === "supervisor" ? "selected" : ""}>
+                    Supervisor
+                </option>
+
+                <option value="colaborador"
+                    ${miembro.rol === "colaborador" ? "selected" : ""}>
+                    Colaborador
+                </option>
+            </select>
+        </div>
+
+        <div class="usuario-editor-campo">
+            <label>Estado</label>
+
+            <select id="usuarioEstado-${userId}">
+                <option value="activo"
+                    ${miembro.activo ? "selected" : ""}>
+                    Activo
+                </option>
+
+                <option value="inactivo"
+                    ${!miembro.activo ? "selected" : ""}>
+                    Inactivo
+                </option>
+            </select>
+        </div>
+
+        <div class="usuario-editor-acciones">
+
+            <button
+                type="button"
+                class="usuario-guardar-btn"
+                onclick="guardarEdicionUsuario('${userId}')">
+                Guardar
+            </button>
+
+            <button
+                type="button"
+                class="usuario-cancelar-btn"
+                onclick="cancelarEdicionUsuario('${userId}')">
+                Cancelar
+            </button>
+
+        </div>
+    `;
+
+    tarjeta.appendChild(editor);
+}
+
+async function guardarEdicionUsuario(userId) {
+
+    const rol =
+        document.getElementById(
+            `usuarioRol-${userId}`
+        ).value;
+
+    const estado =
+        document.getElementById(
+            `usuarioEstado-${userId}`
+        ).value;
+
+    const { error } =
+        await supabaseClient
+            .from("organization_members")
+            .update({
+                rol: rol,
+                activo: estado === "activo"
+            })
+            .eq("user_id", userId);
+
+    if (error) {
+        console.error(
+            "❌ Error actualizando usuario:",
+            error
+        );
+
+        alert("No se pudo actualizar el usuario.");
+        return;
+    }
+
+    await abrirUsuarios();
+}
+
+
+function cancelarEdicionUsuario(userId) {
+
+    const boton =
+        document.querySelector(
+            `.usuario-edit-btn[onclick="editarUsuario('${userId}')"]`
+        );
+
+    if (!boton) return;
+
+    const tarjeta =
+        boton.closest(".usuario-card");
+
+    if (!tarjeta) return;
+
+    const editor =
+        tarjeta.querySelector(".usuario-editor");
+
+    if (editor) {
+        editor.remove();
+    }
+
+    boton.style.display = "";
 }
 
 async function detectarRecuperacionPassword() {

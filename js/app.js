@@ -606,7 +606,7 @@ await mostrarNotificaciones();
 
 }
 
-window.abrirActividad = function() {
+window.abrirActividad = async function() {
 
     const contenido =
         document.getElementById("activityDashboardContent");
@@ -621,18 +621,26 @@ window.abrirActividad = function() {
     const estaOculto =
         contenido.style.display === "none";
 
-    contenido.style.display =
-        estaOculto ? "block" : "none";
+    if (estaOculto) {
 
-    if (boton) {
-        boton.textContent =
-            estaOculto
-                ? "Ocultar actividad"
-                : "Ver actividad";
+        contenido.style.display = "block";
+        contenido.innerHTML = "Cargando actividad...";
+
+        if (boton) {
+            boton.textContent = "Ocultar actividad";
+        }
+
+        await mostrarDashboardActividad();
+
+    } else {
+
+        contenido.style.display = "none";
+
+        if (boton) {
+            boton.textContent = "Ver actividad";
+        }
     }
 };
-
-
 
 function openPhotos(){
 
@@ -4039,27 +4047,20 @@ async function cargarHistorialActividad(pagina = 0) {
 
 async function mostrarDashboardActividad() {
 
-    const contenedor =
-        document.getElementById("activityDashboard");
+console.log("🟣 ACTIVIDAD 1 - INICIO");
 
-    const contenido =
-        document.getElementById("activityDashboardContent");
+const contenedor =
+    document.getElementById("activityDashboard");
 
-    if (!contenedor || !contenido) return;
+const contenido =
+    document.getElementById("activityDashboardContent");
 
-    const rol = await supabaseClient
-        .rpc("current_organization_role");
+if (!contenedor || !contenido) return;
 
-    if (
-        rol.error ||
-        !["admin", "supervisor"].includes(rol.data)
-    ) {
-        contenedor.style.display = "none";
-        return;
-    }
+const actividad =
+    await cargarActividadReciente();
 
-    const actividad =
-        await cargarActividadReciente();
+console.log("🟣 ACTIVIDAD 3 - DATOS:", actividad);
 
         const { data: perfiles, error: errorPerfiles } =
     await supabaseClient
