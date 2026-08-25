@@ -2560,3 +2560,30 @@ top: 20px !important;
     background: #e8e5de !important;
     color: #0D2B45 !important;
 }
+
+.usuario-propiedades-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.usuario-propiedad-item {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    align-items: center;
+    column-gap: 10px;
+    width: 100%;
+}
+
+.usuario-propiedad-item input[type="checkbox"] {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    justify-self: center;
+}
+
+.usuario-propiedad-item span {
+    display: block;
+    margin: 0;
+}

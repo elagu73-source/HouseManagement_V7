@@ -470,14 +470,23 @@ async function guardarEdicionUsuario(userId) {
     const rol =
         document.getElementById(
             `usuarioRol-${userId}`
-        ).value;
+        )?.value;
 
     const estado =
         document.getElementById(
             `usuarioEstado-${userId}`
-        ).value;
+        )?.value;
 
-    const { error } =
+    if (!rol || !estado) {
+        alert("No se pudo leer la información del usuario.");
+        return;
+    }
+
+    // ============================================
+    // 1. GUARDAR ROL Y ESTADO
+    // ============================================
+
+    const { error: errorUsuario } =
         await supabaseClient
             .from("organization_members")
             .update({
@@ -486,19 +495,136 @@ async function guardarEdicionUsuario(userId) {
             })
             .eq("user_id", userId);
 
-    if (error) {
+    if (errorUsuario) {
         console.error(
             "❌ Error actualizando usuario:",
-            error
+            errorUsuario
         );
 
         alert("No se pudo actualizar el usuario.");
         return;
     }
 
+    // ============================================
+    // 2. ADMIN = ACCESO A TODAS LAS CASAS
+    // ============================================
+
+    if (rol === "admin") {
+
+        const { error: errorBorrar } =
+            await supabaseClient
+                .from("house_users")
+                .delete()
+                .eq("user_id", userId);
+
+        if (errorBorrar) {
+            console.error(
+                "❌ Error limpiando asignaciones:",
+                errorBorrar
+            );
+
+            alert(
+                "El rol se guardó, pero hubo un problema con las propiedades."
+            );
+            return;
+        }
+
+    } else {
+
+        // ============================================
+        // 3. LEER CASAS MARCADAS
+        // ============================================
+
+        const editor =
+            document.getElementById(
+                `usuarioPropiedades-${userId}`
+            );
+
+        const checks =
+            editor
+                ? editor.querySelectorAll(
+                    ".usuario-propiedad-check:checked"
+                )
+                : [];
+
+        const houseIds =
+            Array.from(checks)
+                .map(check => check.value);
+
+        // Borramos las asignaciones anteriores
+        const { error: errorBorrar } =
+            await supabaseClient
+                .from("house_users")
+                .delete()
+                .eq("user_id", userId);
+
+        if (errorBorrar) {
+            console.error(
+                "❌ Error borrando asignaciones anteriores:",
+                errorBorrar
+            );
+
+            alert(
+                "No se pudieron actualizar las propiedades."
+            );
+            return;
+        }
+
+        // Creamos las nuevas asignaciones
+        if (houseIds.length > 0) {
+
+            const nuevasAsignaciones =
+    houseIds.map(houseId => ({
+        house_id: houseId,
+        user_id: userId,
+        rol: rol
+    }));
+
+            const { error: errorInsertar } =
+                await supabaseClient
+                    .from("house_users")
+                    .insert(nuevasAsignaciones);
+
+            if (errorInsertar) {
+                console.error(
+                    "❌ Error guardando propiedades:",
+                    errorInsertar
+                );
+
+                alert(
+                    "No se pudieron guardar las propiedades."
+                );
+                return;
+            }
+        }
+    }
+
+    alert("Usuario actualizado correctamente.");
+
     await abrirUsuarios();
 }
 
+function cancelarEdicionUsuario(userId) {
+
+    const boton =
+        document.querySelector(
+            `.usuario-edit-btn[onclick="editarUsuario('${userId}')"]`
+        );
+
+    const tarjeta =
+        boton?.closest(".usuario-card");
+
+    const editor =
+        tarjeta?.querySelector(".usuario-editor");
+
+    if (editor) {
+        editor.remove();
+    }
+
+    if (boton) {
+        boton.style.display = "";
+    }
+}
 
 function cancelarEdicionUsuario(userId) {
 
