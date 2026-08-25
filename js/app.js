@@ -601,9 +601,37 @@ agregar.onclick = function() {
 };
 c.appendChild(agregar);
 
-await mostrarDashboardActividad();
+await prepararDashboardActividad();
 await mostrarNotificaciones();
 
+}
+
+async function prepararDashboardActividad() {
+
+    const contenedor =
+        document.getElementById("activityDashboard");
+
+    const contenido =
+        document.getElementById("activityDashboardContent");
+
+    if (!contenedor || !contenido) return;
+
+    const { data: rolActual, error: rolError } =
+        await supabaseClient.rpc(
+            "current_organization_role"
+        );
+
+    if (
+        rolError ||
+        !["admin", "supervisor"].includes(rolActual)
+    ) {
+        contenedor.style.display = "none";
+        return;
+    }
+
+    contenedor.style.display = "block";
+    contenido.style.display = "none";
+    contenido.innerHTML = "";
 }
 
 window.abrirActividad = async function() {
@@ -4049,17 +4077,20 @@ async function mostrarDashboardActividad() {
 
 console.log("🟣 ACTIVIDAD 1 - INICIO");
 
-const contenedor =
-    document.getElementById("activityDashboard");
-
 const contenido =
     document.getElementById("activityDashboardContent");
 
-if (!contenedor || !contenido) return;
+if (!contenido) {
+    console.error("❌ No existe activityDashboardContent");
+    return;
+}
+
+console.log("🟠 ANTES DE CARGAR AUDIT_LOGS");
 
 const actividad =
     await cargarActividadReciente();
 
+console.log("🟢 DESPUÉS DE CARGAR AUDIT_LOGS");
 console.log("🟣 ACTIVIDAD 3 - DATOS:", actividad);
 
         const { data: perfiles, error: errorPerfiles } =
@@ -4080,8 +4111,6 @@ const nombresUsuarios = {};
     nombresUsuarios[perfil.id] =
         perfil.nombre || "Usuario";
 });
-
-    contenedor.style.display = "block";
 
     if (!actividad.length) {
         contenido.innerHTML =

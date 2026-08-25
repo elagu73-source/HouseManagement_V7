@@ -296,25 +296,76 @@ async function editarUsuario(userId) {
 
     if (!boton) return;
 
-    const tarjeta = boton.closest(".usuario-card");
+    const tarjeta =
+        boton.closest(".usuario-card");
 
     if (!tarjeta) return;
 
-    // Evitar abrir dos veces la edición
     if (tarjeta.querySelector(".usuario-editor")) {
         return;
     }
 
     boton.style.display = "none";
 
-    const editor = document.createElement("div");
+    // Propiedades actualmente asignadas
+    const { data: asignaciones, error: errorAsignaciones } =
+        await supabaseClient
+            .from("house_users")
+            .select("house_id")
+            .eq("user_id", userId);
+
+    if (errorAsignaciones) {
+        console.error(
+            "❌ Error cargando propiedades del usuario:",
+            errorAsignaciones
+        );
+
+        boton.style.display = "";
+        alert("No se pudieron cargar las propiedades.");
+        return;
+    }
+
+    const casasAsignadas =
+        new Set(
+            (asignaciones || []).map(
+                item => item.house_id
+            )
+        );
+
+    const listaPropiedades =
+        houses.map(house => {
+
+            const checked =
+                casasAsignadas.has(house.id)
+                    ? "checked"
+                    : "";
+
+            return `
+                <label class="usuario-propiedad-item">
+                    <input
+                        type="checkbox"
+                        class="usuario-propiedad-check"
+                        value="${house.id}"
+                        ${checked}
+                    >
+                    <span>${house.nombre || "Propiedad"}</span>
+                </label>
+            `;
+        }).join("");
+
+    const editor =
+        document.createElement("div");
+
     editor.className = "usuario-editor";
 
     editor.innerHTML = `
         <div class="usuario-editor-campo">
             <label>Rol</label>
 
-            <select id="usuarioRol-${userId}">
+            <select
+                id="usuarioRol-${userId}"
+                onchange="actualizarEditorPropiedades('${userId}')"
+            >
                 <option value="admin"
                     ${miembro.rol === "admin" ? "selected" : ""}>
                     Admin
@@ -348,6 +399,29 @@ async function editarUsuario(userId) {
             </select>
         </div>
 
+        <div
+            id="usuarioPropiedades-${userId}"
+            class="usuario-propiedades"
+        >
+            ${
+                miembro.rol === "admin"
+                    ? `
+                        <div class="usuario-admin-todas">
+                            Administrador · Acceso a todas las propiedades
+                        </div>
+                    `
+                    : `
+                        <div class="usuario-propiedades-titulo">
+                            Propiedades asignadas
+                        </div>
+
+                        <div class="usuario-propiedades-lista">
+                            ${listaPropiedades}
+                        </div>
+                    `
+            }
+        </div>
+
         <div class="usuario-editor-acciones">
 
             <button
@@ -368,6 +442,27 @@ async function editarUsuario(userId) {
     `;
 
     tarjeta.appendChild(editor);
+}
+
+function actualizarEditorPropiedades(userId) {
+
+    const rol =
+        document.getElementById(
+            `usuarioRol-${userId}`
+        )?.value;
+
+    const contenedor =
+        document.getElementById(
+            `usuarioPropiedades-${userId}`
+        );
+
+    if (!contenedor) return;
+
+    if (rol === "admin") {
+        contenedor.style.display = "none";
+    } else {
+        contenedor.style.display = "block";
+    }
 }
 
 async function guardarEdicionUsuario(userId) {
