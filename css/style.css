@@ -2397,3 +2397,16 @@ top: 20px !important;
     }
 
 }
+
+.forgot-password {
+    margin-top: 18px;
+    color: #C9B56B;
+    font-size: 14px;
+    text-decoration: underline;
+    cursor: pointer;
+    text-align: center;
+}
+
+.forgot-password:hover {
+    color: #E0CC82;
+}

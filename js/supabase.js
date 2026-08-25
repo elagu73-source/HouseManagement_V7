@@ -81,6 +81,110 @@ function pedirPassword() {
     });
 }
 
+async function recuperarPassword() {
+
+    const email = prompt("Ingresá tu email:");
+
+    if (!email) {
+        return;
+    }
+
+    const { error } =
+        await supabaseClient.auth.resetPasswordForEmail(
+            email,
+            {
+                redirectTo: window.location.origin + window.location.pathname
+            }
+        );
+
+    if (error) {
+        console.error(
+            "❌ Error enviando recuperación:",
+            error
+        );
+
+        alert(
+            "No se pudo enviar el email de recuperación."
+        );
+
+        return;
+    }
+
+    alert(
+        "Te enviamos un email para recuperar tu contraseña."
+    );
+}
+
+async function detectarRecuperacionPassword() {
+
+    supabaseClient.auth.onAuthStateChange(
+        async (event, session) => {
+
+            if (event !== "PASSWORD_RECOVERY") {
+                return;
+            }
+
+            const nuevaPassword = prompt(
+                "Ingresá tu nueva contraseña:"
+            );
+
+            if (!nuevaPassword) {
+                return;
+            }
+
+            if (nuevaPassword.length < 8) {
+                alert(
+                    "La contraseña debe tener al menos 8 caracteres."
+                );
+                return;
+            }
+
+            const repetirPassword = prompt(
+                "Repetí tu nueva contraseña:"
+            );
+
+            if (nuevaPassword !== repetirPassword) {
+                alert(
+                    "Las contraseñas no coinciden."
+                );
+                return;
+            }
+
+            const { error } =
+                await supabaseClient.auth.updateUser({
+                    password: nuevaPassword
+                });
+
+            if (error) {
+                console.error(
+                    "❌ Error cambiando contraseña:",
+                    error
+                );
+
+                alert(
+                    "No se pudo cambiar la contraseña."
+                );
+
+                return;
+            }
+
+            alert(
+                "Contraseña actualizada correctamente. Ya podés ingresar con tu nueva contraseña."
+            );
+
+            await supabaseClient.auth.signOut();
+
+            window.location.href =
+                window.location.origin +
+                window.location.pathname;
+        }
+    );
+}
+
+detectarRecuperacionPassword();
+
+window.recuperarPassword = recuperarPassword;
+
 async function probarLogin() {
 
     window.usuarioAutenticado = false;
