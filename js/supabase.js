@@ -335,7 +335,9 @@ async function nuevoUsuario() {
             data.error
         );
 
-        alert(data.error);
+        alert(
+    "No se pudo enviar la invitación. Verificá los datos del usuario e intentá nuevamente."
+);
 
         return;
     }

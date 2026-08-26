@@ -420,6 +420,29 @@ const proximaReservaPorCasa = {};
 
 });
 
+// ============================================
+// ESTADO VACÍO - PROPIEDADES
+// ============================================
+
+if (casasFiltradas.length === 0) {
+
+    const estadoVacio = document.createElement("div");
+
+    estadoVacio.className = "empty-state";
+
+    estadoVacio.innerHTML = `
+        <div class="empty-state-title">
+            No hay propiedades para mostrar
+        </div>
+
+        <div class="empty-state-text">
+            No encontramos propiedades que coincidan con la búsqueda o el filtro seleccionado.
+        </div>
+    `;
+
+    list.appendChild(estadoVacio);
+}
+
 casasFiltradas.forEach((h)=>{
 
     const i = houses.indexOf(h);
@@ -1546,6 +1569,12 @@ if (reservaSuperpuesta) {
 
 }
 
+mostrarLoader(
+    calendarioReservaEditando
+        ? "Actualizando reserva..."
+        : "Guardando reserva..."
+);
+
 let resultadoReserva;
 
 if (calendarioReservaEditando) {
@@ -1603,6 +1632,8 @@ if (error) {
         error
     );
 
+ocultarLoader();
+
     alert(
         "No pudimos guardar la reserva."
     );
@@ -1615,6 +1646,8 @@ console.log(
     "✅ Reserva guardada:",
     data
 );
+
+ocultarLoader();
 
 calendarioReservaEditando = null;
 
@@ -1752,6 +1785,7 @@ if (h.id) {
             "❌ ERROR CONTANDO INCIDENCIAS:",
             error
         );
+        
     } else {
         incidenciasCasa = count || 0;
 
