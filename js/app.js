@@ -724,6 +724,7 @@ let calendarioIngreso = null;
 let calendarioEgreso = null;
 let calendarioCasaActual = null;
 let calendarioReservas = [];
+let calendarioReservaEditando = null;
 
 async function cargarReservasCasa(houseId) {
 
@@ -1048,6 +1049,15 @@ function renderCalendarioCasa() {
 
 calendarioReservas.forEach(reserva => {
 
+    // Si estamos editando esta reserva,
+    // no pintar sus fechas antiguas
+    if (
+        calendarioReservaEditando &&
+        reserva.id === calendarioReservaEditando
+    ) {
+        return;
+    }
+
     const ingreso =
         fechaDesdeISO(reserva.check_in);
 
@@ -1166,6 +1176,181 @@ calendarioReservas.forEach(reserva => {
 
     contenedor.appendChild(info);
 
+// ============================================
+// RESERVAS EXISTENTES
+// ============================================
+
+if (calendarioReservas.length > 0) {
+
+    const reservasGuardadas =
+        document.createElement("div");
+
+    reservasGuardadas.style.marginTop = "14px";
+    reservasGuardadas.style.padding = "12px";
+    reservasGuardadas.style.background = "#FFFFFF";
+    reservasGuardadas.style.borderRadius = "10px";
+
+    const tituloReservas =
+        document.createElement("div");
+
+    tituloReservas.innerHTML =
+        "<strong>Reservas existentes</strong>";
+
+    tituloReservas.style.marginBottom = "10px";
+
+    reservasGuardadas.appendChild(
+        tituloReservas
+    );
+
+    calendarioReservas.forEach(reserva => {
+
+        const fila =
+            document.createElement("div");
+
+        fila.style.display = "flex";
+        fila.style.alignItems = "center";
+        fila.style.justifyContent = "space-between";
+        fila.style.gap = "10px";
+        fila.style.padding = "8px 0";
+        fila.style.borderBottom =
+            "1px solid #E7E1D6";
+
+        const fechas =
+            document.createElement("div");
+
+        fechas.innerHTML =
+            "<strong>Ingreso:</strong> " +
+            formatearFecha(
+                fechaDesdeISO(reserva.check_in)
+            ) +
+            "<br>" +
+            "<strong>Egreso:</strong> " +
+            formatearFecha(
+                fechaDesdeISO(reserva.check_out)
+            );
+
+        fechas.style.fontSize = "13px";
+
+const editarReserva =
+    document.createElement("button");
+
+editarReserva.innerText = "Editar";
+
+editarReserva.style.width = "auto";
+editarReserva.style.minHeight = "0";
+editarReserva.style.height = "30px";
+editarReserva.style.padding = "0 12px";
+editarReserva.style.border = "none";
+editarReserva.style.borderRadius = "7px";
+editarReserva.style.background = "#70805f";
+editarReserva.style.color = "white";
+editarReserva.style.fontSize = "12px";
+editarReserva.style.cursor = "pointer";
+
+editarReserva.onclick = function() {
+
+    calendarioReservaEditando = reserva.id;
+
+    calendarioIngreso =
+        fechaDesdeISO(reserva.check_in);
+
+    calendarioEgreso =
+        fechaDesdeISO(reserva.check_out);
+
+    info.innerHTML =
+        "<b>Ingreso:</b> " +
+        formatearFecha(calendarioIngreso) +
+        "<br>" +
+        "<b>Egreso:</b> " +
+        formatearFecha(calendarioEgreso) +
+        "<br><br>" +
+        "<strong>Editando reserva existente</strong>";
+
+    guardar.innerText = "Guardar cambios";
+};
+
+        const eliminarReserva =
+            document.createElement("button");
+
+        eliminarReserva.innerText =
+            "Eliminar";
+
+        eliminarReserva.style.width = "auto";
+        eliminarReserva.style.minHeight = "0";
+        eliminarReserva.style.height = "30px";
+        eliminarReserva.style.padding = "0 12px";
+        eliminarReserva.style.border = "none";
+        eliminarReserva.style.borderRadius = "7px";
+        eliminarReserva.style.background =
+            "#8B4B4B";
+        eliminarReserva.style.color = "white";
+        eliminarReserva.style.fontSize = "12px";
+        eliminarReserva.style.cursor = "pointer";
+
+        eliminarReserva.onclick =
+            async function() {
+
+                const confirmar = confirm(
+                    "¿Querés eliminar esta reserva?"
+                );
+
+                if (!confirmar) {
+                    return;
+                }
+
+                const { error } =
+                    await supabaseClient
+                        .from("house_reservations")
+                        .delete()
+                        .eq("id", reserva.id);
+
+                if (error) {
+
+                    console.error(
+                        "❌ Error eliminando reserva:",
+                        error
+                    );
+
+                    alert(
+                        "No se pudo eliminar la reserva."
+                    );
+
+                    return;
+                }
+
+                alert(
+                    "Reserva eliminada correctamente."
+                );
+
+                document
+                    .getElementById(
+                        "modalCalendarioCasa"
+                    )
+                    ?.remove();
+
+                await openHouse(current);
+            };
+
+        fila.appendChild(fechas);
+
+const botonesReserva =
+    document.createElement("div");
+
+botonesReserva.style.display = "flex";
+botonesReserva.style.gap = "6px";
+
+botonesReserva.appendChild(editarReserva);
+botonesReserva.appendChild(eliminarReserva);
+
+fila.appendChild(botonesReserva);
+
+        reservasGuardadas.appendChild(fila);
+    });
+
+    contenedor.appendChild(
+        reservasGuardadas
+    );
+}
 
     const acciones =
         document.createElement("div");
@@ -1262,11 +1447,25 @@ if (!houseId) {
 // VERIFICAR SUPERPOSICIÓN DE RESERVAS
 // ============================================
 
-const { data: reservasExistentes, error: errorReservas } =
-    await supabaseClient
+let consultaReservas =
+    supabaseClient
         .from("house_reservations")
-        .select("check_in, check_out")
+        .select("id, check_in, check_out")
         .eq("house_id", houseId);
+
+if (calendarioReservaEditando) {
+
+    consultaReservas =
+        consultaReservas.neq(
+            "id",
+            calendarioReservaEditando
+        );
+}
+
+const {
+    data: reservasExistentes,
+    error: errorReservas
+} = await consultaReservas;
 
 if (errorReservas) {
 
@@ -1312,21 +1511,55 @@ if (reservaSuperpuesta) {
 
 }
 
-const { data, error } =
-    await supabaseClient
-        .from("house_reservations")
-        .insert([{
-            house_id: houseId,
-            check_in:
-                calendarioIngreso
-                    .toISOString()
-                    .split("T")[0],
-            check_out:
-                calendarioEgreso
-                    .toISOString()
-                    .split("T")[0]
-        }])
-        .select();
+let resultadoReserva;
+
+if (calendarioReservaEditando) {
+
+    resultadoReserva =
+        await supabaseClient
+            .from("house_reservations")
+            .update({
+                check_in:
+                    calendarioIngreso
+                        .toISOString()
+                        .split("T")[0],
+
+                check_out:
+                    calendarioEgreso
+                        .toISOString()
+                        .split("T")[0]
+            })
+            .eq(
+                "id",
+                calendarioReservaEditando
+            )
+            .select();
+
+} else {
+
+    resultadoReserva =
+        await supabaseClient
+            .from("house_reservations")
+            .insert([{
+                house_id: houseId,
+
+                check_in:
+                    calendarioIngreso
+                        .toISOString()
+                        .split("T")[0],
+
+                check_out:
+                    calendarioEgreso
+                        .toISOString()
+                        .split("T")[0]
+            }])
+            .select();
+}
+
+const {
+    data,
+    error
+} = resultadoReserva;
 
 if (error) {
 
@@ -1348,10 +1581,13 @@ console.log(
     data
 );
 
+calendarioReservaEditando = null;
+
 document
     .getElementById("modalCalendarioCasa")
     .remove();
-    await openHouse(current);
+
+await openHouse(current);
 
 };
 
