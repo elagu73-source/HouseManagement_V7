@@ -439,8 +439,8 @@ if (casasFiltradas.length === 0) {
             No encontramos propiedades que coincidan con la búsqueda o el filtro seleccionado.
         </div>
     `;
+    c.appendChild(estadoVacio);
 
-    list.appendChild(estadoVacio);
 }
 
 casasFiltradas.forEach((h)=>{
@@ -604,6 +604,7 @@ d.onclick = () => openHouse(i);
 
 c.appendChild(d);
 });
+if (thisRender !== renderVersion) return;
 console.log("🟢 RENDER EJECUTADO - AGREGANDO BOTÓN +");
 // Botón para agregar una nueva propiedad
 const agregar = document.createElement('div');
