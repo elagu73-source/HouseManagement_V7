@@ -33,6 +33,35 @@ function ocultarLoader() {
     loader.classList.remove("visible");
 }
 
+function actualizarEstadoConexion() {
+
+    const banner =
+        document.getElementById("offlineBanner");
+
+    if (!banner) return;
+
+    if (navigator.onLine) {
+        banner.classList.remove("visible");
+    } else {
+        banner.classList.add("visible");
+    }
+}
+
+window.addEventListener(
+    "online",
+    actualizarEstadoConexion
+);
+
+window.addEventListener(
+    "offline",
+    actualizarEstadoConexion
+);
+
+document.addEventListener(
+    "DOMContentLoaded",
+    actualizarEstadoConexion
+);
+
     async function cargarValoraciones() {
 
     try {
@@ -44,8 +73,6 @@ function ocultarLoader() {
         }
 
         valoraciones = await respuesta.json();
-
-        console.log("⭐ VALORACIONES CARGADAS:", valoraciones);
 
     } catch (error) {
 
@@ -63,8 +90,6 @@ async function cargarCasasDesdeSupabase() {
     try {
 
         mostrarLoader("Cargando propiedades...");
-
-        console.log("🏠 BUSCANDO CASAS EN SUPABASE...");
 
         const { data, error } = await supabaseClient
             .from("houses")
@@ -88,11 +113,6 @@ async function cargarCasasDesdeSupabase() {
 
             return;
         }
-
-        console.log(
-            "✅ CASAS ENCONTRADAS EN SUPABASE:",
-            data.length
-        );
 
         // Reemplazar las casas locales por las de Supabase
         houses = data.map(h => ({
@@ -214,8 +234,6 @@ function cbIcon(name, extraClass = ""){
 initPhotoDB();
 
 async function go(id){
-
-    console.log("🚨 GO EJECUTADO:", id, new Error().stack);
 
     if (id === 'home' && window.usuarioAutenticado !== true) {
         return;
@@ -605,7 +623,6 @@ d.onclick = () => openHouse(i);
 c.appendChild(d);
 });
 if (thisRender !== renderVersion) return;
-console.log("🟢 RENDER EJECUTADO - AGREGANDO BOTÓN +");
 // Botón para agregar una nueva propiedad
 const agregar = document.createElement('div');
 
@@ -763,13 +780,7 @@ async function saveSelectedPhoto(){
 
 await savePhotoToSupabase(file, current, ambiente);
 
-console.log("🟢 TERMINÓ savePhotoToSupabase");
-
-console.log("🟢 AHORA VOY A MOSTRAR FOTOS");
-
 await mostrarFotos(current);
-
-console.log("🟢 TERMINÓ mostrarFotos");
 
     input.value = "";
 }
@@ -810,10 +821,6 @@ async function cargarReservasCasa(houseId) {
 
     calendarioReservas = data || [];
 
-    console.log(
-        "📅 RESERVAS CARGADAS:",
-        calendarioReservas
-    );
 }
 
 async function abrirCalendarioCasa(h) {
@@ -1570,6 +1577,15 @@ if (reservaSuperpuesta) {
 
 }
 
+// Evitar doble clic al guardar
+if (guardar.disabled) {
+    return;
+}
+
+guardar.disabled = true;
+guardar.style.opacity = "0.6";
+guardar.style.cursor = "default";
+
 mostrarLoader(
     calendarioReservaEditando
         ? "Actualizando reserva..."
@@ -1635,6 +1651,10 @@ if (error) {
 
 ocultarLoader();
 
+guardar.disabled = false;
+guardar.style.opacity = "1";
+guardar.style.cursor = "pointer";
+
     alert(
         "No pudimos guardar la reserva."
     );
@@ -1642,11 +1662,6 @@ ocultarLoader();
     return;
 
 }
-
-console.log(
-    "✅ Reserva guardada:",
-    data
-);
 
 ocultarLoader();
 
@@ -1790,14 +1805,6 @@ if (h.id) {
     } else {
         incidenciasCasa = count || 0;
 
-        console.log(
-            "📊 CASA:",
-            nombre,
-            "ID:",
-            h.id,
-            "INCIDENCIAS:",
-            incidenciasCasa
-        );
     }
 }
 
@@ -1832,12 +1839,6 @@ if (h.id) {
 
         // Actualizamos también el objeto local
         h.checklistPorcentaje = checklist;
-
-        console.log(
-            "📋 CHECKLIST REAL:",
-            nombre,
-            checklist + "%"
-        );
 
     } else {
 
@@ -2048,11 +2049,6 @@ if (error) {
 
     return;
 }
-
-console.log(
-    "🗑️ CASA MARCADA COMO ELIMINADA EN SUPABASE:",
-    h.id
-);
 
 // Eliminarla también de la memoria local
 houses = houses.filter(casa => casa.id !== h.id);
@@ -2414,26 +2410,12 @@ async function guardarInfoGeneral() {
 
     await saveHouseToSupabase(h);
 
-    console.log(
-        "✅ INFORMACIÓN GENERAL GUARDADA:",
-        h.id
-    );
-
     go("infoGeneral");
 }
 
 async function obtenerInventarioCasa(){
 
     const house = houses[current];
-
-console.log(
-    "🏠 INVENTARIO - CASA ACTUAL:",
-            house?.nombre,
-    "INDEX:",
-    current,
-    "UUID:",
-    house?.id
-);
 
     if (!house || !house.id) {
         console.error("❌ La casa no tiene UUID de Supabase");
@@ -2462,11 +2444,6 @@ console.log(
 
     if (data) {
 
-        console.log(
-            "✅ INVENTARIO ENCONTRADO EN SUPABASE:",
-            house.id
-        );
-
         return Array.isArray(data.data)
             ? data.data
             : [];
@@ -2475,10 +2452,6 @@ console.log(
 // ============================================
 // NO HAY INVENTARIO EN SUPABASE
 // ============================================
-
-console.log(
-    "ℹ️ No hay inventario en Supabase para esta casa."
-);
 
 return [];
 }
@@ -2527,11 +2500,6 @@ async function guardarInventarioSupabase(items){
 
         return false;
     }
-
-    console.log(
-        "✅ INVENTARIO GUARDADO EN SUPABASE:",
-        house.id
-    );
 
     return true;
 }
@@ -2982,11 +2950,6 @@ async function openIncidencias(){
         return;
     }
 
-    console.log(
-        "🚨 CARGANDO INCIDENCIAS DESDE SUPABASE:",
-        house.id
-    );
-
     const { data: incidencias, error } = await supabaseClient
         .from("house_incidencias")
         .select("*")
@@ -3012,11 +2975,6 @@ async function openIncidencias(){
         go('incidencias');
         return;
     }
-
-    console.log(
-        "✅ INCIDENCIAS ENCONTRADAS EN SUPABASE:",
-        incidencias
-    );
 
     if (!incidencias || incidencias.length === 0) {
 
@@ -3266,12 +3224,6 @@ async function cambiarEstadoIncidencia(id){
         return;
     }
 
-    console.log(
-        "✅ ESTADO DE INCIDENCIA ACTUALIZADO:",
-        id,
-        nuevoEstado
-    );
-
     openIncidencias();
 }
 
@@ -3324,11 +3276,6 @@ async function guardarIncidencia(){
             new Date().toISOString().split('T')[0]
     };
 
-    console.log(
-        "🚨 GUARDANDO INCIDENCIA EN SUPABASE:",
-        incidencia
-    );
-
     const { data, error } = await supabaseClient
         .from("house_incidencias")
         .insert(incidencia)
@@ -3348,11 +3295,6 @@ async function guardarIncidencia(){
 
         return;
     }
-
-    console.log(
-        "✅ INCIDENCIA GUARDADA EN SUPABASE:",
-        data
-    );
 
     alert('Incidencia guardada');
 
@@ -3386,11 +3328,6 @@ async function eliminarIncidencia(id){
 
         return;
     }
-
-    console.log(
-        "🗑️ INCIDENCIA ELIMINADA DE SUPABASE:",
-        id
-    );
 
     await render();
 await openIncidencias();
@@ -3469,15 +3406,9 @@ async function guardarChecklistSupabase() {
         return;
     }
 
-    console.log(
-        "✅ CHECKLIST GUARDADO EN SUPABASE:",
-        house.id
-    );
 }
 
 async function startPreparation(){
-
-    console.log("CURRENT =", current);
 
     const house = houses[current];
 
@@ -3485,8 +3416,6 @@ async function startPreparation(){
         console.error("❌ La casa no tiene UUID de Supabase");
         return;
     }
-
-    console.log("🏠 Cargando checklist de Supabase:", house.id);
 
     const diagnostico = document.getElementById("diagnosticoChecklist");
 
@@ -3512,10 +3441,6 @@ if (diagnostico) {
 
     if (data && data.data) {
 
-        console.log(
-            "✅ CHECKLIST ENCONTRADO EN SUPABASE:",
-            data.data
-        );
         if (diagnostico) {
     diagnostico.textContent = "✅ Checklist encontrado en Supabase";
 }
@@ -3535,20 +3460,9 @@ observaciones =
         ? data.observaciones
         : {};
 
-console.log(
-    "📝 OBSERVACIONES ENCONTRADAS EN SUPABASE:",
-    observaciones
-);
-
     } else {
 
-        console.log(
-            "ℹ️ Esta casa todavía no tiene checklist en Supabase."
-        );
-
     }
-
-    console.log("CHECKS CARGADOS =", checks);
 
     paso = 0;
 
@@ -3704,12 +3618,6 @@ function actualizarEstadoCasa() {
 
     }
 
-    console.log(
-        "🏠 ESTADO ACTUALIZADO:",
-        houses[current].nombre,
-        houses[current].estado,
-        houses[current].checklistPorcentaje + "%"
-    );
 }
 
 function actualizarEstadosTodasLasCasas() {
@@ -3764,8 +3672,6 @@ function nextStep(){
 
     if (obs) {
 
-        console.log("📝 GUARDANDO OBSERVACIÓN:", obs.value);
-
         observaciones["c" + current + "_" + paso] = obs.value;
 
         guardarChecklistSupabase();
@@ -3803,11 +3709,6 @@ async function cargarConfiguracionChecklistCasa(){
         return;
     }
 
-    console.log(
-        "☁️ CARGANDO CONFIGURACIÓN CHECKLIST:",
-        house.id
-    );
-
     const { data, error } =
         await supabaseClient
             .from("house_checklist_config")
@@ -3835,11 +3736,6 @@ async function cargarConfiguracionChecklistCasa(){
 
         checklistData[key] =
             JSON.parse(JSON.stringify(data.data));
-
-        console.log(
-            "✅ CONFIGURACIÓN CHECKLIST CARGADA DESDE SUPABASE:",
-            house.id
-        );
 
         return;
     }
@@ -3884,10 +3780,6 @@ async function cargarConfiguracionChecklistCasa(){
         return;
     }
 
-    console.log(
-        "✅ CONFIGURACIÓN INICIAL GUARDADA EN SUPABASE:",
-        house.id
-    );
 }
 
 
@@ -4003,12 +3895,7 @@ async function guardarConfiguracionChecklist(){
         return;
     }
 
-    console.log(
-        "✅ CONFIGURACIÓN CHECKLIST GUARDADA EN SUPABASE:",
-        house.id
-    );
 }
-
 
 async function editItem(a, i, v){
 
@@ -4016,7 +3903,6 @@ async function editItem(a, i, v){
 
     await guardarConfiguracionChecklist();
 }
-
 
 async function delItem(a, i){
 
@@ -4026,7 +3912,6 @@ async function delItem(a, i){
 
     loadChecklistEditor();
 }
-
 
 async function addItem(){
 
@@ -4099,11 +3984,6 @@ async function cargarManualCasa(){
 
     if (data) {
 
-        console.log(
-            "✅ MANUAL ENCONTRADO EN SUPABASE:",
-            house.id
-        );
-
         manualCasa =
             data.data &&
             typeof data.data === "object"
@@ -4116,10 +3996,6 @@ async function cargarManualCasa(){
     // ============================================
     // NO HAY MANUAL EN SUPABASE
     // ============================================
-
-    console.log(
-        "ℹ️ No hay manual en Supabase para esta casa."
-    );
 
     manualCasa = {};
 
@@ -4227,12 +4103,6 @@ async function guardarManual() {
         return;
     }
 
-    console.log(
-        "✅ MANUAL GUARDADO:",
-        house.nombre,
-        seccion
-    );
-
     await abrirManualCasa();
 }
 
@@ -4264,10 +4134,6 @@ function abrirManual(tipo){
 // ============================================
 
 async function abrirManualCasa(){
-
-    console.log(
-        "📖 CARGANDO MANUAL DESDE SUPABASE..."
-    );
 
     await cargarManualCasa();
 
@@ -4398,8 +4264,6 @@ async function cargarHistorialActividad(pagina = 0) {
 
 async function mostrarDashboardActividad() {
 
-console.log("🟣 ACTIVIDAD 1 - INICIO");
-
 const contenido =
     document.getElementById("activityDashboardContent");
 
@@ -4408,13 +4272,8 @@ if (!contenido) {
     return;
 }
 
-console.log("🟠 ANTES DE CARGAR AUDIT_LOGS");
-
 const actividad =
     await cargarActividadReciente();
-
-console.log("🟢 DESPUÉS DE CARGAR AUDIT_LOGS");
-console.log("🟣 ACTIVIDAD 3 - DATOS:", actividad);
 
         const { data: perfiles, error: errorPerfiles } =
     await supabaseClient
@@ -5029,8 +4888,6 @@ window.activarNotificacionesPush = async function() {
             return;
         }
 
-        console.log("✅ Permiso de notificaciones concedido");
-
 // Esperar al Service Worker activo
 const registration =
     await navigator.serviceWorker.ready;
@@ -5104,10 +4961,6 @@ if (saveError) {
 
     return;
 }
-
-console.log(
-    "✅ Dispositivo suscripto a notificaciones push"
-);
 
     } catch (error) {
 

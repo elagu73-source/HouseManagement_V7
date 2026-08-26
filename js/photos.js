@@ -26,8 +26,6 @@ function initPhotoDB() {
 
         photoDB = event.target.result;
 
-        console.log("✅ Base de datos de fotos lista");
-
     };
 
     request.onerror = function(){
@@ -55,8 +53,6 @@ function savePhoto(file, houseId, ambiente) {
     const request = store.add(photo);
 
 request.onsuccess = function() {
-
-    console.log("✅ Foto guardada correctamente");
 
 };
 
@@ -182,9 +178,6 @@ if (typeof houseId === "number") {
     } else {
 
     // La casa todavía no tiene ID en Supabase.
-    console.log(
-        "🏠 La casa no tiene UUID. Creándola en Supabase..."
-    );
 
     await saveHouseToSupabase(house);
 
@@ -202,11 +195,6 @@ if (!houseUuid) {
 
     return false;
 }
-
-console.log(
-    "✅ UUID DE CASA PARA LA FOTO:",
-    houseUuid
-);
 
 // Nombre único para la foto
 const nombreSeguro = file.name
@@ -229,10 +217,6 @@ const nombreArchivo =
             nombreArchivo;
 
         // 1. Subir archivo a Storage
-
-        console.log("📁 STORAGE PATH:", storagePath);
-console.log("📄 NOMBRE ARCHIVO:", file.name);
-console.log("🏠 HOUSE UUID:", houseUuid);
 
         const { error: uploadError } =
             await supabaseClient.storage
@@ -271,8 +255,6 @@ console.log("🏠 HOUSE UUID:", houseUuid);
             return false;
         }
 
-        console.log("✅ FOTO GUARDADA EN SUPABASE:", storagePath);
-
         return true;
 
     } catch (error) {
@@ -296,10 +278,6 @@ function getPhotos(houseId, ambiente) {
             photo.houseId === houseId &&
             photo.ambiente === ambiente
         );
-
-        console.log("📸 Fotos encontradas:", fotos);
-        console.log("Cantidad:", fotos.length);
-    };
 
     request.onerror = function() {
         console.error("❌ Error al leer las fotos");
@@ -399,15 +377,13 @@ function showPhotoTest(houseId, ambiente) {
         );
 
         if (fotos.length === 0) {
-            console.log("❌ No hay fotos");
+            
             return;
         }
 
         const foto = fotos[0];
 
         const url = URL.createObjectURL(foto.archivo);
-
-        console.log("🖼️ URL de la foto:", url);
 
         window.open(url, "_blank");
     };

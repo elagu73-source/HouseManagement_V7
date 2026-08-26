@@ -287,6 +287,8 @@ if (!miembros || miembros.length === 0) {
     });
 }
 
+let creandoUsuario = false;
+
 async function nuevoUsuario() {
 
     const email = prompt(
@@ -294,20 +296,20 @@ async function nuevoUsuario() {
     );
 
     if (!email) return;
-
+creandoUsuario = false;
     const nombre = prompt(
         "Nombre del nuevo usuario:"
     );
 
     if (!nombre) return;
-
+creandoUsuario = false;
     const rol = prompt(
         "Rol:\n\nadmin\nsupervisor\ncolaborador",
         "colaborador"
     );
 
     if (!rol) return;
-
+creandoUsuario = false;
     const rolNormalizado =
         rol.toLowerCase().trim();
 
@@ -334,6 +336,7 @@ async function nuevoUsuario() {
         );
 
     if (error) {
+        creandoUsuario = false;
         console.error(
             "❌ Error invitando usuario:",
             error
@@ -347,6 +350,7 @@ async function nuevoUsuario() {
     }
 
     if (data?.error) {
+        creandoUsuario = false;
         console.error(
             "❌ invite-user:",
             data.error
@@ -362,7 +366,7 @@ async function nuevoUsuario() {
     alert(
         "Invitación enviada correctamente."
     );
-
+creandoUsuario = false;
     await abrirUsuarios();
 }
 
