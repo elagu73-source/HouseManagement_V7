@@ -6,7 +6,34 @@ let valoraciones = {};
 const URL_VALORACIONES =
     "https://script.google.com/macros/s/AKfycbwS6PlI756K21HxlohFoLtXcfzhUK9W5S60aa5rW-11fbSaUUm1Wow7t59KwPZbsSuIXw/exec";
 
-async function cargarValoraciones() {
+function mostrarLoader(texto = "Cargando...") {
+
+    const loader =
+        document.getElementById("appLoader");
+
+    const textoLoader =
+        document.getElementById("appLoaderTexto");
+
+    if (!loader) return;
+
+    if (textoLoader) {
+        textoLoader.textContent = texto;
+    }
+
+    loader.classList.add("visible");
+}
+
+function ocultarLoader() {
+
+    const loader =
+        document.getElementById("appLoader");
+
+    if (!loader) return;
+
+    loader.classList.remove("visible");
+}
+
+    async function cargarValoraciones() {
 
     try {
 
@@ -34,6 +61,8 @@ async function cargarValoraciones() {
 async function cargarCasasDesdeSupabase() {
 
     try {
+
+        mostrarLoader("Cargando propiedades...");
 
         console.log("🏠 BUSCANDO CASAS EN SUPABASE...");
 
@@ -98,16 +127,22 @@ async function cargarCasasDesdeSupabase() {
 await cargarValoraciones();
 
 // Volver a dibujar la pantalla
-render();
+await render();
 
     } catch (error) {
 
-        console.error(
-            "❌ Error inesperado cargando casas:",
-            error
-        );
-    }
+    console.error(
+        "❌ Error inesperado cargando casas:",
+        error
+    );
+
+} finally {
+
+    ocultarLoader();
+
 }
+}
+
 let propertyFilter='Todas';
 function setPropertyFilter(filtro){
     propertyFilter = filtro;

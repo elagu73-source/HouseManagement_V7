@@ -65,9 +65,88 @@ request.onsuccess = function() {
     };
 }
 
+async function comprimirImagen(file) {
+
+    // Si no es una imagen, devolver el archivo original
+    if (!file || !file.type.startsWith("image/")) {
+        return file;
+    }
+
+    const MAX_WIDTH = 1920;
+    const MAX_HEIGHT = 1920;
+    const QUALITY = 0.82;
+
+    const bitmap = await createImageBitmap(file);
+
+    let width = bitmap.width;
+    let height = bitmap.height;
+
+    // Mantener proporciones
+    if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+
+        const ratio = Math.min(
+            MAX_WIDTH / width,
+            MAX_HEIGHT / height
+        );
+
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+    }
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(
+        bitmap,
+        0,
+        0,
+        width,
+        height
+    );
+
+    const blob = await new Promise(resolve => {
+
+        canvas.toBlob(
+            resolve,
+            "image/jpeg",
+            QUALITY
+        );
+
+    });
+
+    bitmap.close();
+
+    if (!blob) {
+        return file;
+    }
+
+    return new File(
+        [blob],
+        file.name.replace(/\.[^.]+$/, "") + ".jpg",
+        {
+            type: "image/jpeg",
+            lastModified: Date.now()
+        }
+    );
+}
+
 async function savePhotoToSupabase(file, houseId, ambiente) {
 
     try {
+
+// Comprimir imagen antes de subirla
+const archivoOriginal = file;
+file = await comprimirImagen(file);
+
+console.log(
+    "📸 COMPRESIÓN:",
+    Math.round(archivoOriginal.size / 1024) + " KB →",
+    Math.round(file.size / 1024) + " KB"
+);
 
         // Obtener usuario autenticado
         const { data: userData, error: userError } =
