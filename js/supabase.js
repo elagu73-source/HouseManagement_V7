@@ -230,6 +230,23 @@ async function abrirUsuarios() {
 
     contenedor.innerHTML = "";
 
+if (!miembros || miembros.length === 0) {
+
+    contenedor.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-state-title">
+                No hay usuarios
+            </div>
+
+            <div class="empty-state-text">
+                Todavía no hay usuarios registrados en esta organización.
+            </div>
+        </div>
+    `;
+
+    return;
+}
+
     miembros.forEach(miembro => {
 
         const perfilUsuario =
