@@ -1296,4 +1296,196 @@ if ("serviceWorker" in navigator) {
 
 </div>
 
+<!-- MODAL CREAR NUEVA CONTRASEÑA -->
+<div id="modalNuevaPassword" class="hm-modal" style="display:none;">
+
+    <div class="hm-modal-card">
+
+        <h2>Crear nueva contraseña</h2>
+
+        <p>
+            Ingresá tu nueva contraseña.
+            Debe tener al menos 8 caracteres.
+        </p>
+
+        <input
+            type="password"
+            id="nuevaPassword"
+            placeholder="Nueva contraseña"
+            autocomplete="new-password"
+        >
+
+        <input
+            type="password"
+            id="repetirNuevaPassword"
+            placeholder="Repetir contraseña"
+            autocomplete="new-password"
+            style="margin-top:12px;"
+        >
+
+        <div
+            id="nuevaPasswordError"
+            style="
+                display:none;
+                margin-top:10px;
+                color:#8B4B4B;
+                font-size:13px;
+            "
+        ></div>
+
+        <div class="hm-modal-actions">
+
+            <button
+                type="button"
+                class="btn"
+                onclick="guardarNuevaPassword()"
+            >
+                Guardar contraseña
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- MODAL NUEVO USUARIO -->
+<div id="modalNuevoUsuario" class="hm-modal" style="display:none;">
+
+    <div class="hm-modal-card">
+
+        <h2>Nuevo usuario</h2>
+
+        <p>
+            Completá los datos para enviar la invitación.
+        </p>
+
+        <input
+            type="email"
+            id="nuevoUsuarioEmail"
+            placeholder="Email"
+            autocomplete="email"
+        >
+
+        <input
+            type="text"
+            id="nuevoUsuarioNombre"
+            placeholder="Nombre"
+            style="margin-top:12px;"
+        >
+
+        <select
+            id="nuevoUsuarioRol"
+            style="
+                width:100%;
+                margin-top:12px;
+                padding:13px 14px;
+                border:1px solid #D8D2C7;
+                border-radius:10px;
+                font-size:15px;
+                box-sizing:border-box;
+                background:#fff;
+            "
+        >
+            <option value="colaborador">Colaborador</option>
+            <option value="supervisor">Supervisor</option>
+            <option value="admin">Admin</option>
+        </select>
+
+        <div
+            id="nuevoUsuarioError"
+            style="
+                display:none;
+                margin-top:10px;
+                color:#8B4B4B;
+                font-size:13px;
+            "
+        ></div>
+
+        <div class="hm-modal-actions">
+
+            <button
+                type="button"
+                class="btn"
+                onclick="cerrarNuevoUsuario()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="btn"
+                id="btnCrearNuevoUsuario"
+                onclick="enviarNuevoUsuario()"
+            >
+                Enviar invitación
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- MODAL INICIAR SESIÓN -->
+<div id="modalLogin" class="hm-modal" style="display:none;">
+
+    <div class="hm-modal-card">
+
+        <h2>Ingresar</h2>
+
+        <p>
+            Ingresá tu email y contraseña.
+        </p>
+
+        <input
+            type="email"
+            id="loginEmail"
+            placeholder="Email"
+            autocomplete="email"
+        >
+
+        <input
+            type="password"
+            id="loginPassword"
+            placeholder="Contraseña"
+            autocomplete="current-password"
+            style="margin-top:12px;"
+        >
+
+        <div
+            id="loginError"
+            style="
+                display:none;
+                margin-top:10px;
+                color:#8B4B4B;
+                font-size:13px;
+            "
+        ></div>
+
+        <div class="hm-modal-actions">
+
+            <button
+                type="button"
+                class="btn"
+                onclick="cerrarLogin()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="btn"
+                id="btnLogin"
+                onclick="enviarLogin()"
+            >
+                Ingresar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 </body></html>

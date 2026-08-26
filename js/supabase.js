@@ -81,11 +81,50 @@ function pedirPassword() {
     });
 }
 
-async function recuperarPassword() {
+function recuperarPassword() {
 
-    const email = prompt("Ingresá tu email:");
+    const modal =
+        document.getElementById("modalRecuperarPassword");
+
+    const email =
+        document.getElementById("recuperarPasswordEmail");
+
+    if (!modal) return;
+
+    if (email) {
+        email.value = "";
+    }
+
+    modal.style.display = "flex";
+
+    setTimeout(() => {
+        email?.focus();
+    }, 50);
+}
+
+
+function cerrarRecuperarPassword() {
+
+    const modal =
+        document.getElementById("modalRecuperarPassword");
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+}
+
+
+async function enviarRecuperacionPassword() {
+
+    const input =
+        document.getElementById("recuperarPasswordEmail");
+
+    const email =
+        input?.value.trim();
 
     if (!email) {
+        alert("Ingresá tu email.");
+        input?.focus();
         return;
     }
 
@@ -93,11 +132,14 @@ async function recuperarPassword() {
         await supabaseClient.auth.resetPasswordForEmail(
             email,
             {
-                redirectTo: window.location.origin + window.location.pathname
+                redirectTo:
+                    window.location.origin +
+                    window.location.pathname
             }
         );
 
     if (error) {
+
         console.error(
             "❌ Error enviando recuperación:",
             error
@@ -109,6 +151,8 @@ async function recuperarPassword() {
 
         return;
     }
+
+    cerrarRecuperarPassword();
 
     alert(
         "Te enviamos un email para recuperar tu contraseña."
@@ -289,38 +333,117 @@ if (!miembros || miembros.length === 0) {
 
 let creandoUsuario = false;
 
-async function nuevoUsuario() {
+function nuevoUsuario() {
 
-    const email = prompt(
-        "Email del nuevo usuario:"
-    );
+    const modal =
+        document.getElementById("modalNuevoUsuario");
 
-    if (!email) return;
-creandoUsuario = false;
-    const nombre = prompt(
-        "Nombre del nuevo usuario:"
-    );
+    const email =
+        document.getElementById("nuevoUsuarioEmail");
 
-    if (!nombre) return;
-creandoUsuario = false;
-    const rol = prompt(
-        "Rol:\n\nadmin\nsupervisor\ncolaborador",
-        "colaborador"
-    );
+    const nombre =
+        document.getElementById("nuevoUsuarioNombre");
 
-    if (!rol) return;
-creandoUsuario = false;
-    const rolNormalizado =
-        rol.toLowerCase().trim();
+    const rol =
+        document.getElementById("nuevoUsuarioRol");
+
+    const errorTexto =
+        document.getElementById("nuevoUsuarioError");
+
+    if (!modal) return;
+
+    if (email) email.value = "";
+    if (nombre) nombre.value = "";
+    if (rol) rol.value = "colaborador";
+
+    if (errorTexto) {
+        errorTexto.textContent = "";
+        errorTexto.style.display = "none";
+    }
+
+    modal.style.display = "flex";
+
+    setTimeout(() => {
+        email?.focus();
+    }, 50);
+}
+
+
+function cerrarNuevoUsuario() {
+
+    const modal =
+        document.getElementById("modalNuevoUsuario");
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+}
+
+async function enviarNuevoUsuario() {
+
+    if (creandoUsuario) return;
+
+    const emailInput =
+        document.getElementById("nuevoUsuarioEmail");
+
+    const nombreInput =
+        document.getElementById("nuevoUsuarioNombre");
+
+    const rolInput =
+        document.getElementById("nuevoUsuarioRol");
+
+    const errorTexto =
+        document.getElementById("nuevoUsuarioError");
+
+    const boton =
+        document.getElementById("btnCrearNuevoUsuario");
+
+    const email =
+        emailInput?.value.trim() || "";
+
+    const nombre =
+        nombreInput?.value.trim() || "";
+
+    const rol =
+        rolInput?.value || "";
+
+    function mostrarError(mensaje) {
+        if (!errorTexto) return;
+
+        errorTexto.textContent = mensaje;
+        errorTexto.style.display = "block";
+    }
+
+    if (!email) {
+        mostrarError("Ingresá el email del usuario.");
+        emailInput?.focus();
+        return;
+    }
+
+    if (!nombre) {
+        mostrarError("Ingresá el nombre del usuario.");
+        nombreInput?.focus();
+        return;
+    }
 
     if (
         !["admin", "supervisor", "colaborador"]
-            .includes(rolNormalizado)
+            .includes(rol)
     ) {
-        alert(
-            "El rol debe ser admin, supervisor o colaborador."
-        );
+        mostrarError("Seleccioná un rol válido.");
         return;
+    }
+
+    if (errorTexto) {
+        errorTexto.textContent = "";
+        errorTexto.style.display = "none";
+    }
+
+    creandoUsuario = true;
+
+    if (boton) {
+        boton.disabled = true;
+        boton.style.opacity = "0.6";
     }
 
     const { data, error } =
@@ -328,47 +451,48 @@ creandoUsuario = false;
             "invite-user",
             {
                 body: {
-                    email: email.trim(),
-                    nombre: nombre.trim(),
-                    rol: rolNormalizado
+                    email,
+                    nombre,
+                    rol
                 }
             }
         );
 
-    if (error) {
+    if (error || data?.error) {
+
         creandoUsuario = false;
+
+        if (boton) {
+            boton.disabled = false;
+            boton.style.opacity = "1";
+        }
+
         console.error(
             "❌ Error invitando usuario:",
-            error
+            error || data?.error
         );
 
-        alert(
-            "No se pudo invitar al usuario."
+        mostrarError(
+            "No se pudo enviar la invitación. Verificá los datos del usuario e intentá nuevamente."
         );
 
         return;
     }
 
-    if (data?.error) {
-        creandoUsuario = false;
-        console.error(
-            "❌ invite-user:",
-            data.error
-        );
+    creandoUsuario = false;
 
-        alert(
-    "No se pudo enviar la invitación. Verificá los datos del usuario e intentá nuevamente."
-);
-
-        return;
+    if (boton) {
+        boton.disabled = false;
+        boton.style.opacity = "1";
     }
 
-    alert(
-        "Invitación enviada correctamente."
-    );
-creandoUsuario = false;
+    cerrarNuevoUsuario();
+
+    alert("Invitación enviada correctamente.");
+
     await abrirUsuarios();
 }
+
 
 async function editarUsuario(userId) {
 
@@ -380,6 +504,7 @@ async function editarUsuario(userId) {
             .single();
 
     if (error || !miembro) {
+
         console.error(
             "❌ Error obteniendo usuario:",
             error
@@ -407,7 +532,6 @@ async function editarUsuario(userId) {
 
     boton.style.display = "none";
 
-    // Propiedades actualmente asignadas
     const { data: asignaciones, error: errorAsignaciones } =
         await supabaseClient
             .from("house_users")
@@ -415,6 +539,7 @@ async function editarUsuario(userId) {
             .eq("user_id", userId);
 
     if (errorAsignaciones) {
+
         console.error(
             "❌ Error cargando propiedades del usuario:",
             errorAsignaciones
@@ -762,7 +887,8 @@ async function detectarRecuperacionPassword() {
                 return;
             }
 
-            const url = new URL(window.location.href);
+            const url =
+                new URL(window.location.href);
 
             const esInvitacion =
                 url.hash.includes("type=invite") ||
@@ -775,83 +901,276 @@ async function detectarRecuperacionPassword() {
                 return;
             }
 
-            const nuevaPassword = prompt(
-                "Creá tu contraseña:"
-            );
-
-            if (!nuevaPassword) {
-                return;
-            }
-
-            if (nuevaPassword.length < 8) {
-                alert(
-                    "La contraseña debe tener al menos 8 caracteres."
-                );
-                return;
-            }
-
-            const repetirPassword = prompt(
-                "Repetí tu contraseña:"
-            );
-
-            if (nuevaPassword !== repetirPassword) {
-                alert(
-                    "Las contraseñas no coinciden."
-                );
-                return;
-            }
-
-            const { error } =
-                await supabaseClient.auth.updateUser({
-                    password: nuevaPassword
-                });
-
-            if (error) {
-                console.error(
-                    "❌ Error creando contraseña:",
-                    error
+            const modal =
+                document.getElementById(
+                    "modalNuevaPassword"
                 );
 
-                alert(
-                    "No se pudo crear la contraseña."
+            const inputNueva =
+                document.getElementById(
+                    "nuevaPassword"
                 );
-                return;
+
+            const inputRepetir =
+                document.getElementById(
+                    "repetirNuevaPassword"
+                );
+
+            const errorTexto =
+                document.getElementById(
+                    "nuevaPasswordError"
+                );
+
+            if (!modal) return;
+
+            if (inputNueva) {
+                inputNueva.value = "";
             }
 
-            alert(
-                "Contraseña creada correctamente."
-            );
+            if (inputRepetir) {
+                inputRepetir.value = "";
+            }
 
-            window.history.replaceState(
-                {},
-                document.title,
-                window.location.pathname
-            );
+            if (errorTexto) {
+                errorTexto.textContent = "";
+                errorTexto.style.display = "none";
+            }
+
+            modal.style.display = "flex";
+
+            setTimeout(() => {
+                inputNueva?.focus();
+            }, 50);
         }
     );
 }
 
 detectarRecuperacionPassword();
 
-window.recuperarPassword = recuperarPassword;
+async function guardarNuevaPassword() {
 
-async function probarLogin() {
+    const modal =
+        document.getElementById("modalNuevaPassword");
+
+    const inputNueva =
+        document.getElementById("nuevaPassword");
+
+    const inputRepetir =
+        document.getElementById("repetirNuevaPassword");
+
+    const errorTexto =
+        document.getElementById("nuevaPasswordError");
+
+    const nuevaPassword =
+        inputNueva?.value || "";
+
+    const repetirPassword =
+        inputRepetir?.value || "";
+
+    function mostrarError(mensaje) {
+
+        if (!errorTexto) return;
+
+        errorTexto.textContent = mensaje;
+        errorTexto.style.display = "block";
+    }
+
+    if (nuevaPassword.length < 8) {
+
+        mostrarError(
+            "La contraseña debe tener al menos 8 caracteres."
+        );
+
+        inputNueva?.focus();
+        return;
+    }
+
+    if (nuevaPassword !== repetirPassword) {
+
+        mostrarError(
+            "Las contraseñas no coinciden."
+        );
+
+        inputRepetir?.focus();
+        return;
+    }
+
+    if (errorTexto) {
+        errorTexto.style.display = "none";
+    }
+
+    const boton =
+        modal?.querySelector(".hm-modal-actions button");
+
+    if (boton?.disabled) return;
+
+    if (boton) {
+        boton.disabled = true;
+        boton.style.opacity = "0.6";
+    }
+
+    const { error } =
+        await supabaseClient.auth.updateUser({
+            password: nuevaPassword
+        });
+
+    if (error) {
+
+        console.error(
+            "❌ Error creando contraseña:",
+            error
+        );
+
+        mostrarError(
+            "No se pudo guardar la contraseña. Intentá nuevamente."
+        );
+
+        if (boton) {
+            boton.disabled = false;
+            boton.style.opacity = "1";
+        }
+
+        return;
+    }
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+
+    alert(
+        "Contraseña creada correctamente."
+    );
+
+    window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname
+    );
+}
+
+window.guardarNuevaPassword = guardarNuevaPassword;
+
+let resolverLogin = null;
+let loginEnProceso = false;
+
+function probarLogin() {
+
+    return new Promise((resolve) => {
+
+        resolverLogin = resolve;
+
+        const modal =
+            document.getElementById("modalLogin");
+
+        const email =
+            document.getElementById("loginEmail");
+
+        const password =
+            document.getElementById("loginPassword");
+
+        const errorTexto =
+            document.getElementById("loginError");
+
+        if (!modal) {
+            resolverLogin = null;
+            resolve(false);
+            return;
+        }
+
+        if (email) email.value = "";
+        if (password) password.value = "";
+
+        if (errorTexto) {
+            errorTexto.textContent = "";
+            errorTexto.style.display = "none";
+        }
+
+        modal.style.display = "flex";
+
+        setTimeout(() => {
+            email?.focus();
+        }, 50);
+    });
+}
+
+
+function cerrarLogin() {
+
+    if (loginEnProceso) return;
+
+    const modal =
+        document.getElementById("modalLogin");
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+
+    if (resolverLogin) {
+        resolverLogin(false);
+        resolverLogin = null;
+    }
+}
+
+
+async function enviarLogin() {
+
+    if (loginEnProceso) return;
+
+    const modal =
+        document.getElementById("modalLogin");
+
+    const emailInput =
+        document.getElementById("loginEmail");
+
+    const passwordInput =
+        document.getElementById("loginPassword");
+
+    const errorTexto =
+        document.getElementById("loginError");
+
+    const boton =
+        document.getElementById("btnLogin");
+
+    const email =
+        emailInput?.value.trim() || "";
+
+    const password =
+        passwordInput?.value || "";
+
+    function mostrarError(mensaje) {
+
+        if (!errorTexto) return;
+
+        errorTexto.textContent = mensaje;
+        errorTexto.style.display = "block";
+    }
+
+    if (!email) {
+        mostrarError("Ingresá tu email.");
+        emailInput?.focus();
+        return;
+    }
+
+    if (!password) {
+        mostrarError("Ingresá tu contraseña.");
+        passwordInput?.focus();
+        return;
+    }
+
+    if (errorTexto) {
+        errorTexto.style.display = "none";
+    }
+
+    loginEnProceso = true;
+
+    if (boton) {
+        boton.disabled = true;
+        boton.style.opacity = "0.6";
+    }
 
     window.usuarioAutenticado = false;
 
-    const email = prompt('Email de prueba:');
-
-    if (!email) {
-        return false;
-    }
-
- const password = await pedirPassword();
-
-if (!password) {
-    return false;
-}
-
-    const { data, error } =
+    const { error } =
         await supabaseClient.auth.signInWithPassword({
             email,
             password
@@ -859,21 +1178,50 @@ if (!password) {
 
     if (error) {
 
-        alert('Usuario o contraseña incorrectos.');
+        loginEnProceso = false;
 
-        return false;
+        if (boton) {
+            boton.disabled = false;
+            boton.style.opacity = "1";
+        }
+
+        mostrarError(
+            "Email o contraseña incorrectos."
+        );
+
+        passwordInput?.focus();
+        return;
     }
 
-window.usuarioAutenticado = true;
+    window.usuarioAutenticado = true;
 
-// Activar notificaciones push en este dispositivo
-if (typeof activarNotificacionesPush === "function") {
-    try {
-        await activarNotificacionesPush();
-    } catch (error) {
-        console.error("❌ No se pudieron activar las notificaciones push:", error);
+    if (typeof activarNotificacionesPush === "function") {
+        try {
+            await activarNotificacionesPush();
+        } catch (error) {
+            console.error(
+                "❌ No se pudieron activar las notificaciones push:",
+                error
+            );
+        }
+    }
+
+    loginEnProceso = false;
+
+    if (boton) {
+        boton.disabled = false;
+        boton.style.opacity = "1";
+    }
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+
+    if (resolverLogin) {
+        resolverLogin(true);
+        resolverLogin = null;
     }
 }
 
-return true;
-}
+window.cerrarLogin = cerrarLogin;
+window.enviarLogin = enviarLogin;
