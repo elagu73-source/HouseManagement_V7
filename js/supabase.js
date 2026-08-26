@@ -732,12 +732,28 @@ async function detectarRecuperacionPassword() {
     supabaseClient.auth.onAuthStateChange(
         async (event, session) => {
 
-            if (event !== "PASSWORD_RECOVERY") {
+            if (
+                event !== "PASSWORD_RECOVERY" &&
+                event !== "SIGNED_IN"
+            ) {
+                return;
+            }
+
+            const url = new URL(window.location.href);
+
+            const esInvitacion =
+                url.hash.includes("type=invite") ||
+                url.searchParams.get("type") === "invite";
+
+            const esRecuperacion =
+                event === "PASSWORD_RECOVERY";
+
+            if (!esInvitacion && !esRecuperacion) {
                 return;
             }
 
             const nuevaPassword = prompt(
-                "Ingresá tu nueva contraseña:"
+                "Creá tu contraseña:"
             );
 
             if (!nuevaPassword) {
@@ -752,7 +768,7 @@ async function detectarRecuperacionPassword() {
             }
 
             const repetirPassword = prompt(
-                "Repetí tu nueva contraseña:"
+                "Repetí tu contraseña:"
             );
 
             if (nuevaPassword !== repetirPassword) {
@@ -769,26 +785,25 @@ async function detectarRecuperacionPassword() {
 
             if (error) {
                 console.error(
-                    "❌ Error cambiando contraseña:",
+                    "❌ Error creando contraseña:",
                     error
                 );
 
                 alert(
-                    "No se pudo cambiar la contraseña."
+                    "No se pudo crear la contraseña."
                 );
-
                 return;
             }
 
             alert(
-                "Contraseña actualizada correctamente. Ya podés ingresar con tu nueva contraseña."
+                "Contraseña creada correctamente."
             );
 
-            await supabaseClient.auth.signOut();
-
-            window.location.href =
-                window.location.origin +
-                window.location.pathname;
+            window.history.replaceState(
+                {},
+                document.title,
+                window.location.pathname
+            );
         }
     );
 }
