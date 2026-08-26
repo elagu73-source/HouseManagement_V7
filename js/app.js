@@ -3044,6 +3044,23 @@ async function openIncidencias(){
 
     lista.innerHTML = '';
 
+    if (!incidencias || incidencias.length === 0) {
+
+    lista.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-state-title">
+                No hay incidencias
+            </div>
+
+            <div class="empty-state-text">
+                Esta propiedad no tiene incidencias registradas.
+            </div>
+        </div>
+    `;
+
+    return;
+}
+
     incidencias.forEach(incidencia => {
 
         const prioridadIcono =

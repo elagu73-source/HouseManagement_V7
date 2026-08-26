@@ -477,7 +477,17 @@ if (rolError) {
             "ℹ️ No hay fotos en Supabase para esta casa."
         );
 
-        container.innerText = "No hay fotos.";
+        container.innerHTML = `
+    <div class="empty-state">
+        <div class="empty-state-title">
+            No hay fotos
+        </div>
+
+        <div class="empty-state-text">
+            Esta propiedad todavía no tiene fotos cargadas.
+        </div>
+    </div>
+`;
         return;
     }
 
