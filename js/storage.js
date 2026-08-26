@@ -77,11 +77,6 @@ async function saveHouseToSupabase(house) {
                 return;
             }
 
-            console.log(
-                '✅ CASA CREADA EN SUPABASE:',
-                house.id
-            );
-
         } else {
 
             const { error: houseError } =
@@ -125,10 +120,6 @@ async function saveHouseToSupabase(house) {
                 return;
             }
 
-            console.log(
-                '✅ CASA ACTUALIZADA EN SUPABASE:',
-                house.id
-            );
         }
 
     } catch (error) {

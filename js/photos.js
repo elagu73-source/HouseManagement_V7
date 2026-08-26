@@ -279,6 +279,8 @@ function getPhotos(houseId, ambiente) {
             photo.ambiente === ambiente
         );
 
+    };
+
     request.onerror = function() {
         console.error("❌ Error al leer las fotos");
     };
@@ -425,8 +427,6 @@ if (rolError) {
         houseUuid = house.id;
     }
 
-    console.log("🔎 Buscando fotos de casa:", houseUuid);
-
     // Buscar fotos en Supabase
     const { data: fotos, error } = await supabaseClient
         .from("house_photos")
@@ -449,10 +449,6 @@ if (rolError) {
 
     if (!fotos || fotos.length === 0) {
 
-        console.log(
-            "ℹ️ No hay fotos en Supabase para esta casa."
-        );
-
         container.innerHTML = `
     <div class="empty-state">
         <div class="empty-state-title">
@@ -466,11 +462,6 @@ if (rolError) {
 `;
         return;
     }
-
-    console.log(
-        "📸 FOTOS ENCONTRADAS:",
-        fotos
-    );
 
     container.style.display = "block";
 
@@ -654,8 +645,6 @@ async function deletePhoto(foto) {
 
     try {
 
-        console.log("🗑️ Eliminando foto:", foto);
-
         // 1. Eliminar archivo de Storage
         const { error: storageError } =
             await supabaseClient.storage
@@ -690,10 +679,6 @@ async function deletePhoto(foto) {
 
             return;
         }
-
-        console.log(
-            "🗑️ FOTO ELIMINADA CORRECTAMENTE DE SUPABASE"
-        );
 
         // 3. Actualizar galería
         mostrarFotos(current);

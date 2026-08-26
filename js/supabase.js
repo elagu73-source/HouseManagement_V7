@@ -839,11 +839,6 @@ async function probarLogin() {
 
     window.usuarioAutenticado = false;
 
-    console.log(
-        "🔴 LOGIN INICIADO - AUTENTICADO:",
-        window.usuarioAutenticado
-    );
-
     const email = prompt('Email de prueba:');
 
     if (!email) {
@@ -862,8 +857,6 @@ if (!password) {
             password
         });
 
-    console.log('RESULTADO LOGIN:', { data, error });
-
     if (error) {
 
         alert('Usuario o contraseña incorrectos.');
@@ -872,11 +865,6 @@ if (!password) {
     }
 
 window.usuarioAutenticado = true;
-
-console.log(
-    "🟢 LOGIN CORRECTO - AUTENTICADO:",
-    window.usuarioAutenticado
-);
 
 // Activar notificaciones push en este dispositivo
 if (typeof activarNotificacionesPush === "function") {

@@ -1255,4 +1255,45 @@ if ("serviceWorker" in navigator) {
     Sin conexión a Internet
 </div>
 
+<!-- MODAL RECUPERAR CONTRASEÑA -->
+<div id="modalRecuperarPassword" class="hm-modal" style="display:none;">
+
+    <div class="hm-modal-card">
+
+        <h2>Recuperar contraseña</h2>
+
+        <p>
+            Ingresá tu email y te enviaremos un enlace
+            para crear una nueva contraseña.
+        </p>
+
+        <input
+            type="email"
+            id="recuperarPasswordEmail"
+            placeholder="Email"
+            autocomplete="email"
+        >
+
+        <div class="hm-modal-actions">
+
+            <button
+                type="button"
+                class="btn"
+                onclick="cerrarRecuperarPassword()">
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="btn"
+                onclick="enviarRecuperacionPassword()">
+                Enviar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 </body></html>
