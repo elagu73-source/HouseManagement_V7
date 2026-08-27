@@ -1,3 +1,214 @@
+// ============================================
+// MONITOREO CENTRALIZADO DE ERRORES
+// ============================================
+
+(function iniciarMonitoreoErrores() {
+
+    const erroresRecientes = new Map();
+    const LIMITE_POR_SESION = 20;
+    const VENTANA_DUPLICADO_MS = 60000;
+
+    let cantidadEnviada = 0;
+    let enviandoError = false;
+
+    function normalizarError(error) {
+
+        if (error instanceof Error) {
+            return {
+                message:
+                    error.message ||
+                    "Error sin mensaje",
+                stack:
+                    error.stack ||
+                    null
+            };
+        }
+
+        if (
+            error &&
+            typeof error === "object"
+        ) {
+            return {
+                message:
+                    error.message ||
+                    JSON.stringify(error),
+                stack:
+                    error.stack ||
+                    null
+            };
+        }
+
+        return {
+            message:
+                String(error || "Error sin mensaje"),
+            stack: null
+        };
+    }
+
+
+    async function reportarErrorAplicacion(
+        error,
+        opciones = {}
+    ) {
+
+        if (
+            enviandoError ||
+            !navigator.onLine ||
+            cantidadEnviada >= LIMITE_POR_SESION ||
+            typeof supabaseClient === "undefined"
+        ) {
+            return null;
+        }
+
+        const errorNormalizado =
+            normalizarError(error);
+
+        if (
+            !errorNormalizado.message ||
+            errorNormalizado.message ===
+                "Script error."
+        ) {
+            return null;
+        }
+
+        const source =
+            opciones.source ||
+            "client";
+
+        const huella =
+            source +
+            "|" +
+            errorNormalizado.message +
+            "|" +
+            (
+                errorNormalizado.stack ||
+                ""
+            ).slice(0, 300);
+
+        const ahora = Date.now();
+        const ultimoRegistro =
+            erroresRecientes.get(huella);
+
+        if (
+            ultimoRegistro &&
+            ahora - ultimoRegistro <
+                VENTANA_DUPLICADO_MS
+        ) {
+            return null;
+        }
+
+        erroresRecientes.set(
+            huella,
+            ahora
+        );
+
+        enviandoError = true;
+
+        try {
+
+            const pageUrl =
+                window.location.origin +
+                window.location.pathname;
+
+            const contexto = {
+                filename:
+                    opciones.filename ||
+                    null,
+                line:
+                    opciones.line ||
+                    null,
+                column:
+                    opciones.column ||
+                    null,
+                online:
+                    navigator.onLine,
+                standalone:
+                    window.matchMedia(
+                        "(display-mode: standalone)"
+                    ).matches
+            };
+
+            const { data, error: rpcError } =
+                await supabaseClient.rpc(
+                    "log_client_error",
+                    {
+                        p_source: source,
+                        p_message:
+                            errorNormalizado.message,
+                        p_stack:
+                            errorNormalizado.stack,
+                        p_context:
+                            contexto,
+                        p_page_url:
+                            pageUrl,
+                        p_user_agent:
+                            navigator.userAgent
+                    }
+                );
+
+            if (!rpcError && data) {
+                cantidadEnviada++;
+                return data;
+            }
+
+            return null;
+
+        } catch (_) {
+
+            return null;
+
+        } finally {
+
+            enviandoError = false;
+
+        }
+    }
+
+
+    window.addEventListener(
+        "error",
+        function(event) {
+
+            reportarErrorAplicacion(
+                event.error ||
+                event.message,
+                {
+                    source:
+                        "window.error",
+                    filename:
+                        event.filename,
+                    line:
+                        event.lineno,
+                    column:
+                        event.colno
+                }
+            );
+
+        }
+    );
+
+
+    window.addEventListener(
+        "unhandledrejection",
+        function(event) {
+
+            reportarErrorAplicacion(
+                event.reason,
+                {
+                    source:
+                        "unhandledrejection"
+                }
+            );
+
+        }
+    );
+
+
+    window.hmReportarError =
+        reportarErrorAplicacion;
+
+})();
+
 let houses = [];
 let current = 0;
 
