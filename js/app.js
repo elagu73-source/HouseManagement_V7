@@ -560,11 +560,12 @@ function comenzarPrimeraPropiedad() {
 async function mostrarBienvenidaOnboardingSiCorresponde() {
 
     if (
-        houses.length > 0 ||
-        window.bienvenidaOnboardingMostrada
-    ) {
-        return;
-    }
+    window.onboardingRecienCreado !== true ||
+    houses.length > 0 ||
+    window.bienvenidaOnboardingMostrada
+) {
+    return;
+}
 
     const {
         data: { session }
