@@ -21,6 +21,18 @@
     INGRESAR
 </div>
 
+<div
+    class="cover-btn"
+    style="
+        margin-top:14px;
+        background:#B6A978;
+        color:#0D2B45;
+    "
+    onclick="abrirRegistroCliente()"
+>
+    CREAR CUENTA
+</div>
+
 <div class="forgot-password" onclick="recuperarPassword()">
     Olvidé mi contraseña
 </div>
@@ -1570,6 +1582,93 @@ document.addEventListener("DOMContentLoaded", () => {
 
     </div>
 
+</div>
+
+<!-- MODAL CREAR CUENTA -->
+<div
+    id="modalRegistroCliente"
+    class="hm-modal"
+    style="display:none;"
+>
+    <div class="hm-modal-card">
+
+        <h2>Crear cuenta</h2>
+
+        <p>
+            Creá la cuenta administradora de tu organización.
+        </p>
+
+        <input
+            type="text"
+            id="registroNombre"
+            placeholder="Tu nombre"
+            autocomplete="name"
+        >
+
+        <input
+            type="text"
+            id="registroOrganizacion"
+            placeholder="Nombre de la organización"
+            autocomplete="organization"
+            style="margin-top:12px;"
+        >
+
+        <input
+            type="email"
+            id="registroEmail"
+            placeholder="Email"
+            autocomplete="email"
+            style="margin-top:12px;"
+        >
+
+        <input
+            type="password"
+            id="registroPassword"
+            placeholder="Contraseña"
+            autocomplete="new-password"
+            style="margin-top:12px;"
+        >
+
+        <input
+            type="password"
+            id="registroRepetirPassword"
+            placeholder="Repetir contraseña"
+            autocomplete="new-password"
+            style="margin-top:12px;"
+        >
+
+        <div
+            id="registroClienteError"
+            style="
+                display:none;
+                margin-top:10px;
+                color:#8B4B4B;
+                font-size:13px;
+            "
+        ></div>
+
+        <div class="hm-modal-actions">
+
+            <button
+                type="button"
+                class="btn"
+                onclick="cerrarRegistroCliente()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="btn"
+                id="btnRegistroCliente"
+                onclick="enviarRegistroCliente()"
+            >
+                Crear cuenta
+            </button>
+
+        </div>
+
+    </div>
 </div>
 
 <!-- MODAL INICIAR SESIÓN -->
