@@ -515,25 +515,39 @@ const usersAdminAccess =
 
 if (usersAdminAccess) {
 
-    const { data: rolActual, error: rolError } =
-        await supabaseClient.rpc(
-            "current_organization_role"
-        );
+    const {
+        data: { session }
+    } = await supabaseClient.auth.getSession();
 
-    if (rolError) {
-        console.error(
-            "❌ Error obteniendo rol para Usuarios:",
-            rolError
-        );
+    if (!session) {
 
         usersAdminAccess.style.display = "none";
 
     } else {
 
-        usersAdminAccess.style.display =
-            rolActual === "admin"
-                ? "block"
-                : "none";
+        const {
+            data: rolActual,
+            error: rolError
+        } = await supabaseClient.rpc(
+            "current_organization_role"
+        );
+
+        if (rolError) {
+
+            console.error(
+                "❌ Error obteniendo rol para Usuarios:",
+                rolError
+            );
+
+            usersAdminAccess.style.display = "none";
+
+        } else {
+
+            usersAdminAccess.style.display =
+                rolActual === "admin"
+                    ? "block"
+                    : "none";
+        }
     }
 }
 
