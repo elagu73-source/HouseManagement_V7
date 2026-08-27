@@ -1164,10 +1164,10 @@ onclick="cerrarVisorFoto()">
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase.js?v=100"></script>
+<script src="js/supabase.js?v=101"></script>
 <script src="js/storage.js"></script>
 <script src="js/photos.js"></script>
-<script src="js/app.js?v=104"></script>
+<script src="js/app.js?v=105"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
@@ -1582,6 +1582,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
     </div>
 
+</div>
+
+<!-- MODAL BIENVENIDA ONBOARDING -->
+<div
+    id="modalBienvenidaOnboarding"
+    class="hm-modal"
+    style="display:none;"
+>
+    <div class="hm-modal-card">
+
+        <h2>¡Organización creada!</h2>
+
+        <p>
+            Tu cuenta administradora ya está lista.
+        </p>
+
+        <div
+            style="
+                margin:18px 0;
+                padding:16px;
+                border-radius:12px;
+                background:#F4F1EA;
+                color:#0D2B45;
+                line-height:1.6;
+                text-align:left;
+            "
+        >
+            <strong>Siguientes pasos:</strong><br>
+            1. Crear tu primera propiedad.<br>
+            2. Configurar ambientes y checklist.<br>
+            3. Invitar a tu equipo.
+        </div>
+
+        <button
+            type="button"
+            class="btn"
+            style="width:100%;"
+            onclick="comenzarPrimeraPropiedad()"
+        >
+            Crear primera propiedad
+        </button>
+
+    </div>
 </div>
 
 <!-- MODAL CREAR CUENTA -->

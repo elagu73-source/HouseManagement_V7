@@ -207,7 +207,14 @@ async function enviarRegistroCliente() {
             return;
         }
 
-        cerrarRegistroCliente();
+        const modalRegistro =
+    document.getElementById(
+        "modalRegistroCliente"
+    );
+
+if (modalRegistro) {
+    modalRegistro.style.display = "none";
+}
 
         if (data?.session) {
 
@@ -1265,6 +1272,89 @@ function cerrarLogin() {
     }
 }
 
+async function completarOnboardingSiCorresponde() {
+
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+        return {
+            ok: false,
+            mensaje:
+                "No se pudo verificar la cuenta."
+        };
+    }
+
+    const {
+        data: perfil,
+        error: perfilError
+    } = await supabaseClient
+        .from("profiles")
+        .select("active_organization_id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (
+        !perfilError &&
+        perfil?.active_organization_id
+    ) {
+        return {
+            ok: true,
+            creado: false
+        };
+    }
+
+    const metadata =
+        user.user_metadata || {};
+
+    if (
+        metadata.hm_onboarding !== true ||
+        !metadata.organization_name ||
+        !metadata.admin_name
+    ) {
+        return {
+            ok: false,
+            mensaje:
+                "La cuenta todavía no tiene una organización configurada."
+        };
+    }
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "complete_organization_onboarding",
+        {
+            p_organization_name:
+                metadata.organization_name,
+            p_admin_name:
+                metadata.admin_name
+        }
+    );
+
+    if (error) {
+
+        console.error(
+            "❌ Error completando onboarding:",
+            error
+        );
+
+        return {
+            ok: false,
+            mensaje:
+                "No se pudo completar la configuración inicial."
+        };
+    }
+
+    return {
+        ok: true,
+        creado: true,
+        organization:
+            data?.organization_id || null
+    };
+}
 
 async function enviarLogin() {
 
@@ -1346,6 +1436,30 @@ async function enviarLogin() {
         passwordInput?.focus();
         return;
     }
+
+const resultadoOnboarding =
+    await completarOnboardingSiCorresponde();
+
+if (!resultadoOnboarding.ok) {
+
+    await supabaseClient.auth.signOut();
+
+    loginEnProceso = false;
+
+    if (boton) {
+        boton.disabled = false;
+        boton.style.opacity = "1";
+    }
+
+    mostrarError(
+        resultadoOnboarding.mensaje
+    );
+
+    return;
+}
+
+window.onboardingRecienCreado =
+    resultadoOnboarding.creado === true;
 
     window.usuarioAutenticado = true;
 

@@ -501,6 +501,104 @@ function calcularPorcentajeChecklist(datos) {
 
 let renderVersion = 0;
 
+function crearPropiedadVacia() {
+
+    return {
+        nombre: "",
+        barrio: "",
+        lote: "",
+        capacidad: "",
+        rating: "",
+        estado: "Pendiente",
+        ingreso: "",
+        checklistPorcentaje: 0,
+        situacion: "Disponible"
+    };
+}
+
+
+function iniciarNuevaPropiedad(
+    directoAEdicion = false
+) {
+
+    const nuevaCasa =
+        crearPropiedadVacia();
+
+    houses.push(nuevaCasa);
+
+    current =
+        houses.length - 1;
+
+    if (directoAEdicion) {
+        editCurrent();
+        return;
+    }
+
+    render();
+    openHouse(current);
+}
+
+
+function comenzarPrimeraPropiedad() {
+
+    const modal =
+        document.getElementById(
+            "modalBienvenidaOnboarding"
+        );
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+
+    window.bienvenidaOnboardingMostrada =
+        true;
+
+    iniciarNuevaPropiedad(true);
+}
+
+
+async function mostrarBienvenidaOnboardingSiCorresponde() {
+
+    if (
+        houses.length > 0 ||
+        window.bienvenidaOnboardingMostrada
+    ) {
+        return;
+    }
+
+    const {
+        data: { session }
+    } = await supabaseClient.auth.getSession();
+
+    if (!session) return;
+
+    const {
+        data: rolActual,
+        error
+    } = await supabaseClient.rpc(
+        "current_organization_role"
+    );
+
+    if (
+        error ||
+        rolActual !== "admin"
+    ) {
+        return;
+    }
+
+    const modal =
+        document.getElementById(
+            "modalBienvenidaOnboarding"
+        );
+
+    if (modal) {
+        window.bienvenidaOnboardingMostrada =
+            true;
+
+        modal.style.display = "flex";
+    }
+}
+
 async function render(){
         const thisRender = ++renderVersion;
     const c = document.getElementById('houses');
@@ -879,31 +977,14 @@ agregar.innerHTML = `
 `;
 
 agregar.onclick = function() {
-
-    const nuevaCasa = {
-        nombre: "",
-        barrio: "",
-        lote: "",
-        capacidad: "",
-        rating: "",
-        estado: "Pendiente",
-        ingreso: "",
-        checklistPorcentaje: 0,
-        situacion: "Disponible"
-    };
-
-    houses.push(nuevaCasa);
-
-    const nuevoIndice = houses.length - 1;
-
-    render();
-
-    openHouse(nuevoIndice);
+    iniciarNuevaPropiedad(false);
 };
+
 c.appendChild(agregar);
 
 await prepararDashboardActividad();
 await mostrarNotificaciones();
+await mostrarBienvenidaOnboardingSiCorresponde();
 
 }
 
