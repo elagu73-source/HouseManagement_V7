@@ -57,10 +57,55 @@ self.addEventListener("fetch", event => {
 
     const url = new URL(request.url);
 
-    // No intervenir en Supabase, CDN u otros dominios externos
-    if (url.origin !== self.location.origin) {
-        return;
-    }
+   // Librería externa de Supabase
+if (url.hostname === "cdn.jsdelivr.net") {
+
+    event.respondWith(
+        fetch(request)
+            .then(response => {
+
+                const copia = response.clone();
+
+                caches.open(CACHE_NAME)
+                    .then(cache => {
+                        cache.put(request, copia);
+                    });
+
+                return response;
+            })
+            .catch(() => caches.match(request))
+    );
+
+    return;
+}
+
+// Librería externa de Supabase
+if (url.hostname === "cdn.jsdelivr.net") {
+
+    event.respondWith(
+        fetch(request)
+            .then(response => {
+
+                const copia = response.clone();
+
+                caches.open(CACHE_NAME)
+                    .then(cache => {
+                        cache.put(request, copia);
+                    });
+
+                return response;
+            })
+            .catch(() => caches.match(request))
+    );
+
+    return;
+}
+
+
+// No intervenir en Supabase ni otros dominios externos
+if (url.origin !== self.location.origin) {
+    return;
+}
 
     // Navegación principal
     if (request.mode === "navigate") {

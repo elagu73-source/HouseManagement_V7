@@ -1,7 +1,9 @@
 {
   "name": "Costa Boutique House Management",
   "short_name": "House Management",
-  "description": "Gestión de propiedades Costa Boutique",
+  "description": "Gestión integral de propiedades",
+  "id": "./",
+"scope": "./",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0D2B45",
