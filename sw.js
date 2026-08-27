@@ -15,7 +15,7 @@ const ARCHIVOS = [
     "./logo-house-management.png",
 
     "./icon-192.png",
-    "./icon-512.png",
+    "./icon-512-v2.png",
     "./apple-touch-icon.png"
 ];
 
@@ -48,9 +48,49 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
 
+    const request = event.request;
+
+    // No intervenir en POST, PUT, DELETE, etc.
+    if (request.method !== "GET") {
+        return;
+    }
+
+    const url = new URL(request.url);
+
+    // No intervenir en Supabase, CDN u otros dominios externos
+    if (url.origin !== self.location.origin) {
+        return;
+    }
+
+    // Navegación principal
+    if (request.mode === "navigate") {
+
+        event.respondWith(
+            fetch(request)
+                .catch(() => caches.match("./index.html"))
+        );
+
+        return;
+    }
+
+    // Archivos locales
     event.respondWith(
-        fetch(event.request)
-            .catch(() => caches.match(event.request))
+        fetch(request)
+            .then(response => {
+
+                if (response && response.ok) {
+
+                    const copia = response.clone();
+
+                    caches.open(CACHE_NAME)
+                        .then(cache => {
+                            cache.put(request, copia);
+                        });
+                }
+
+                return response;
+            })
+            .catch(() => caches.match(request))
     );
 
 });

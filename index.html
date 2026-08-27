@@ -1231,6 +1231,19 @@ if ("serviceWorker" in navigator) {
         });
 
     });
+let recargandoPorActualizacion = false;
+
+navigator.serviceWorker.addEventListener(
+    "controllerchange",
+    () => {
+
+        if (recargandoPorActualizacion) return;
+
+        recargandoPorActualizacion = true;
+
+        window.location.reload();
+    }
+);
 
 }
 
