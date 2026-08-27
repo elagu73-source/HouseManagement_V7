@@ -25,6 +25,30 @@
     Olvidé mi contraseña
 </div>
 
+<div
+    id="installAppButton"
+    class="cover-btn"
+    style="display:none; margin-top:22px;"
+    onclick="instalarApp()"
+>
+    INSTALAR APP
+</div>
+
+<div
+    id="iosInstallHelp"
+    style="
+        display:none;
+        margin-top:18px;
+        color:#B6A978;
+        font-size:13px;
+        line-height:1.5;
+        text-align:center;
+    "
+>
+    En iPhone: abrí esta página en Safari,
+    tocá Compartir y elegí “Añadir a pantalla de inicio”.
+</div>
+
 </section>
 
 <section id="home" class="screen">
@@ -1246,6 +1270,83 @@ navigator.serviceWorker.addEventListener(
 );
 
 }
+
+let instalacionPendiente = null;
+
+function appYaInstalada() {
+    return (
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true
+    );
+}
+
+window.addEventListener("beforeinstallprompt", event => {
+
+    event.preventDefault();
+
+    instalacionPendiente = event;
+
+    const boton =
+        document.getElementById("installAppButton");
+
+    if (boton && !appYaInstalada()) {
+        boton.style.display = "block";
+    }
+});
+
+
+async function instalarApp() {
+
+    if (!instalacionPendiente) {
+        return;
+    }
+
+    instalacionPendiente.prompt();
+
+    await instalacionPendiente.userChoice;
+
+    instalacionPendiente = null;
+
+    const boton =
+        document.getElementById("installAppButton");
+
+    if (boton) {
+        boton.style.display = "none";
+    }
+}
+
+
+window.addEventListener("appinstalled", () => {
+
+    instalacionPendiente = null;
+
+    const boton =
+        document.getElementById("installAppButton");
+
+    if (boton) {
+        boton.style.display = "none";
+    }
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const esIOS =
+        /iphone|ipad|ipod/i.test(
+            window.navigator.userAgent
+        );
+
+    const ayudaIOS =
+        document.getElementById("iosInstallHelp");
+
+    if (
+        esIOS &&
+        !appYaInstalada() &&
+        ayudaIOS
+    ) {
+        ayudaIOS.style.display = "block";
+    }
+});
 
 </script>
 
