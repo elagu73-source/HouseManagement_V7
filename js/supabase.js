@@ -8,6 +8,255 @@ const supabaseClient = window.supabase.createClient(
 
 window.supabaseClient = supabaseClient;
 
+// ============================================
+// REGISTRO DE NUEVO CLIENTE
+// ============================================
+
+let registroClienteEnProceso = false;
+
+function abrirRegistroCliente() {
+
+    const modal =
+        document.getElementById(
+            "modalRegistroCliente"
+        );
+
+    if (!modal) return;
+
+    [
+        "registroNombre",
+        "registroOrganizacion",
+        "registroEmail",
+        "registroPassword",
+        "registroRepetirPassword"
+    ].forEach(id => {
+
+        const input =
+            document.getElementById(id);
+
+        if (input) {
+            input.value = "";
+        }
+    });
+
+    const errorTexto =
+        document.getElementById(
+            "registroClienteError"
+        );
+
+    if (errorTexto) {
+        errorTexto.textContent = "";
+        errorTexto.style.display = "none";
+    }
+
+    modal.style.display = "flex";
+
+    setTimeout(() => {
+        document
+            .getElementById("registroNombre")
+            ?.focus();
+    }, 50);
+}
+
+
+function cerrarRegistroCliente() {
+
+    if (registroClienteEnProceso) return;
+
+    const modal =
+        document.getElementById(
+            "modalRegistroCliente"
+        );
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+}
+
+
+async function enviarRegistroCliente() {
+
+    if (registroClienteEnProceso) return;
+
+    const nombre =
+        document
+            .getElementById("registroNombre")
+            ?.value.trim() || "";
+
+    const organizacion =
+        document
+            .getElementById("registroOrganizacion")
+            ?.value.trim() || "";
+
+    const email =
+        document
+            .getElementById("registroEmail")
+            ?.value.trim()
+            .toLowerCase() || "";
+
+    const password =
+        document
+            .getElementById("registroPassword")
+            ?.value || "";
+
+    const repetirPassword =
+        document
+            .getElementById(
+                "registroRepetirPassword"
+            )
+            ?.value || "";
+
+    const errorTexto =
+        document.getElementById(
+            "registroClienteError"
+        );
+
+    const boton =
+        document.getElementById(
+            "btnRegistroCliente"
+        );
+
+    function mostrarError(mensaje) {
+
+        if (!errorTexto) return;
+
+        errorTexto.textContent = mensaje;
+        errorTexto.style.display = "block";
+    }
+
+    if (nombre.length < 2) {
+        mostrarError(
+            "Ingresá tu nombre completo."
+        );
+        return;
+    }
+
+    if (organizacion.length < 3) {
+        mostrarError(
+            "Ingresá el nombre de la organización."
+        );
+        return;
+    }
+
+    if (
+        !email ||
+        !email.includes("@")
+    ) {
+        mostrarError(
+            "Ingresá un email válido."
+        );
+        return;
+    }
+
+    if (password.length < 8) {
+        mostrarError(
+            "La contraseña debe tener al menos 8 caracteres."
+        );
+        return;
+    }
+
+    if (password !== repetirPassword) {
+        mostrarError(
+            "Las contraseñas no coinciden."
+        );
+        return;
+    }
+
+    if (errorTexto) {
+        errorTexto.style.display = "none";
+    }
+
+    registroClienteEnProceso = true;
+
+    if (boton) {
+        boton.disabled = true;
+        boton.style.opacity = "0.6";
+    }
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+                emailRedirectTo:
+                    "https://elagu73-source.github.io/HouseManagement_V7/",
+                data: {
+                    hm_onboarding: true,
+                    admin_name: nombre,
+                    organization_name:
+                        organizacion
+                }
+            }
+        });
+
+        if (error) {
+
+            console.error(
+                "❌ Error creando cuenta:",
+                error
+            );
+
+            mostrarError(
+                "No se pudo crear la cuenta. Revisá los datos e intentá nuevamente."
+            );
+
+            return;
+        }
+
+        cerrarRegistroCliente();
+
+        if (data?.session) {
+
+            const {
+                error: onboardingError
+            } = await supabaseClient.rpc(
+                "complete_organization_onboarding",
+                {
+                    p_organization_name:
+                        organizacion,
+                    p_admin_name:
+                        nombre
+                }
+            );
+
+            if (onboardingError) {
+                console.error(
+                    "❌ Error completando onboarding:",
+                    onboardingError
+                );
+            }
+        }
+
+        alert(
+            "Cuenta creada. Revisá tu email y confirmá la dirección antes de ingresar."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "❌ Error inesperado creando cuenta:",
+            error
+        );
+
+        mostrarError(
+            "No se pudo crear la cuenta. Intentá nuevamente."
+        );
+
+    } finally {
+
+        registroClienteEnProceso = false;
+
+        if (boton) {
+            boton.disabled = false;
+            boton.style.opacity = "1";
+        }
+    }
+}
+
 function recuperarPassword() {
 
     const modal =
