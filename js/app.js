@@ -5160,24 +5160,22 @@ if (organizationError || !organizationId) {
 const pushData = subscription.toJSON();
 
 // Guardarla en Supabase
-const { error: saveError } =
-    await supabaseClient
-        .from("push_subscriptions")
-        .upsert(
-            {
-                user_id: user.id,
-                organization_id: organizationId,
-                endpoint: pushData.endpoint,
-                p256dh: pushData.keys.p256dh,
-                auth: pushData.keys.auth,
-                updated_at: new Date().toISOString()
-            },
-            {
-                onConflict: "endpoint"
-            }
-        );
+const {
+    data: subscriptionSaved,
+    error: saveError
+} = await supabaseClient.rpc(
+    "register_push_subscription",
+    {
+        p_endpoint:
+            pushData.endpoint,
+        p_p256dh:
+            pushData.keys.p256dh,
+        p_auth:
+            pushData.keys.auth
+    }
+);
 
-if (saveError) {
+if (saveError || !subscriptionSaved) {
 
     console.error(
         "❌ Error guardando suscripción push:",
