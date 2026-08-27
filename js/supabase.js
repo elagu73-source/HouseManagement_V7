@@ -763,28 +763,6 @@ function cancelarEdicionUsuario(userId) {
             `.usuario-edit-btn[onclick="editarUsuario('${userId}')"]`
         );
 
-    const tarjeta =
-        boton?.closest(".usuario-card");
-
-    const editor =
-        tarjeta?.querySelector(".usuario-editor");
-
-    if (editor) {
-        editor.remove();
-    }
-
-    if (boton) {
-        boton.style.display = "";
-    }
-}
-
-function cancelarEdicionUsuario(userId) {
-
-    const boton =
-        document.querySelector(
-            `.usuario-edit-btn[onclick="editarUsuario('${userId}')"]`
-        );
-
     if (!boton) return;
 
     const tarjeta =
