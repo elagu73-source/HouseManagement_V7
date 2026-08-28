@@ -2390,10 +2390,13 @@ houses = houses.filter(casa => casa.id !== h.id);
         "current_organization_role"
     );
 
-    botonEliminar.style.display =
+    botonEliminar.style.setProperty(
+        "display",
         rolParaEliminarPropiedad === "admin"
-            ? "flex"
-            : "none";
+            ? "inline-flex"
+            : "none",
+        "important"
+    );
 
    document.querySelector(".property-top-bar").appendChild(botonEliminar);
 
