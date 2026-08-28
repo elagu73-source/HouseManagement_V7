@@ -2604,35 +2604,39 @@ top: 20px !important;
 }
 
 /* =========================================
-   ACTIVIDAD RECIENTE - MOBILE
-   ========================================= */
+ACTIVIDAD RECIENTE - MOBILE
+========================================= */
 
 @media (max-width: 900px) {
 
     .activity-dashboard-header {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
         gap: 8px !important;
+        width: 100% !important;
     }
 
     .activity-dashboard-header > span {
+        grid-column: 1 / -1 !important;
         font-size: 13px !important;
-        white-space: nowrap;
+        white-space: nowrap !important;
     }
 
     .activity-dashboard-header button {
-        width: auto !important;
+        width: 100% !important;
         min-width: 0 !important;
-        height: 32px !important;
-        min-height: 32px !important;
+        height: 36px !important;
+        min-height: 36px !important;
 
-        padding: 0 10px !important;
+        padding: 0 6px !important;
 
         font-size: 11px !important;
         line-height: 1 !important;
 
         white-space: nowrap !important;
-        flex-shrink: 0 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
-
 }
 
 /* ============================================
@@ -2928,4 +2932,22 @@ top: 20px !important;
     line-height: 1.5;
     resize: vertical;
     box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+
+  .activity-header,
+  .recent-activity-header,
+  .activity-actions {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  .activity-header button,
+  .recent-activity-header button,
+  .activity-actions button {
+    width: auto !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
+  }
 }
