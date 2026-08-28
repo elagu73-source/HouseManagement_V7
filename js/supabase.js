@@ -1296,15 +1296,17 @@ async function completarOnboardingSiCorresponde() {
         .eq("id", user.id)
         .maybeSingle();
 
-    if (
-        !perfilError &&
-        perfil?.active_organization_id
-    ) {
-        return {
-            ok: true,
-            creado: false
-        };
-    }
+   if (
+    !perfilError &&
+    perfil?.active_organization_id
+) {
+    const metadataExistente = user.user_metadata || {};
+
+    return {
+        ok: true,
+        creado: metadataExistente.hm_onboarding === true
+    };
+}
 
     const metadata =
         user.user_metadata || {};
