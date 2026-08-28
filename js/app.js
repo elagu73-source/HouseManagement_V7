@@ -2739,7 +2739,7 @@ const botonGuardarInfo =
 if (botonGuardarInfo) {
     botonGuardarInfo.style.setProperty(
         "display",
-        puedeEditarInfoGeneral ? "flex" : "none",
+        puedeEditarInfoGeneral ? "block" : "none",
         "important"
     );
 }
