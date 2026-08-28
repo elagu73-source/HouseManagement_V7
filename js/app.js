@@ -509,6 +509,8 @@ function crearPropiedadVacia() {
         barrio: "",
         lote: "",
         capacidad: "",
+        wifi: "",
+        obs: "",
         rating: "",
         estado: "Pendiente",
         ingreso: "",
