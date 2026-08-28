@@ -950,6 +950,19 @@ d.onclick = () => openHouse(i);
 c.appendChild(d);
 });
 if (thisRender !== renderVersion) return;
+
+const {
+    data: rolParaCrearPropiedad
+} = await supabaseClient.rpc(
+    "current_organization_role"
+);
+
+if (
+    ["admin", "supervisor"].includes(
+        rolParaCrearPropiedad
+    )
+) {
+
 // Botón para agregar una nueva propiedad
 const agregar = document.createElement('div');
 
@@ -985,6 +998,7 @@ agregar.onclick = function() {
 };
 
 c.appendChild(agregar);
+}
 
 await prepararDashboardActividad();
 await mostrarNotificaciones();
