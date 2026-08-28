@@ -2869,7 +2869,29 @@ async function obtenerInventarioCasa(){
 // NO HAY INVENTARIO EN SUPABASE
 // ============================================
 
-return [];
+const inventoryBase =
+    await obtenerInventarioBaseOrganizacion();
+
+const initialItems =
+    inventoryBase.map(item => ({
+        nombre: item,
+        presente: true,
+        control: "presente"
+    }));
+
+if (initialItems.length) {
+
+    const saved =
+        await guardarInventarioSupabase(
+            initialItems
+        );
+
+    if (!saved) {
+        return null;
+    }
+}
+
+return initialItems;
 }
 
 // ============================================
@@ -4192,10 +4214,10 @@ async function cargarConfiguracionChecklistCasa(){
 
     if (!checklistData[key]) {
 
-        checklistData[key] =
-            JSON.parse(JSON.stringify(ambientes));
+    checklistData[key] =
+        await obtenerChecklistBaseOrganizacion();
 
-    }
+}
 
     // ============================================
     // GUARDAR CONFIGURACIÓN INICIAL EN SUPABASE
@@ -5521,6 +5543,48 @@ async function cargarConfiguracionOrganizacion() {
     document.getElementById(
         "organizationModuleNotifications"
     ).checked = modules.notificaciones !== false;
+
+    const checklistBase =
+    Array.isArray(
+        organizationSettingsCurrent.checklist_base
+    ) &&
+    organizationSettingsCurrent.checklist_base.length
+        ? organizationSettingsCurrent.checklist_base
+        : ambientes;
+
+document.getElementById(
+    "organizationChecklistBase"
+).value = checklistBase
+    .map(environment => {
+
+        const title =
+            String(
+                environment.title || ""
+            ).trim();
+
+        const items =
+            Array.isArray(environment.items)
+                ? environment.items
+                : [];
+
+        return (
+            title +
+            ": " +
+            items.join(", ")
+        );
+    })
+    .join("\n");
+
+const inventoryBase =
+    Array.isArray(
+        organizationSettingsCurrent.inventario_base
+    )
+        ? organizationSettingsCurrent.inventario_base
+        : [];
+
+document.getElementById(
+    "organizationInventoryBase"
+).value = inventoryBase.join("\n");
 }
 
 
@@ -5540,6 +5604,74 @@ async function guardarConfiguracionOrganizacion() {
         document.getElementById(
             "organizationSettingsLogo"
         ).value.trim();
+
+        const checklistBaseText =
+    document.getElementById(
+        "organizationChecklistBase"
+    ).value;
+
+const checklistBase =
+    checklistBaseText
+        .split(/\r?\n/)
+        .map(line => {
+
+            const separatorPosition =
+                line.indexOf(":");
+
+            if (separatorPosition <= 0) {
+                return null;
+            }
+
+            const title =
+                line
+                    .slice(
+                        0,
+                        separatorPosition
+                    )
+                    .trim();
+
+            const items =
+                line
+                    .slice(
+                        separatorPosition + 1
+                    )
+                    .split(",")
+                    .map(item => item.trim())
+                    .filter(Boolean);
+
+            if (
+                !title ||
+                !items.length
+            ) {
+                return null;
+            }
+
+            return {
+                title,
+                items
+            };
+        })
+        .filter(Boolean);
+
+const inventoryBase =
+    [
+        ...new Set(
+            document.getElementById(
+                "organizationInventoryBase"
+            )
+                .value
+                .split(/\r?\n/)
+                .map(item => item.trim())
+                .filter(Boolean)
+        )
+    ];
+
+if (!checklistBase.length) {
+    alert(
+        "La plantilla de checklist debe tener al menos un ambiente válido."
+    );
+    return;
+}
 
     if (organizationName.length < 3) {
         alert(
@@ -5576,9 +5708,13 @@ async function guardarConfiguracionOrganizacion() {
             organizationSettingsCurrent.modulos || {};
 
         const newSettings = {
-            ...organizationSettingsCurrent,
+    ...organizationSettingsCurrent,
 
-            modulos: {
+    checklist_base: checklistBase,
+    inventario_base: inventoryBase,
+
+    modulos: {
+
                 ...currentModules,
 
                 checklist:
@@ -5784,4 +5920,102 @@ if (organizationHeaderLogo) {
     notificationsButton.style.display =
         notificationsEnabled ? "" : "none";
 }
+}
+
+async function obtenerChecklistBaseOrganizacion() {
+
+    const {
+        data: organizationId,
+        error: organizationIdError
+    } = await supabaseClient.rpc(
+        "current_organization_id"
+    );
+
+    if (
+        organizationIdError ||
+        !organizationId
+    ) {
+        return JSON.parse(
+            JSON.stringify(ambientes)
+        );
+    }
+
+    const {
+        data: organization,
+        error
+    } = await supabaseClient
+        .from("organizations")
+        .select("configuracion")
+        .eq("id", organizationId)
+        .single();
+
+    if (error) {
+        console.error(
+            "Error cargando checklist base:",
+            error
+        );
+
+        return JSON.parse(
+            JSON.stringify(ambientes)
+        );
+    }
+
+    const checklistBase =
+        organization?.configuracion
+            ?.checklist_base;
+
+    if (
+        !Array.isArray(checklistBase) ||
+        !checklistBase.length
+    ) {
+        return JSON.parse(
+            JSON.stringify(ambientes)
+        );
+    }
+
+    return JSON.parse(
+        JSON.stringify(checklistBase)
+    );
+}
+
+async function obtenerInventarioBaseOrganizacion() {
+
+    const {
+        data: organizationId,
+        error: organizationIdError
+    } = await supabaseClient.rpc(
+        "current_organization_id"
+    );
+
+    if (
+        organizationIdError ||
+        !organizationId
+    ) {
+        return [];
+    }
+
+    const {
+        data: organization,
+        error
+    } = await supabaseClient
+        .from("organizations")
+        .select("configuracion")
+        .eq("id", organizationId)
+        .single();
+
+    if (error) {
+        console.error(
+            "Error cargando inventario base:",
+            error
+        );
+        return [];
+    }
+
+    const inventoryBase =
+        organization?.configuracion
+            ?.inventario_base;
+
+    return Array.isArray(inventoryBase)
+        ? inventoryBase
+        : [];
 }

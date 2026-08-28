@@ -2909,3 +2909,23 @@ top: 20px !important;
         padding: 20px;
     }
 }
+
+.organization-settings-help {
+    margin: -4px 0 12px;
+    color: #6f736d;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.organization-settings-card textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #d8d1c5;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #082b49;
+    font: inherit;
+    line-height: 1.5;
+    resize: vertical;
+    box-sizing: border-box;
+}

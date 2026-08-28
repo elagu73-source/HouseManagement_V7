@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#0D2B45">
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>House Management V7</title>
-<link rel="stylesheet" href="css/style.css?v=5"></head><body>
+<link rel="stylesheet" href="css/style.css?v=6"></head><body>
 
 <section id="cover" class="screen active">
     <div class="cover-content">
@@ -1187,7 +1187,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=103"></script>
 <script src="js/storage.js"></script>
 <script src="js/photos.js"></script>
-<script src="js/app.js?v=120"></script>
+<script src="js/app.js?v=121"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
@@ -1474,6 +1474,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 type="checkbox">
             Notificaciones
         </label>
+
+<h3>Checklist base</h3>
+
+<p class="organization-settings-help">
+    Esta plantilla se aplicará a las propiedades que todavía no tengan un checklist configurado.
+    Escribí un ambiente por línea con el formato:
+    Ambiente: ítem, ítem, ítem
+</p>
+
+<textarea
+    id="organizationChecklistBase"
+    rows="12"
+    placeholder="Exterior: Entrada limpia, Jardín, Luces"></textarea>
+
+<h3>Inventario base</h3>
+
+<p class="organization-settings-help">
+    Escribí un elemento por línea. Se aplicará a las propiedades que todavía no tengan inventario configurado.
+</p>
+
+<textarea
+    id="organizationInventoryBase"
+    rows="8"
+    placeholder="Toallas&#10;Sábanas&#10;Vasos"></textarea>
 
         <button
             id="organizationSettingsSave"
