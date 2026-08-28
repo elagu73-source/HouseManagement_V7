@@ -2667,7 +2667,7 @@ obtenerPrimeraFoto(current, function(url){
 });
 }
 
-function openInfoGeneral(){
+async function openInfoGeneral(){
 
     const h = houses[current];
 
@@ -2699,9 +2699,52 @@ function openInfoGeneral(){
         h.alarma ?? '';
 
     document.getElementById('infoObservaciones').value =
-        h.obs ?? '';
+    h.obs ?? '';
 
-    go('infoGeneral');
+const {
+    data: rolInfoGeneral
+} = await supabaseClient.rpc(
+    "current_organization_role"
+);
+
+const puedeEditarInfoGeneral =
+    ["admin", "supervisor"].includes(
+        rolInfoGeneral
+    );
+
+[
+    "infoNombre",
+    "infoDireccion",
+    "infoPropietario",
+    "infoTelefono",
+    "infoCapacidad",
+    "infoHabitaciones",
+    "infoBanios",
+    "infoWifi",
+    "infoAlarma",
+    "infoObservaciones"
+].forEach(id => {
+    const campo = document.getElementById(id);
+
+    if (campo) {
+        campo.readOnly = !puedeEditarInfoGeneral;
+    }
+});
+
+const botonGuardarInfo =
+    document.querySelector(
+        '#infoGeneral .btn[onclick="guardarInfoGeneral()"]'
+    );
+
+if (botonGuardarInfo) {
+    botonGuardarInfo.style.setProperty(
+        "display",
+        puedeEditarInfoGeneral ? "flex" : "none",
+        "important"
+    );
+}
+
+go('infoGeneral');
 }
 
 async function guardarInfoGeneral() {
