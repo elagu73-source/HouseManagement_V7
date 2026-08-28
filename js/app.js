@@ -316,14 +316,15 @@ async function cargarCasasDesdeSupabase() {
             return;
         }
 
-        if (!data || data.length === 0) {
+       if (!data || data.length === 0) {
 
-            console.warn(
-                "⚠️ Supabase no devolvió casas."
-            );
+    houses = [];
 
-            return;
-        }
+    await cargarValoraciones();
+    await render();
+
+    return;
+}
 
         // Reemplazar las casas locales por las de Supabase
         houses = data.map(h => ({
