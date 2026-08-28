@@ -5738,11 +5738,16 @@ async function aplicarModulosOrganizacion() {
     }
 
     if (ratingsButton) {
-    ratingsButton.style.setProperty(
-        "display",
-        ratingsEnabled ? "flex" : "none",
-        "important"
-    );
+
+    if (ratingsEnabled) {
+        ratingsButton.style.setProperty(
+            "display",
+            "flex",
+            "important"
+        );
+    } else {
+        ratingsButton.remove();
+    }
 }
 
     if (notificationsButton) {
