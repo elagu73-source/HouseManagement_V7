@@ -2231,21 +2231,39 @@ const estado = h.estado ?? "Pendiente";
         '</span> ' +
         estado;
 
-    const { data: reservasCasa, error: errorReservasCasa } =
-    await supabaseClient
+    let reservasCasa = [];
+
+if (h.id) {
+
+    const {
+        data,
+        error
+    } = await supabaseClient
         .from("house_reservations")
         .select("check_in, check_out")
         .eq("house_id", h.id)
-        .gte("check_out", new Date().toISOString().split("T")[0])
-        .order("check_in", { ascending: true });
+        .gte(
+            "check_out",
+            new Date()
+                .toISOString()
+                .split("T")[0]
+        )
+        .order(
+            "check_in",
+            { ascending: true }
+        );
 
-if (errorReservasCasa) {
+    if (error) {
 
-    console.error(
-        "❌ Error cargando reservas de la casa:",
-        errorReservasCasa
-    );
+        console.error(
+            "❌ Error cargando reservas de la casa:",
+            error
+        );
 
+    } else {
+
+        reservasCasa = data || [];
+    }
 }
 
 const proximaReserva =
@@ -2429,6 +2447,12 @@ houses = houses.filter(casa => casa.id !== h.id);
             : "none",
         "important"
     );
+
+document
+    .querySelectorAll(
+        "#btnEliminarPropiedad"
+    )
+    .forEach(button => button.remove());
 
    document.querySelector(".property-top-bar").appendChild(botonEliminar);
 
@@ -3798,14 +3822,59 @@ function editCurrent() {
     go("edit");
 }
 
-async function saveCurrent(){let h=houses[current];
-h.nombre=document.getElementById('name').value; h.name=document.getElementById('name').value; h.nombreCasa=document.getElementById('name').value; h.nombre_casa=document.getElementById('name').value;h.barrio=document.getElementById('barrio').value;h.lote=document.getElementById('lote').value;h.capacidad=document.getElementById('capacidad').value;h.wifi=document.getElementById('wifi').value;h.obs=document.getElementById('obs').value;h.situacion=document.getElementById('situacion').value;
-await saveHouseToSupabase(h);
-const title = document.getElementById('title');
-if (title) title.textContent = h.nombre;
-render();
-openHouse(current);
-render();openHouse(current);}
+async function saveCurrent() {
+
+    const house = houses[current];
+
+    house.nombre =
+        document.getElementById("name").value;
+
+    house.name = house.nombre;
+    house.nombreCasa = house.nombre;
+    house.nombre_casa = house.nombre;
+
+    house.barrio =
+        document.getElementById("barrio").value;
+
+    house.lote =
+        document.getElementById("lote").value;
+
+    house.capacidad =
+        document.getElementById("capacidad").value;
+
+    house.wifi =
+        document.getElementById("wifi").value;
+
+    house.obs =
+        document.getElementById("obs").value;
+
+    house.situacion =
+        document.getElementById("situacion").value;
+
+    await saveHouseToSupabase(house);
+
+    const savedHouseId = house.id;
+
+    const title =
+        document.getElementById("title");
+
+    if (title) {
+        title.textContent = house.nombre;
+    }
+
+    await render();
+
+    const savedIndex =
+        houses.findIndex(
+            item => item.id === savedHouseId
+        );
+
+    if (savedIndex >= 0) {
+        current = savedIndex;
+    }
+
+    await openHouse(current);
+}
 render();
 
 const ambientes=[
