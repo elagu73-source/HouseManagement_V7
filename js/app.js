@@ -5621,11 +5621,22 @@ async function guardarConfiguracionOrganizacion() {
         }
 
         organizationSettingsCurrent =
-            newSettings;
+    newSettings;
 
-        alert(
-            "Configuración guardada correctamente."
-        );
+const organizationHeaderLogo =
+    document.getElementById(
+        "organizationHeaderLogo"
+    );
+
+if (organizationHeaderLogo) {
+    organizationHeaderLogo.src =
+        logoUrl ||
+        "./logo-house-management.png";
+}
+
+alert(
+    "Configuración guardada correctamente."
+);
 
     } catch (error) {
 
@@ -5671,7 +5682,7 @@ async function aplicarModulosOrganizacion() {
         error
     } = await supabaseClient
         .from("organizations")
-        .select("configuracion")
+        .select("configuracion, logo_url")
         .eq("id", organizationId)
         .single();
 
@@ -5685,6 +5696,25 @@ async function aplicarModulosOrganizacion() {
 
     const modules =
         organization?.configuracion?.modulos || {};
+
+        const organizationHeaderLogo =
+    document.getElementById(
+        "organizationHeaderLogo"
+    );
+
+if (organizationHeaderLogo) {
+
+    organizationHeaderLogo.onerror =
+        function() {
+            this.onerror = null;
+            this.src =
+                "./logo-house-management.png";
+        };
+
+    organizationHeaderLogo.src =
+        organization?.logo_url ||
+        "./logo-house-management.png";
+}
 
     const checklistEnabled =
         modules.checklist !== false;
