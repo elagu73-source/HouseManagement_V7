@@ -653,6 +653,36 @@ if (usersAdminAccess) {
     }
 }
 
+// ============================================
+// ACCESO A CONFIGURACIÓN DE LA ORGANIZACIÓN
+// ============================================
+
+const organizationSettingsAccess =
+    document.getElementById(
+        "organizationSettingsAccess"
+    );
+
+if (organizationSettingsAccess) {
+
+    const {
+        data: rolConfiguracion,
+        error: errorRolConfiguracion
+    } = await supabaseClient.rpc(
+        "current_organization_role"
+    );
+
+    if (
+        errorRolConfiguracion ||
+        rolConfiguracion !== "admin"
+    ) {
+        organizationSettingsAccess.style.display =
+            "none";
+    } else {
+        organizationSettingsAccess.style.display =
+            "block";
+    }
+}
+
     // ============================================
 // CHECKLISTS DESDE SUPABASE PARA HOME
 // ============================================
@@ -5378,3 +5408,235 @@ if (saveError || !subscriptionSaved) {
         );
     }
 };
+
+// ============================================
+// CONFIGURACIÓN DE LA ORGANIZACIÓN
+// ============================================
+
+let organizationSettingsCurrent = {};
+
+async function abrirConfiguracionOrganizacion() {
+
+    const {
+        data: rolActual,
+        error: rolError
+    } = await supabaseClient.rpc(
+        "current_organization_role"
+    );
+
+    if (
+        rolError ||
+        rolActual !== "admin"
+    ) {
+        alert(
+            "No tenés permiso para acceder a esta configuración."
+        );
+        return;
+    }
+
+    go("configuracionOrganizacion");
+
+    await cargarConfiguracionOrganizacion();
+}
+
+
+async function cargarConfiguracionOrganizacion() {
+
+    const {
+        data: organizationId,
+        error: organizationIdError
+    } = await supabaseClient.rpc(
+        "current_organization_id"
+    );
+
+    if (
+        organizationIdError ||
+        !organizationId
+    ) {
+        console.error(
+            "Error obteniendo organización:",
+            organizationIdError
+        );
+
+        alert(
+            "No se pudo obtener la organización."
+        );
+        return;
+    }
+
+    const {
+        data: organization,
+        error
+    } = await supabaseClient
+        .from("organizations")
+        .select(
+            "id, nombre, logo_url, configuracion"
+        )
+        .eq("id", organizationId)
+        .single();
+
+    if (error || !organization) {
+        console.error(
+            "Error cargando configuración:",
+            error
+        );
+
+        alert(
+            "No se pudo cargar la configuración."
+        );
+        return;
+    }
+
+    organizationSettingsCurrent =
+        organization.configuracion || {};
+
+    const modules =
+        organizationSettingsCurrent.modulos || {};
+
+    document.getElementById(
+        "organizationSettingsName"
+    ).value = organization.nombre || "";
+
+    document.getElementById(
+        "organizationSettingsLogo"
+    ).value = organization.logo_url || "";
+
+    document.getElementById(
+        "organizationModuleChecklist"
+    ).checked = modules.checklist !== false;
+
+    document.getElementById(
+        "organizationModuleInventory"
+    ).checked = modules.inventario !== false;
+
+    document.getElementById(
+        "organizationModuleRatings"
+    ).checked = modules.valoraciones !== false;
+
+    document.getElementById(
+        "organizationModuleNotifications"
+    ).checked = modules.notificaciones !== false;
+}
+
+
+async function guardarConfiguracionOrganizacion() {
+
+    const saveButton =
+        document.getElementById(
+            "organizationSettingsSave"
+        );
+
+    const organizationName =
+        document.getElementById(
+            "organizationSettingsName"
+        ).value.trim();
+
+    const logoUrl =
+        document.getElementById(
+            "organizationSettingsLogo"
+        ).value.trim();
+
+    if (organizationName.length < 3) {
+        alert(
+            "Ingresá el nombre de la organización."
+        );
+        return;
+    }
+
+    saveButton.disabled = true;
+    saveButton.textContent = "Guardando...";
+
+    try {
+
+        const {
+            data: organizationId,
+            error: organizationIdError
+        } = await supabaseClient.rpc(
+            "current_organization_id"
+        );
+
+        if (
+            organizationIdError ||
+            !organizationId
+        ) {
+            throw (
+                organizationIdError ||
+                new Error(
+                    "No se encontró la organización."
+                )
+            );
+        }
+
+        const currentModules =
+            organizationSettingsCurrent.modulos || {};
+
+        const newSettings = {
+            ...organizationSettingsCurrent,
+
+            modulos: {
+                ...currentModules,
+
+                checklist:
+                    document.getElementById(
+                        "organizationModuleChecklist"
+                    ).checked,
+
+                inventario:
+                    document.getElementById(
+                        "organizationModuleInventory"
+                    ).checked,
+
+                valoraciones:
+                    document.getElementById(
+                        "organizationModuleRatings"
+                    ).checked,
+
+                notificaciones:
+                    document.getElementById(
+                        "organizationModuleNotifications"
+                    ).checked
+            }
+        };
+
+        const {
+            error
+        } = await supabaseClient
+            .from("organizations")
+            .update({
+                nombre: organizationName,
+                logo_url: logoUrl || null,
+                configuracion: newSettings,
+                updated_at:
+                    new Date().toISOString()
+            })
+            .eq("id", organizationId);
+
+        if (error) {
+            throw error;
+        }
+
+        organizationSettingsCurrent =
+            newSettings;
+
+        alert(
+            "Configuración guardada correctamente."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Error guardando configuración:",
+            error
+        );
+
+        alert(
+            "No se pudo guardar la configuración."
+        );
+
+    } finally {
+
+        saveButton.disabled = false;
+        saveButton.textContent =
+            "Guardar configuración";
+    }
+}

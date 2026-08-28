@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#0D2B45">
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>House Management V7</title>
-<link rel="stylesheet" href="css/style.css?v=4"></head><body>
+<link rel="stylesheet" href="css/style.css?v=5"></head><body>
 
 <section id="cover" class="screen active">
     <div class="cover-content">
@@ -120,6 +120,14 @@
             style="display:none;">
             Usuarios
         </button>
+
+        <button
+    id="organizationSettingsAccess"
+    type="button"
+    onclick="abrirConfiguracionOrganizacion()"
+    style="display:none;">
+    Configuración
+</button>
 
     </div>
 
@@ -1167,7 +1175,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=103"></script>
 <script src="js/storage.js"></script>
 <script src="js/photos.js"></script>
-<script src="js/app.js?v=115"></script>
+<script src="js/app.js?v=116"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
@@ -1389,6 +1397,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <div id="usuariosContent">
         Cargando usuarios...
+    </div>
+
+</section>
+
+<section id="configuracionOrganizacion" class="screen">
+
+    <button
+        type="button"
+        onclick="go('home')"
+        class="btn usuarios-back-btn">
+        &lt; Propiedades
+    </button>
+
+    <h2>Configuración de la organización</h2>
+
+    <div class="organization-settings-card">
+
+        <label for="organizationSettingsName">
+            Nombre de la organización
+        </label>
+
+        <input
+            id="organizationSettingsName"
+            type="text"
+            maxlength="100"
+            autocomplete="organization">
+
+        <label for="organizationSettingsLogo">
+            Dirección del logo
+        </label>
+
+        <input
+            id="organizationSettingsLogo"
+            type="url"
+            placeholder="https://...">
+
+        <h3>Módulos activos</h3>
+
+        <label class="organization-module-option">
+            <input
+                id="organizationModuleChecklist"
+                type="checkbox">
+            Checklist
+        </label>
+
+        <label class="organization-module-option">
+            <input
+                id="organizationModuleInventory"
+                type="checkbox">
+            Inventario
+        </label>
+
+        <label class="organization-module-option">
+            <input
+                id="organizationModuleRatings"
+                type="checkbox">
+            Valoraciones
+        </label>
+
+        <label class="organization-module-option">
+            <input
+                id="organizationModuleNotifications"
+                type="checkbox">
+            Notificaciones
+        </label>
+
+        <button
+            id="organizationSettingsSave"
+            type="button"
+            class="btn"
+            onclick="guardarConfiguracionOrganizacion()">
+            Guardar configuración
+        </button>
+
     </div>
 
 </section>
