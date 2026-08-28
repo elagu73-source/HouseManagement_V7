@@ -683,6 +683,8 @@ if (organizationSettingsAccess) {
     }
 }
 
+await aplicarModulosOrganizacion();
+
     // ============================================
 // CHECKLISTS DESDE SUPABASE PARA HOME
 // ============================================
@@ -2674,6 +2676,9 @@ botonCalendario.onclick = function(event) {
 ratingElement.parentElement.appendChild(botonCalendario);
 
 }
+
+await aplicarModulosOrganizacion();
+
 
 const foto = document.getElementById("houseHeroPhoto");
 
@@ -5639,4 +5644,106 @@ async function guardarConfiguracionOrganizacion() {
         saveButton.textContent =
             "Guardar configuración";
     }
+}
+
+async function aplicarModulosOrganizacion() {
+
+    const {
+        data: organizationId,
+        error: organizationIdError
+    } = await supabaseClient.rpc(
+        "current_organization_id"
+    );
+
+    if (
+        organizationIdError ||
+        !organizationId
+    ) {
+        console.error(
+            "Error obteniendo organización para módulos:",
+            organizationIdError
+        );
+        return;
+    }
+
+    const {
+        data: organization,
+        error
+    } = await supabaseClient
+        .from("organizations")
+        .select("configuracion")
+        .eq("id", organizationId)
+        .single();
+
+    if (error) {
+        console.error(
+            "Error cargando módulos:",
+            error
+        );
+        return;
+    }
+
+    const modules =
+        organization?.configuracion?.modulos || {};
+
+    const checklistEnabled =
+        modules.checklist !== false;
+
+    const inventoryEnabled =
+        modules.inventario !== false;
+
+    const ratingsEnabled =
+        modules.valoraciones !== false;
+
+        const notificationsEnabled =
+    modules.notificaciones !== false;
+
+    const checklistButton =
+        document.getElementById(
+            "houseMenuChecklist"
+        );
+
+    const checklistEditorButton =
+        document.getElementById(
+            "houseMenuChecklistEditor"
+        );
+
+    const inventoryButton =
+        document.getElementById(
+            "houseMenuInventory"
+        );
+
+    const ratingsButton =
+        document.getElementById(
+            "btnValoracionPropiedad"
+        );
+        const notificationsButton =
+    document.getElementById(
+        "notificationsButton"
+    );
+
+    if (checklistButton) {
+        checklistButton.style.display =
+            checklistEnabled ? "" : "none";
+    }
+
+    if (checklistEditorButton) {
+        checklistEditorButton.style.display =
+            checklistEnabled ? "" : "none";
+    }
+
+    if (inventoryButton) {
+        inventoryButton.style.display =
+            inventoryEnabled ? "" : "none";
+    }
+
+    if (ratingsButton) {
+        ratingsButton.style.display =
+            ratingsEnabled ? "" : "none";
+    }
+
+    if (notificationsButton) {
+    notificationsButton.style.display =
+        notificationsEnabled ? "" : "none";
+}
 }

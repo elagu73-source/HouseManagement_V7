@@ -294,7 +294,11 @@
                 <span>Manual</span>
             </div>
 
-            <div class="house-menu-btn" onclick="startPreparation()">
+            <div
+    id="houseMenuChecklist"
+    class="house-menu-btn"
+    onclick="startPreparation()">
+
                 <span class="house-icon">
                     <svg viewBox="0 0 24 24">
                         <rect x="4" y="4" width="16" height="16" rx="2"></rect>
@@ -315,7 +319,10 @@
                 <span>Incidencias</span>
             </div>
 
-            <div class="house-menu-btn" onclick="openInventario()">
+            <div
+    id="houseMenuInventory"
+    class="house-menu-btn"
+    onclick="openInventario()">
                 <span class="house-icon">
                     <svg viewBox="0 0 24 24">
                         <path d="M4 7L12 3L20 7L12 11L4 7Z"></path>
@@ -347,7 +354,10 @@
                 <span>Editar casa</span>
             </div>
 
-            <div class="house-menu-btn" onclick="openChecklistEditor()">
+            <div
+    id="houseMenuChecklistEditor"
+    class="house-menu-btn"
+    onclick="openChecklistEditor()">
                 <span class="house-icon">
                     <svg viewBox="0 0 24 24">
                         <rect x="4" y="3" width="16" height="18" rx="2"></rect>
@@ -1175,7 +1185,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=103"></script>
 <script src="js/storage.js"></script>
 <script src="js/photos.js"></script>
-<script src="js/app.js?v=116"></script>
+<script src="js/app.js?v=117"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
