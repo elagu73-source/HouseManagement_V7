@@ -2384,6 +2384,17 @@ houses = houses.filter(casa => casa.id !== h.id);
         go("home");
     };
 
+    const {
+        data: rolParaEliminarPropiedad
+    } = await supabaseClient.rpc(
+        "current_organization_role"
+    );
+
+    botonEliminar.style.display =
+        rolParaEliminarPropiedad === "admin"
+            ? "flex"
+            : "none";
+
    document.querySelector(".property-top-bar").appendChild(botonEliminar);
 
 // ============================================
