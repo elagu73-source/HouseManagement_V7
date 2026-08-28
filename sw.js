@@ -1,4 +1,4 @@
-const CACHE_NAME = "house-management-v19";
+const CACHE_NAME = "house-management-v20";
 
 const ARCHIVOS = [
     "./",
@@ -10,7 +10,7 @@ const ARCHIVOS = [
     "./js/supabase.js?v=103",
     "./js/storage.js",
     "./js/photos.js",
-    "./js/app.js?v=114",
+    "./js/app.js?v=115",
 
     "./logo-house-management.png",
 

@@ -3825,6 +3825,7 @@ async function startPreparation(){
     const diagnostico = document.getElementById("diagnosticoChecklist");
 
 if (diagnostico) {
+    diagnostico.style.display = "block";
     diagnostico.textContent = "☁️ Cargando checklist desde Supabase...";
 }
 
@@ -3865,8 +3866,12 @@ observaciones =
         ? data.observaciones
         : {};
 
-    } else {
+        } else {
 
+    }
+
+    if (diagnostico) {
+        diagnostico.style.display = "none";
     }
 
     paso = 0;
