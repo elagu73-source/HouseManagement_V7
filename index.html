@@ -427,7 +427,14 @@
 <label>Alarma</label>
 <input id="infoAlarma">
 
+<label>Formulario de valoración</label>
+<input
+    id="infoValoracionUrl"
+    type="url"
+    placeholder="https://forms...">
+
 <label>Observaciones generales</label>
+
 <textarea id="infoObservaciones"></textarea>
 
 <div class="btn" onclick="guardarInfoGeneral()">
@@ -1185,9 +1192,9 @@ onclick="cerrarVisorFoto()">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js?v=103"></script>
-<script src="js/storage.js"></script>
+<script src="js/storage.js?v=2"></script>
 <script src="js/photos.js"></script>
-<script src="js/app.js?v=122"></script>
+<script src="js/app.js?v=123"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();

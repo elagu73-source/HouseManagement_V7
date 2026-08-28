@@ -50,7 +50,9 @@ async function saveHouseToSupabase(house) {
                             '',
                         estado: house.estado || 'Pendiente',
                         ingreso: house.ingreso || '',
-                        rating: house.rating || ''
+                        rating: house.rating || '',
+valoracion_url:
+    house.valoracion_url || null
                     });
 
             if (houseError) {
@@ -108,7 +110,9 @@ async function saveHouseToSupabase(house) {
                             house.estado ||
                             'Pendiente',
                         ingreso: house.ingreso || '',
-                        rating: house.rating || ''
+                        rating: house.rating || '',
+valoracion_url:
+    house.valoracion_url || null
                     })
                     .eq('id', house.id);
 

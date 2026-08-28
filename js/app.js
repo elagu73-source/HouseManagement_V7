@@ -2520,7 +2520,9 @@ botonValoracion.onclick = function(event) {
         h.nombre_casa ||
         "";
 
-    const link = linksValoracion[nombreCasa];
+    const link =
+    h.valoracion_url ||
+    linksValoracion[nombreCasa];
 
     if (!link) {
         alert("No encontramos el formulario de valoración para esta casa.");
@@ -2757,6 +2759,10 @@ async function openInfoGeneral(){
     document.getElementById('infoAlarma').value =
         h.alarma ?? '';
 
+        document.getElementById(
+    "infoValoracionUrl"
+).value = h.valoracion_url ?? "";
+
     document.getElementById('infoObservaciones').value =
     h.obs ?? '';
 
@@ -2843,6 +2849,11 @@ async function guardarInfoGeneral() {
 
     h.alarma =
         document.getElementById("infoAlarma").value;
+
+        h.valoracion_url =
+    document.getElementById(
+        "infoValoracionUrl"
+    ).value.trim();
 
     h.obs =
         document.getElementById("infoObservaciones").value;
