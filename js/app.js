@@ -5738,9 +5738,12 @@ async function aplicarModulosOrganizacion() {
     }
 
     if (ratingsButton) {
-        ratingsButton.style.display =
-            ratingsEnabled ? "" : "none";
-    }
+    ratingsButton.style.setProperty(
+        "display",
+        ratingsEnabled ? "flex" : "none",
+        "important"
+    );
+}
 
     if (notificationsButton) {
     notificationsButton.style.display =
