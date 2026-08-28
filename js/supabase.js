@@ -1062,7 +1062,18 @@ async function detectarRecuperacionPassword() {
                 return;
             }
 
+            if (document.readyState === "loading") {
+                await new Promise(resolve => {
+                    document.addEventListener(
+                        "DOMContentLoaded",
+                        resolve,
+                        { once: true }
+                    );
+                });
+            }
+
             const modal =
+
                 document.getElementById(
                     "modalNuevaPassword"
                 );
