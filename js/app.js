@@ -772,6 +772,112 @@ async function editarDatosComerciales(
     await abrirSuperadmin();
 }
 
+async function editarModulosOrganizacion(
+    organizacion
+) {
+
+    const modulos =
+        organizacion.modulos || {};
+
+    const checklist = confirm(
+        `Checklist\n\nEstado actual: ${
+            modulos.checklist
+                ? "Activo"
+                : "Inactivo"
+        }\n\nAceptar = Activo\nCancelar = Inactivo`
+    );
+
+    const inventario = confirm(
+        `Inventario\n\nEstado actual: ${
+            modulos.inventario
+                ? "Activo"
+                : "Inactivo"
+        }\n\nAceptar = Activo\nCancelar = Inactivo`
+    );
+
+    const valoraciones = confirm(
+        `Valoraciones\n\nEstado actual: ${
+            modulos.valoraciones
+                ? "Activo"
+                : "Inactivo"
+        }\n\nAceptar = Activo\nCancelar = Inactivo`
+    );
+
+    const notificaciones = confirm(
+        `Notificaciones\n\nEstado actual: ${
+            modulos.notificaciones
+                ? "Activo"
+                : "Inactivo"
+        }\n\nAceptar = Activo\nCancelar = Inactivo`
+    );
+
+    const resumen = [
+        `Checklist: ${
+            checklist
+                ? "Activo"
+                : "Inactivo"
+        }`,
+        `Inventario: ${
+            inventario
+                ? "Activo"
+                : "Inactivo"
+        }`,
+        `Valoraciones: ${
+            valoraciones
+                ? "Activo"
+                : "Inactivo"
+        }`,
+        `Notificaciones: ${
+            notificaciones
+                ? "Activo"
+                : "Inactivo"
+        }`
+    ].join("\n");
+
+    const guardar = confirm(
+        `¿Guardar esta configuración?\n\n${resumen}`
+    );
+
+    if (!guardar) return;
+
+    const {
+        error
+    } = await supabaseClient.rpc(
+        "superadmin_update_organization_modules",
+        {
+            p_organization_id:
+                organizacion.id,
+            p_checklist:
+                checklist,
+            p_inventario:
+                inventario,
+            p_valoraciones:
+                valoraciones,
+            p_notificaciones:
+                notificaciones
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Error actualizando módulos:",
+            error
+        );
+
+        alert(
+            "No se pudieron actualizar los módulos."
+        );
+
+        return;
+    }
+
+    alert(
+        "Módulos actualizados."
+    );
+
+    await abrirSuperadmin();
+}
+
 async function abrirSuperadmin() {
 
     const {
@@ -910,6 +1016,31 @@ abono.textContent =
           } por mes`
         : "Abono: sin definir";
 
+const modulosTexto =
+    document.createElement("p");
+
+const modulosActivos =
+    organizacion.modulos || {};
+
+modulosTexto.textContent =
+    `Módulos: Checklist ${
+        modulosActivos.checklist
+            ? "✓"
+            : "—"
+    } · Inventario ${
+        modulosActivos.inventario
+            ? "✓"
+            : "—"
+    } · Valoraciones ${
+        modulosActivos.valoraciones
+            ? "✓"
+            : "—"
+    } · Notificaciones ${
+        modulosActivos.notificaciones
+            ? "✓"
+            : "—"
+    }`;
+
             const alta =
                 document.createElement("p");
 
@@ -961,6 +1092,25 @@ botonEditarComercial.addEventListener(
     )
 );
 
+const botonEditarModulos =
+    document.createElement("button");
+
+botonEditarModulos.type =
+    "button";
+
+botonEditarModulos.className =
+    "btn";
+
+botonEditarModulos.textContent =
+    "Configurar módulos";
+
+botonEditarModulos.addEventListener(
+    "click",
+    () => editarModulosOrganizacion(
+        organizacion
+    )
+);
+
 const acciones =
     document.createElement("div");
 
@@ -969,10 +1119,11 @@ acciones.className =
 
 acciones.append(
     botonEditarComercial,
+    botonEditarModulos,
     botonEstado
 );
 
-    tarjeta.append(
+tarjeta.append(
     titulo,
     estado,
     propiedades,
@@ -980,6 +1131,7 @@ acciones.append(
     plan,
     limites,
     abono,
+    modulosTexto,
     alta,
     acciones
 );
