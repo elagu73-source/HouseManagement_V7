@@ -1216,7 +1216,7 @@ onclick="cerrarVisorFoto()">
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase.js?v=103"></script>
+<script src="js/supabase.js?v=104"></script>
 <script src="js/storage.js?v=2"></script>
 <script src="js/photos.js"></script>
 <script src="js/app.js?v=123"></script>
@@ -1829,6 +1829,53 @@ document.addEventListener("DOMContentLoaded", () => {
             autocomplete="new-password"
             style="margin-top:12px;"
         >
+
+        <label
+    for="registroAceptaLegales"
+    style="
+        display:flex;
+        align-items:flex-start;
+        gap:10px;
+        margin-top:16px;
+        color:#0D2B45;
+        font-size:13px;
+        line-height:1.5;
+        cursor:pointer;
+    "
+>
+    <input
+        type="checkbox"
+        id="registroAceptaLegales"
+        style="
+            width:auto;
+            min-width:18px;
+            height:18px;
+            margin:2px 0 0;
+            cursor:pointer;
+        "
+    >
+
+    <span>
+        He leído y acepto los
+        <a
+            href="terminos-condiciones.html"
+            target="_blank"
+            rel="noopener"
+            style="color:#718363; font-weight:bold;"
+        >
+            Términos y condiciones
+        </a>
+        y la
+        <a
+            href="politica-privacidad.html"
+            target="_blank"
+            rel="noopener"
+            style="color:#718363; font-weight:bold;"
+        >
+            Política de privacidad
+        </a>.
+    </span>
+</label>
 
         <div
             id="registroClienteError"

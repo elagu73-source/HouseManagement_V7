@@ -23,7 +23,7 @@ function abrirRegistroCliente() {
 
     if (!modal) return;
 
-    [
+        [
         "registroNombre",
         "registroOrganizacion",
         "registroEmail",
@@ -38,6 +38,15 @@ function abrirRegistroCliente() {
             input.value = "";
         }
     });
+
+    const aceptaLegales =
+        document.getElementById(
+            "registroAceptaLegales"
+        );
+
+    if (aceptaLegales) {
+        aceptaLegales.checked = false;
+    }
 
     const errorTexto =
         document.getElementById(
@@ -106,6 +115,13 @@ async function enviarRegistroCliente() {
             )
             ?.value || "";
 
+    const aceptaLegales =
+        document
+            .getElementById(
+                "registroAceptaLegales"
+            )
+            ?.checked === true;
+
     const errorTexto =
         document.getElementById(
             "registroClienteError"
@@ -158,6 +174,13 @@ async function enviarRegistroCliente() {
     if (password !== repetirPassword) {
         mostrarError(
             "Las contraseñas no coinciden."
+        );
+        return;
+    }
+
+    if (!aceptaLegales) {
+        mostrarError(
+            "Debés aceptar los Términos y condiciones y la Política de privacidad."
         );
         return;
     }
