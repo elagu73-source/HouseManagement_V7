@@ -1500,16 +1500,43 @@ if (!resultadoOnboarding.ok) {
 }
 
 const {
-    data: usuarioActivo,
-    error: estadoUsuarioError
+    data: estadoAcceso,
+    error: estadoAccesoError
 } = await supabaseClient.rpc(
-    "current_user_is_active"
+    "current_user_access_status"
 );
 
 if (
-    estadoUsuarioError ||
-    usuarioActivo !== true
+    estadoAccesoError ||
+    estadoAcceso !== "activo"
 ) {
+
+    let mensajeAcceso =
+        "Tu usuario está inactivo. Contactá al administrador.";
+
+    if (estadoAccesoError) {
+        mensajeAcceso =
+            "No se pudo verificar el estado del usuario.";
+    } else if (
+        estadoAcceso ===
+        "organizacion_suspendida"
+    ) {
+        mensajeAcceso =
+            "El servicio de tu organización está suspendido. Contactá a House Management.";
+    } else if (
+        estadoAcceso ===
+        "sin_organizacion"
+    ) {
+        mensajeAcceso =
+            "Tu usuario no tiene una organización activa asignada.";
+    } else if (
+        estadoAcceso ===
+        "sin_perfil"
+    ) {
+        mensajeAcceso =
+            "No encontramos el perfil de tu usuario.";
+    }
+
     await supabaseClient.auth.signOut();
 
     loginEnProceso = false;
@@ -1520,12 +1547,11 @@ if (
     }
 
     mostrarError(
-        estadoUsuarioError
-            ? "No se pudo verificar el estado del usuario."
-            : "Tu usuario está inactivo. Contactá al administrador."
+        mensajeAcceso
     );
 
     return;
+
 }
 
 window.onboardingRecienCreado =
