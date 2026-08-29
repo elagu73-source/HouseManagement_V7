@@ -751,6 +751,47 @@ async function abrirSuperadmin() {
                     organizacion.usuarios_activos
                 }`;
 
+                const plan =
+    document.createElement("p");
+
+const nombrePlan =
+    organizacion.plan &&
+    organizacion.plan !== "sin_asignar"
+        ? organizacion.plan
+              .replaceAll("_", " ")
+        : "Sin asignar";
+
+plan.textContent =
+    `Plan: ${nombrePlan}`;
+
+const limites =
+    document.createElement("p");
+
+limites.textContent =
+    `Límites: ${
+        organizacion.limite_propiedades ??
+        "sin definir"
+    } propiedades / ${
+        organizacion.limite_usuarios ??
+        "sin definir"
+    } usuarios`;
+
+const abono =
+    document.createElement("p");
+
+abono.textContent =
+    organizacion.precio_mensual !== null
+        ? `Abono: ${
+            organizacion.moneda
+          } ${
+            Number(
+                organizacion.precio_mensual
+            ).toLocaleString(
+                "es-AR"
+            )
+          } por mes`
+        : "Abono: sin definir";
+
             const alta =
                 document.createElement("p");
 
@@ -784,12 +825,15 @@ botonEstado.addEventListener(
 );
 
             tarjeta.append(
-            titulo,
-            estado,
-            propiedades,
-            usuarios,
-            alta,
-            botonEstado
+    titulo,
+    estado,
+    propiedades,
+    usuarios,
+    plan,
+    limites,
+    abono,
+    alta,
+    botonEstado
 );
 
             contenido.appendChild(
