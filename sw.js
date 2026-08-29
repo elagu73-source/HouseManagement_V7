@@ -1,4 +1,4 @@
-const CACHE_NAME = "house-management-v33";
+const CACHE_NAME = "house-management-v34";
 
 const ARCHIVOS = [
     "./",
