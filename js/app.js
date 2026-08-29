@@ -2861,6 +2861,21 @@ async function guardarInfoGeneral() {
 
     await saveHouseToSupabase(h);
 
+    const savedHouseId = h.id;
+
+    await render();
+
+    const savedIndex =
+        houses.findIndex(
+            house => house.id === savedHouseId
+        );
+
+    if (savedIndex >= 0) {
+        current = savedIndex;
+    }
+
+    await openHouse(current);
+
     go("infoGeneral");
 }
 
