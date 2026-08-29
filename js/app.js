@@ -607,13 +607,13 @@ async function abrirSuperadmin() {
 
     const {
         data: esSuperadmin,
-        error
+        error: accesoError
     } = await supabaseClient.rpc(
         "current_user_is_superadmin"
     );
 
     if (
-        error ||
+        accesoError ||
         esSuperadmin !== true
     ) {
         alert(
@@ -629,10 +629,102 @@ async function abrirSuperadmin() {
             "superadminContent"
         );
 
-    if (contenido) {
-        contenido.innerHTML =
-            "Panel habilitado. Próximamente se mostrarán aquí las organizaciones.";
+    if (!contenido) return;
+
+    contenido.textContent =
+        "Cargando organizaciones...";
+
+    const {
+        data: organizaciones,
+        error
+    } = await supabaseClient.rpc(
+        "superadmin_list_organizations"
+    );
+
+    if (error) {
+        console.error(
+            "Error cargando organizaciones:",
+            error
+        );
+
+        contenido.textContent =
+            "No se pudieron cargar las organizaciones.";
+
+        return;
     }
+
+    contenido.replaceChildren();
+
+    if (!organizaciones?.length) {
+        contenido.textContent =
+            "Todavía no hay organizaciones registradas.";
+        return;
+    }
+
+    organizaciones.forEach(
+        organizacion => {
+
+            const tarjeta =
+                document.createElement("article");
+
+            tarjeta.className =
+                "organization-settings-card";
+
+            const titulo =
+                document.createElement("h3");
+
+            titulo.textContent =
+                organizacion.nombre;
+
+            const estado =
+                document.createElement("p");
+
+            estado.textContent =
+                organizacion.activo
+                    ? "Estado: Activa"
+                    : "Estado: Suspendida";
+
+            const propiedades =
+                document.createElement("p");
+
+            propiedades.textContent =
+                `Propiedades activas: ${
+                    organizacion.propiedades_activas
+                }`;
+
+            const usuarios =
+                document.createElement("p");
+
+            usuarios.textContent =
+                `Usuarios activos: ${
+                    organizacion.usuarios_activos
+                }`;
+
+            const alta =
+                document.createElement("p");
+
+            alta.textContent =
+                `Creada: ${
+                    new Date(
+                        organizacion.created_at
+                    ).toLocaleDateString(
+                        "es-AR"
+                    )
+                }`;
+
+            tarjeta.append(
+                titulo,
+                estado,
+                propiedades,
+                usuarios,
+                alta
+            );
+
+            contenido.appendChild(
+                tarjeta
+            );
+        }
+    );
 }
 
 async function render(){
