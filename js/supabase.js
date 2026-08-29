@@ -23,7 +23,7 @@ function abrirRegistroCliente() {
 
     if (!modal) return;
 
-        [
+    [
         "registroNombre",
         "registroOrganizacion",
         "registroEmail",
@@ -211,7 +211,12 @@ async function enviarRegistroCliente() {
                     hm_onboarding: true,
                     admin_name: nombre,
                     organization_name:
-                        organizacion
+                        organizacion,
+                    legal_accepted: true,
+                    terms_version:
+                        "2026-08-28",
+                    privacy_version:
+                        "2026-08-28"
                 }
             }
         });
