@@ -156,6 +156,14 @@
     Configuración
 </button>
 
+<button
+    id="superadminAccess"
+    type="button"
+    onclick="abrirSuperadmin()"
+    style="display:none;">
+    Superadministrador
+</button>
+
     </div>
 
     <div id="activityDashboardContent" style="display:none;">
@@ -1219,7 +1227,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=106"></script>
 <script src="js/storage.js?v=2"></script>
 <script src="js/photos.js"></script>
-<script src="js/app.js?v=125"></script>
+<script src="js/app.js?v=126"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
@@ -1420,6 +1428,27 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 </script>
+
+<section id="superadmin" class="screen">
+
+    <button
+        type="button"
+        onclick="go('home')"
+        class="btn usuarios-back-btn">
+        &lt; Propiedades
+    </button>
+
+    <h2>Panel de Superadministrador</h2>
+
+    <p>
+        Gestión global de organizaciones y clientes de House Management.
+    </p>
+
+    <div id="superadminContent">
+        Cargando organizaciones...
+    </div>
+
+</section>
 
 <section id="usuarios" class="screen">
 

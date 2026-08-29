@@ -603,6 +603,38 @@ async function mostrarBienvenidaOnboardingSiCorresponde() {
     }
 }
 
+async function abrirSuperadmin() {
+
+    const {
+        data: esSuperadmin,
+        error
+    } = await supabaseClient.rpc(
+        "current_user_is_superadmin"
+    );
+
+    if (
+        error ||
+        esSuperadmin !== true
+    ) {
+        alert(
+            "No tenés permisos para acceder al panel de Superadministrador."
+        );
+        return;
+    }
+
+    go("superadmin");
+
+    const contenido =
+        document.getElementById(
+            "superadminContent"
+        );
+
+    if (contenido) {
+        contenido.innerHTML =
+            "Panel habilitado. Próximamente se mostrarán aquí las organizaciones.";
+    }
+}
+
 async function render(){
         const thisRender = ++renderVersion;
     const c = document.getElementById('houses');
@@ -680,6 +712,32 @@ if (organizationSettingsAccess) {
     } else {
         organizationSettingsAccess.style.display =
             "block";
+    }
+}
+
+// ============================================
+// ACCESO AL PANEL DE SUPERADMINISTRADOR
+// ============================================
+
+const superadminAccess =
+    document.getElementById("superadminAccess");
+
+if (superadminAccess) {
+
+    const {
+        data: esSuperadmin,
+        error: superadminError
+    } = await supabaseClient.rpc(
+        "current_user_is_superadmin"
+    );
+
+    if (
+        superadminError ||
+        esSuperadmin !== true
+    ) {
+        superadminAccess.style.display = "none";
+    } else {
+        superadminAccess.style.display = "block";
     }
 }
 
