@@ -2816,8 +2816,8 @@ async function guardarInfoGeneral() {
 
     const h = houses[current];
 
-    if (!h || !h.id) {
-        console.error("❌ La casa no tiene UUID de Supabase");
+    if (!h) {
+        console.error("❌ No se encontró la propiedad actual");
         return;
     }
 
