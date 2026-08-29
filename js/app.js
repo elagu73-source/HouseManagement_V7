@@ -654,6 +654,124 @@ async function cambiarEstadoOrganizacion(
     await abrirSuperadmin();
 }
 
+async function editarDatosComerciales(
+    organizacion
+) {
+
+    const plan = prompt(
+        "Plan comercial:",
+        organizacion.plan ===
+        "sin_asignar"
+            ? ""
+            : organizacion.plan
+    );
+
+    if (plan === null) return;
+
+    const limitePropiedades = prompt(
+        "Límite de propiedades:",
+        organizacion.limite_propiedades ??
+        ""
+    );
+
+    if (limitePropiedades === null) return;
+
+    const limiteUsuarios = prompt(
+        "Límite de usuarios:",
+        organizacion.limite_usuarios ??
+        ""
+    );
+
+    if (limiteUsuarios === null) return;
+
+    const precioMensual = prompt(
+        "Precio mensual:",
+        organizacion.precio_mensual ??
+        ""
+    );
+
+    if (precioMensual === null) return;
+
+    const moneda = prompt(
+        "Moneda: USD o ARS",
+        organizacion.moneda || "USD"
+    );
+
+    if (moneda === null) return;
+
+    const propiedadesNumero =
+        Number(limitePropiedades);
+
+    const usuariosNumero =
+        Number(limiteUsuarios);
+
+    const precioNumero =
+        Number(precioMensual);
+
+    if (
+        !plan.trim() ||
+        !Number.isInteger(
+            propiedadesNumero
+        ) ||
+        propiedadesNumero <= 0 ||
+        !Number.isInteger(
+            usuariosNumero
+        ) ||
+        usuariosNumero <= 0 ||
+        !Number.isFinite(
+            precioNumero
+        ) ||
+        precioNumero < 0 ||
+        !["USD", "ARS"].includes(
+            moneda.trim().toUpperCase()
+        )
+    ) {
+        alert(
+            "Revisá el plan, los límites, el precio y la moneda."
+        );
+        return;
+    }
+
+    const {
+        error
+    } = await supabaseClient.rpc(
+        "superadmin_update_organization_commercial",
+        {
+            p_organization_id:
+                organizacion.id,
+            p_plan:
+                plan.trim(),
+            p_limite_propiedades:
+                propiedadesNumero,
+            p_limite_usuarios:
+                usuariosNumero,
+            p_precio_mensual:
+                precioNumero,
+            p_moneda:
+                moneda.trim().toUpperCase()
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Error actualizando datos comerciales:",
+            error
+        );
+
+        alert(
+            "No se pudieron guardar los datos comerciales."
+        );
+
+        return;
+    }
+
+    alert(
+        "Datos comerciales actualizados."
+    );
+
+    await abrirSuperadmin();
+}
+
 async function abrirSuperadmin() {
 
     const {
@@ -824,7 +942,26 @@ botonEstado.addEventListener(
     )
 );
 
-            tarjeta.append(
+const botonEditarComercial =
+    document.createElement("button");
+
+botonEditarComercial.type =
+    "button";
+
+botonEditarComercial.className =
+    "btn";
+
+botonEditarComercial.textContent =
+    "Editar plan y límites";
+
+botonEditarComercial.addEventListener(
+    "click",
+    () => editarDatosComerciales(
+        organizacion
+    )
+);
+
+    tarjeta.append(
     titulo,
     estado,
     propiedades,
@@ -833,6 +970,7 @@ botonEstado.addEventListener(
     limites,
     abono,
     alta,
+    botonEditarComercial,
     botonEstado
 );
 
