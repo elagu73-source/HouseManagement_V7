@@ -603,6 +603,57 @@ async function mostrarBienvenidaOnboardingSiCorresponde() {
     }
 }
 
+async function cambiarEstadoOrganizacion(
+    organizationId,
+    organizationName,
+    activoActual
+) {
+
+    const accion =
+        activoActual
+            ? "suspender"
+            : "activar";
+
+    const confirmado = confirm(
+        `¿Querés ${accion} la organización "${organizationName}"?`
+    );
+
+    if (!confirmado) return;
+
+    const {
+        error
+    } = await supabaseClient.rpc(
+        "superadmin_set_organization_status",
+        {
+            p_organization_id:
+                organizationId,
+            p_activo:
+                !activoActual
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Error actualizando organización:",
+            error
+        );
+
+        alert(
+            "No se pudo actualizar el estado de la organización."
+        );
+
+        return;
+    }
+
+    alert(
+        activoActual
+            ? "Organización suspendida."
+            : "Organización activada."
+    );
+
+    await abrirSuperadmin();
+}
+
 async function abrirSuperadmin() {
 
     const {
@@ -712,13 +763,34 @@ async function abrirSuperadmin() {
                     )
                 }`;
 
+                const botonEstado =
+    document.createElement("button");
+
+botonEstado.type = "button";
+botonEstado.className = "btn";
+
+botonEstado.textContent =
+    organizacion.activo
+        ? "Suspender organización"
+        : "Activar organización";
+
+botonEstado.addEventListener(
+    "click",
+    () => cambiarEstadoOrganizacion(
+        organizacion.id,
+        organizacion.nombre,
+        organizacion.activo
+    )
+);
+
             tarjeta.append(
-                titulo,
-                estado,
-                propiedades,
-                usuarios,
-                alta
-            );
+            titulo,
+            estado,
+            propiedades,
+            usuarios,
+            alta,
+            botonEstado
+);
 
             contenido.appendChild(
                 tarjeta
