@@ -1499,6 +1499,35 @@ if (!resultadoOnboarding.ok) {
     return;
 }
 
+const {
+    data: usuarioActivo,
+    error: estadoUsuarioError
+} = await supabaseClient.rpc(
+    "current_user_is_active"
+);
+
+if (
+    estadoUsuarioError ||
+    usuarioActivo !== true
+) {
+    await supabaseClient.auth.signOut();
+
+    loginEnProceso = false;
+
+    if (boton) {
+        boton.disabled = false;
+        boton.style.opacity = "1";
+    }
+
+    mostrarError(
+        estadoUsuarioError
+            ? "No se pudo verificar el estado del usuario."
+            : "Tu usuario está inactivo. Contactá al administrador."
+    );
+
+    return;
+}
+
 window.onboardingRecienCreado =
     resultadoOnboarding.creado === true;
 
