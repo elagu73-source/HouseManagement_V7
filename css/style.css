@@ -2951,3 +2951,64 @@ ACTIVIDAD RECIENTE - MOBILE
     flex: 0 0 auto !important;
   }
 }
+
+/* ============================================
+   PANEL DE SUPERADMINISTRADOR
+============================================ */
+
+#superadmin .organization-settings-card {
+    margin-bottom: 18px;
+}
+
+.superadmin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.superadmin-actions .btn {
+    width: auto;
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+
+    .superadmin-actions {
+        flex-direction: column;
+    }
+
+    .superadmin-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Botón Superadministrador */
+
+#superadminAccess {
+    background: #B86B5D !important;
+}
+
+#superadminAccess:hover {
+    background: #A85E52 !important;
+}
+
+/* Navegación administrativa en celular */
+
+@media (max-width: 900px) {
+
+    .activity-dashboard-header {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .activity-dashboard-header button {
+        height: auto !important;
+        min-height: 42px !important;
+        padding: 7px 8px !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        line-height: 1.15 !important;
+    }
+}

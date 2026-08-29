@@ -961,6 +961,17 @@ botonEditarComercial.addEventListener(
     )
 );
 
+const acciones =
+    document.createElement("div");
+
+acciones.className =
+    "superadmin-actions";
+
+acciones.append(
+    botonEditarComercial,
+    botonEstado
+);
+
     tarjeta.append(
     titulo,
     estado,
@@ -970,8 +981,7 @@ botonEditarComercial.addEventListener(
     limites,
     abono,
     alta,
-    botonEditarComercial,
-    botonEstado
+    acciones
 );
 
             contenido.appendChild(
