@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#0D2B45">
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>House Management V7</title>
-<link rel="stylesheet" href="css/style.css?v=7"></head><body>
+<link rel="stylesheet" href="css/style.css?v=8"></head><body>
 
 <section id="cover" class="screen active">
     <div class="cover-content">
@@ -1227,7 +1227,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=107"></script>
 <script src="js/storage.js?v=2"></script>
 <script src="js/photos.js"></script>
-<script src="js/app.js?v=135"></script>
+<script src="js/app.js?v=136"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
@@ -1941,6 +1941,125 @@ document.addEventListener("DOMContentLoaded", () => {
 </div>
 
 <!-- MODAL INICIAR SESIÓN -->
+
+<div id="modalEstadoOrganizacion" class="hm-modal" style="display:none;">
+    <div class="hm-modal-card superadmin-confirm-card">
+        <div
+            id="modalEstadoIcono"
+            class="superadmin-confirm-icon"
+        >
+            !
+        </div>
+
+        <h2 id="modalEstadoTitulo">
+            Cambiar estado
+        </h2>
+
+        <p id="modalEstadoTexto"></p>
+
+        <p
+            id="modalEstadoMensaje"
+            class="superadmin-modal-message"
+        ></p>
+
+        <div class="hm-modal-actions">
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="cerrarModalEstadoOrganizacion()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                id="modalEstadoConfirmar"
+                type="button"
+                class="btn"
+                onclick="confirmarCambioEstadoOrganizacion()"
+            >
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="modalEditarPlan" class="hm-modal" style="display:none;">
+    <div class="hm-modal-card">
+        <h2>Editar plan y límites</h2>
+
+        <p id="modalEditarPlanEmpresa">
+            Configuración comercial de la empresa
+        </p>
+
+        <label for="superadminPlan">Plan comercial</label>
+        <input
+            id="superadminPlan"
+            type="text"
+            maxlength="50"
+            placeholder="Por ejemplo: Gestionado"
+        >
+
+        <label for="superadminLimitePropiedades">
+            Límite de propiedades
+        </label>
+        <input
+            id="superadminLimitePropiedades"
+            type="number"
+            min="1"
+            step="1"
+        >
+
+        <label for="superadminLimiteUsuarios">
+            Límite de usuarios
+        </label>
+        <input
+            id="superadminLimiteUsuarios"
+            type="number"
+            min="1"
+            step="1"
+        >
+
+        <label for="superadminPrecioMensual">
+            Abono mensual
+        </label>
+        <input
+            id="superadminPrecioMensual"
+            type="number"
+            min="0"
+            step="0.01"
+        >
+
+        <label for="superadminMoneda">Moneda</label>
+        <select id="superadminMoneda">
+            <option value="USD">USD</option>
+            <option value="ARS">ARS</option>
+        </select>
+
+        <p
+            id="superadminPlanMensaje"
+            class="superadmin-modal-message"
+        ></p>
+
+        <div class="hm-modal-actions">
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="cerrarModalEditarPlan()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="btn"
+                onclick="guardarDatosComerciales()"
+            >
+                Guardar cambios
+            </button>
+        </div>
+    </div>
+</div>
+
 <div id="modalLogin" class="hm-modal" style="display:none;">
 
     <div class="hm-modal-card">

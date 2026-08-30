@@ -3012,3 +3012,239 @@ ACTIVIDAD RECIENTE - MOBILE
         line-height: 1.15 !important;
     }
 }
+
+/* Ventana comercial del Superadministrador */
+
+#modalEditarPlan .hm-modal-card {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#modalEditarPlan label {
+    display: block;
+    margin: 15px 0 7px;
+    color: #0D2B45;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+#modalEditarPlan input,
+#modalEditarPlan select {
+    width: 100%;
+    min-height: 48px;
+    padding: 11px 14px;
+    border: 1px solid #D8D2C7;
+    border-radius: 10px;
+    background: #FFFFFF;
+    color: #0D2B45;
+    font: inherit;
+    box-sizing: border-box;
+}
+
+#modalEditarPlan input:focus,
+#modalEditarPlan select:focus {
+    border-color: #7A8C68;
+    outline: 3px solid rgba(122, 140, 104, 0.16);
+}
+
+.superadmin-modal-message {
+    display: none;
+    margin: 14px 0 0 !important;
+    padding: 11px 13px;
+    border-radius: 10px;
+    background: #F7EFE6;
+    color: #9A4F43 !important;
+    font-weight: 700;
+}
+
+#modalEditarPlan .btn-secondary {
+    background: #EEE9DF;
+    color: #0D2B45;
+}
+
+/* Confirmación del Superadministrador */
+
+.superadmin-confirm-card {
+    text-align: center;
+}
+
+.superadmin-confirm-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 16px;
+
+    border-radius: 50%;
+    background: #F1E9D4;
+    color: #9A7840;
+
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.superadmin-confirm-card h2 {
+    font-family: Georgia, serif;
+}
+
+.superadmin-confirm-card > p {
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+#modalEstadoConfirmar.estado-suspender {
+    background: #B86B5D;
+}
+
+#modalEstadoConfirmar.estado-activar {
+    background: #718461;
+}
+
+/* Tarjetas amigables del Superadministrador */
+
+#superadminContent {
+    display: grid;
+    gap: 18px;
+}
+
+.superadmin-company-card {
+    position: relative;
+    max-width: 720px !important;
+    padding: 22px !important;
+    overflow: hidden;
+}
+
+.superadmin-company-card h3 {
+    margin: 0 0 12px !important;
+    color: #0D2B45;
+    font-family: Georgia, serif;
+    font-size: 25px;
+    line-height: 1.2;
+}
+
+.superadmin-status {
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    margin: 0 0 18px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.superadmin-status::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    margin-right: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.superadmin-status.activa {
+    background: #EEF3E9;
+    color: #687A59;
+}
+
+.superadmin-status.suspendida {
+    background: #F7EAE7;
+    color: #A35649;
+}
+
+.superadmin-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.superadmin-stat {
+    margin: 0 !important;
+    padding: 14px 12px;
+    border-radius: 12px;
+    background: #F3F0E9;
+    color: #0D2B45 !important;
+    font-size: 14px !important;
+    font-weight: 700;
+    text-align: center;
+}
+
+.superadmin-details {
+    padding: 14px 16px;
+    border: 1px solid #E2DDD4;
+    border-radius: 12px;
+    background: #FCFBF8;
+}
+
+.superadmin-detail {
+    margin: 0 0 8px !important;
+    color: #394B59 !important;
+    font-size: 14px !important;
+    line-height: 1.45;
+}
+
+.superadmin-detail:last-child {
+    margin-bottom: 0 !important;
+}
+
+.superadmin-created {
+    padding-top: 9px;
+    border-top: 1px solid #E6E0D6;
+    color: #777B75 !important;
+    font-size: 13px !important;
+}
+
+.superadmin-company-card .superadmin-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.superadmin-company-card .superadmin-actions .btn {
+    width: 100%;
+    min-height: 46px;
+    border-radius: 11px;
+    font-size: 14px;
+}
+
+.superadmin-company-card .superadmin-actions .btn:first-child {
+    grid-column: 1 / -1;
+}
+
+.superadmin-company-card .superadmin-actions .btn:nth-child(2) {
+    background: #EDE8DE;
+    color: #0D2B45;
+}
+
+.superadmin-company-card .superadmin-actions .btn:nth-child(3) {
+    background: #B86B5D;
+}
+
+.superadmin-company-card
+.superadmin-actions
+.btn:nth-child(3):disabled {
+    opacity: 0.55;
+}
+
+@media (max-width: 420px) {
+    .superadmin-company-card {
+        padding: 18px !important;
+    }
+
+    .superadmin-company-card h3 {
+        font-size: 22px;
+    }
+
+    .superadmin-company-card .superadmin-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .superadmin-company-card
+    .superadmin-actions
+    .btn:first-child {
+        grid-column: auto;
+    }
+}

@@ -712,34 +712,126 @@ async function mostrarBienvenidaOnboardingSiCorresponde() {
     }
 }
 
-async function cambiarEstadoOrganizacion(
+let cambioEstadoOrganizacionPendiente =
+    null;
+
+function cambiarEstadoOrganizacion(
     organizationId,
     organizationName,
     activoActual
 ) {
+    cambioEstadoOrganizacionPendiente = {
+        organizationId,
+        organizationName,
+        activoActual
+    };
 
     const accion =
         activoActual
             ? "suspender"
             : "activar";
 
-    const confirmado = confirm(
-        `¿Querés ${accion} la organización "${organizationName}"?`
-    );
+    const titulo =
+        activoActual
+            ? "Suspender organización"
+            : "Activar organización";
 
-    if (!confirmado) return;
+    const texto =
+        activoActual
+            ? `¿Querés suspender temporalmente a “${organizationName}”? Sus usuarios no podrán ingresar hasta que vuelvas a activarla.`
+            : `¿Querés activar nuevamente a “${organizationName}”? Sus usuarios recuperarán el acceso.`;
+
+    document.getElementById(
+        "modalEstadoTitulo"
+    ).textContent = titulo;
+
+    document.getElementById(
+        "modalEstadoTexto"
+    ).textContent = texto;
+
+    const boton =
+        document.getElementById(
+            "modalEstadoConfirmar"
+        );
+
+    boton.textContent =
+        activoActual
+            ? "Sí, suspender"
+            : "Sí, activar";
+
+    boton.className =
+        activoActual
+            ? "btn estado-suspender"
+            : "btn estado-activar";
+
+    boton.disabled = false;
+
+    const mensaje =
+        document.getElementById(
+            "modalEstadoMensaje"
+        );
+
+    mensaje.textContent = "";
+    mensaje.style.display = "none";
+
+    document.getElementById(
+        "modalEstadoOrganizacion"
+    ).style.display = "flex";
+}
+
+function cerrarModalEstadoOrganizacion() {
+    document.getElementById(
+        "modalEstadoOrganizacion"
+    ).style.display = "none";
+
+    cambioEstadoOrganizacionPendiente =
+        null;
+}
+
+async function confirmarCambioEstadoOrganizacion() {
+    if (
+        !cambioEstadoOrganizacionPendiente
+    ) {
+        return;
+    }
 
     const {
-        error
-    } = await supabaseClient.rpc(
-        "superadmin_set_organization_status",
-        {
-            p_organization_id:
-                organizationId,
-            p_activo:
-                !activoActual
-        }
-    );
+        organizationId,
+        activoActual
+    } =
+        cambioEstadoOrganizacionPendiente;
+
+    const boton =
+        document.getElementById(
+            "modalEstadoConfirmar"
+        );
+
+    const mensaje =
+        document.getElementById(
+            "modalEstadoMensaje"
+        );
+
+    boton.disabled = true;
+
+    mensaje.textContent =
+        activoActual
+            ? "Suspendiendo organización..."
+            : "Activando organización...";
+
+    mensaje.style.display = "block";
+    mensaje.style.background = "#F1F3ED";
+    mensaje.style.color = "#687A59";
+
+    const { error } =
+        await supabaseClient.rpc(
+            "superadmin_set_organization_status",
+            {
+                p_organization_id:
+                    organizationId,
+                p_activo:
+                    !activoActual
+            }
+        );
 
     if (error) {
         console.error(
@@ -747,78 +839,138 @@ async function cambiarEstadoOrganizacion(
             error
         );
 
-        alert(
-            "No se pudo actualizar el estado de la organización."
-        );
+        mensaje.textContent =
+            "No se pudo actualizar el estado.";
+        mensaje.style.background = "#F7EFE6";
+        mensaje.style.color = "#9A4F43";
 
+        boton.disabled = false;
         return;
     }
 
-    alert(
+    mensaje.textContent =
         activoActual
-            ? "Organización suspendida."
-            : "Organización activada."
-    );
+            ? "Organización suspendida correctamente."
+            : "Organización activada correctamente.";
 
-    await abrirSuperadmin();
+    mensaje.style.background = "#EEF3E9";
+    mensaje.style.color = "#687A59";
+
+    setTimeout(
+        async () => {
+            cerrarModalEstadoOrganizacion();
+            await abrirSuperadmin();
+        },
+        800
+    );
 }
 
-async function editarDatosComerciales(
+function editarDatosComerciales(
     organizacion
 ) {
+    organizacionComercialActual =
+        organizacion;
 
-    const plan = prompt(
-        "Plan comercial:",
+    document.getElementById(
+        "modalEditarPlanEmpresa"
+    ).textContent =
+        organizacion.nombre;
+
+    document.getElementById(
+        "superadminPlan"
+    ).value =
         organizacion.plan ===
         "sin_asignar"
             ? ""
-            : organizacion.plan
-    );
+            : organizacion.plan || "";
 
-    if (plan === null) return;
-
-    const limitePropiedades = prompt(
-        "Límite de propiedades:",
+    document.getElementById(
+        "superadminLimitePropiedades"
+    ).value =
         organizacion.limite_propiedades ??
-        ""
-    );
+        "";
 
-    if (limitePropiedades === null) return;
-
-    const limiteUsuarios = prompt(
-        "Límite de usuarios:",
+    document.getElementById(
+        "superadminLimiteUsuarios"
+    ).value =
         organizacion.limite_usuarios ??
-        ""
-    );
+        "";
 
-    if (limiteUsuarios === null) return;
-
-    const precioMensual = prompt(
-        "Precio mensual:",
+    document.getElementById(
+        "superadminPrecioMensual"
+    ).value =
         organizacion.precio_mensual ??
-        ""
-    );
+        "";
 
-    if (precioMensual === null) return;
+    document.getElementById(
+        "superadminMoneda"
+    ).value =
+        organizacion.moneda || "USD";
 
-    const moneda = prompt(
-        "Moneda: USD o ARS",
-        organizacion.moneda || "USD"
-    );
+    const mensaje =
+        document.getElementById(
+            "superadminPlanMensaje"
+        );
 
-    if (moneda === null) return;
+    mensaje.textContent = "";
+    mensaje.style.display = "none";
+
+    document.getElementById(
+        "modalEditarPlan"
+    ).style.display = "flex";
+}
+
+function cerrarModalEditarPlan() {
+    document.getElementById(
+        "modalEditarPlan"
+    ).style.display = "none";
+
+    organizacionComercialActual = null;
+}
+
+async function guardarDatosComerciales() {
+    if (!organizacionComercialActual) {
+        return;
+    }
+
+    const plan =
+        document.getElementById(
+            "superadminPlan"
+        ).value.trim();
 
     const propiedadesNumero =
-        Number(limitePropiedades);
+        Number(
+            document.getElementById(
+                "superadminLimitePropiedades"
+            ).value
+        );
 
     const usuariosNumero =
-        Number(limiteUsuarios);
+        Number(
+            document.getElementById(
+                "superadminLimiteUsuarios"
+            ).value
+        );
 
     const precioNumero =
-        Number(precioMensual);
+        Number(
+            document.getElementById(
+                "superadminPrecioMensual"
+            ).value
+        );
+
+    const moneda =
+        document.getElementById(
+            "superadminMoneda"
+        ).value;
+
+    const mensaje =
+        document.getElementById(
+            "superadminPlanMensaje"
+        );
 
     if (
-        !plan.trim() ||
+        !plan ||
         !Number.isInteger(
             propiedadesNumero
         ) ||
@@ -830,36 +982,38 @@ async function editarDatosComerciales(
         !Number.isFinite(
             precioNumero
         ) ||
-        precioNumero < 0 ||
-        !["USD", "ARS"].includes(
-            moneda.trim().toUpperCase()
-        )
+        precioNumero < 0
     ) {
-        alert(
-            "Revisá el plan, los límites, el precio y la moneda."
-        );
+        mensaje.textContent =
+            "Completá correctamente todos los campos.";
+        mensaje.style.display = "block";
         return;
     }
 
-    const {
-        error
-    } = await supabaseClient.rpc(
-        "superadmin_update_organization_commercial",
-        {
-            p_organization_id:
-                organizacion.id,
-            p_plan:
-                plan.trim(),
-            p_limite_propiedades:
-                propiedadesNumero,
-            p_limite_usuarios:
-                usuariosNumero,
-            p_precio_mensual:
-                precioNumero,
-            p_moneda:
-                moneda.trim().toUpperCase()
-        }
-    );
+    mensaje.textContent =
+        "Guardando cambios...";
+    mensaje.style.display = "block";
+    mensaje.style.background = "#F1F3ED";
+    mensaje.style.color = "#687A59";
+
+    const { error } =
+        await supabaseClient.rpc(
+            "superadmin_update_organization_commercial",
+            {
+                p_organization_id:
+                    organizacionComercialActual.id,
+                p_plan:
+                    plan,
+                p_limite_propiedades:
+                    propiedadesNumero,
+                p_limite_usuarios:
+                    usuariosNumero,
+                p_precio_mensual:
+                    precioNumero,
+                p_moneda:
+                    moneda
+            }
+        );
 
     if (error) {
         console.error(
@@ -867,18 +1021,25 @@ async function editarDatosComerciales(
             error
         );
 
-        alert(
-            "No se pudieron guardar los datos comerciales."
-        );
-
+        mensaje.textContent =
+            "No se pudieron guardar los cambios.";
+        mensaje.style.background = "#F7EFE6";
+        mensaje.style.color = "#9A4F43";
         return;
     }
 
-    alert(
-        "Datos comerciales actualizados."
-    );
+    mensaje.textContent =
+        "Cambios guardados correctamente.";
+    mensaje.style.background = "#EEF3E9";
+    mensaje.style.color = "#687A59";
 
-    await abrirSuperadmin();
+    setTimeout(
+        async () => {
+            cerrarModalEditarPlan();
+            await abrirSuperadmin();
+        },
+        700
+    );
 }
 
 async function iniciarIngreso() {
@@ -1011,7 +1172,7 @@ async function abrirSuperadmin() {
                 document.createElement("article");
 
             tarjeta.className =
-                "organization-settings-card";
+    "organization-settings-card superadmin-company-card";
 
             const titulo =
                 document.createElement("h3");
@@ -1041,10 +1202,15 @@ botonIngresar.addEventListener(
             const estado =
                 document.createElement("p");
 
-            estado.textContent =
-                organizacion.activo
-                    ? "Estado: Activa"
-                    : "Estado: Suspendida";
+            estado.className =
+    organizacion.activo
+        ? "superadmin-status activa"
+        : "superadmin-status suspendida";
+
+estado.textContent =
+    organizacion.activo
+        ? "Empresa activa"
+        : "Empresa suspendida";
 
             const propiedades =
                 document.createElement("p");
@@ -1166,15 +1332,53 @@ acciones.append(
     botonEstado
 );
 
-    tarjeta.append(
-    titulo,
-    estado,
+    propiedades.className =
+    "superadmin-stat";
+
+usuarios.className =
+    "superadmin-stat";
+
+const resumen =
+    document.createElement("div");
+
+resumen.className =
+    "superadmin-stats";
+
+resumen.append(
     propiedades,
-    usuarios,
+    usuarios
+);
+
+plan.className =
+    "superadmin-detail";
+
+limites.className =
+    "superadmin-detail";
+
+abono.className =
+    "superadmin-detail";
+
+alta.className =
+    "superadmin-detail superadmin-created";
+
+const detalle =
+    document.createElement("div");
+
+detalle.className =
+    "superadmin-details";
+
+detalle.append(
     plan,
     limites,
     abono,
-    alta,
+    alta
+);
+
+tarjeta.append(
+    titulo,
+    estado,
+    resumen,
+    detalle,
     acciones
 );
 
