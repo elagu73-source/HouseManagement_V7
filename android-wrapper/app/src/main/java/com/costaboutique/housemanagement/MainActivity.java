@@ -24,6 +24,7 @@ public class MainActivity extends Activity {
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
+        settings.setTextZoom(100);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setAllowFileAccess(false);
