@@ -461,8 +461,9 @@ async function go(id){
         backIcon.innerHTML = cbIcon('back');
     }
 
- if(id === 'home'){
+if(id === 'home'){
     await cargarCasasDesdeSupabase();
+    await procesarDestinoNotificacionPendiente();
 }
 }
 
@@ -5854,6 +5855,64 @@ async function abrirNotificaciones() {
 // ============================================
 // MARCAR NOTIFICACIÓN COMO LEÍDA
 // ============================================
+
+async function procesarDestinoNotificacionPendiente() {
+
+    const url =
+        new URL(window.location.href);
+
+    const notificationId =
+        url.searchParams.get(
+            "notification"
+        );
+
+    const houseId =
+        url.searchParams.get("house");
+
+    const entityType =
+        url.searchParams.get("entity");
+
+    if (!houseId) {
+        return;
+    }
+
+    window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname
+    );
+
+    if (notificationId) {
+        await marcarNotificacionLeida(
+            notificationId
+        );
+    }
+
+    const houseIndex =
+        houses.findIndex(
+            house => house.id === houseId
+        );
+
+    if (houseIndex === -1) {
+
+        alert(
+            "La propiedad relacionada ya no está disponible."
+        );
+
+        return;
+    }
+
+    await openHouse(houseIndex);
+
+    if (entityType === "incidencia") {
+        await openIncidencias();
+        return;
+    }
+
+    if (entityType === "checklist") {
+        await startPreparation();
+    }
+}
 
 window.abrirNotificacion = async function(
     id,

@@ -1,4 +1,4 @@
-const CACHE_NAME = "house-management-v44";
+const CACHE_NAME = "house-management-v45";
 
 const ARCHIVOS = [
     "./",
@@ -12,7 +12,7 @@ const ARCHIVOS = [
     "./js/supabase.js?v=108",
     "./js/storage.js?v=2",
     "./js/photos.js",
-    "./js/app.js?v=133",
+    "./js/app.js?v=134",
 
     "./logo-house-management.png",
 
@@ -165,10 +165,22 @@ self.addEventListener("push", event => {
     }
 
     const options = {
-        body: data.message,
-        icon: "./icon-192.png",
-        badge: "./icon-192.png"
-    };
+    body: data.message,
+    icon: "./icon-192.png",
+    badge: "./icon-192.png",
+    data: {
+        notificationId:
+            data.notificationId || "",
+        organizationId:
+            data.organizationId || "",
+        houseId:
+            data.houseId || "",
+        entityType:
+            data.entityType || "",
+        entityId:
+            data.entityId || ""
+    }
+};
 
     event.waitUntil(
         self.registration.showNotification(
@@ -177,3 +189,75 @@ self.addEventListener("push", event => {
         )
     );
 });
+
+self.addEventListener(
+    "notificationclick",
+    event => {
+
+        event.notification.close();
+
+        const data =
+            event.notification.data || {};
+
+        const destination =
+            new URL(
+                "./",
+                self.registration.scope
+            );
+
+        if (data.notificationId) {
+            destination.searchParams.set(
+                "notification",
+                data.notificationId
+            );
+        }
+
+        if (data.organizationId) {
+            destination.searchParams.set(
+                "organization",
+                data.organizationId
+            );
+        }
+
+        if (data.houseId) {
+            destination.searchParams.set(
+                "house",
+                data.houseId
+            );
+        }
+
+        if (data.entityType) {
+            destination.searchParams.set(
+                "entity",
+                data.entityType
+            );
+        }
+
+        event.waitUntil(
+            (async () => {
+
+                const windows =
+                    await clients.matchAll({
+                        type: "window",
+                        includeUncontrolled: true
+                    });
+
+                if (windows.length > 0) {
+
+                    const appWindow =
+                        windows[0];
+
+                    await appWindow.navigate(
+                        destination.href
+                    );
+
+                    return appWindow.focus();
+                }
+
+                return clients.openWindow(
+                    destination.href
+                );
+            })()
+        );
+    }
+);
