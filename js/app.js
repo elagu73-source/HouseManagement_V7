@@ -5820,7 +5820,7 @@ async function mostrarNotificaciones() {
                 .map(n => `
     <div
         class="notification-item ${n.read ? "read" : "unread"}"
-        onclick="marcarNotificacionLeida('${n.id}')"
+        onclick="abrirNotificacion('${n.id}', '${n.house_id || ""}', '${n.entity_type || ""}')"
     >
         <strong>${n.title}</strong>
         <span>${n.message || ""}</span>
@@ -5854,6 +5854,59 @@ async function abrirNotificaciones() {
 // ============================================
 // MARCAR NOTIFICACIÓN COMO LEÍDA
 // ============================================
+
+window.abrirNotificacion = async function(
+    id,
+    houseId,
+    entityType
+) {
+
+    await marcarNotificacionLeida(id);
+
+    const panel =
+        document.getElementById(
+            "notificationsContent"
+        );
+
+    if (panel) {
+        panel.style.display = "none";
+    }
+
+    let houseIndex =
+        houses.findIndex(
+            house => house.id === houseId
+        );
+
+    if (houseIndex === -1) {
+
+        await cargarCasasDesdeSupabase();
+
+        houseIndex =
+            houses.findIndex(
+                house => house.id === houseId
+            );
+    }
+
+    if (houseIndex === -1) {
+
+        alert(
+            "La propiedad relacionada ya no está disponible."
+        );
+
+        return;
+    }
+
+    await openHouse(houseIndex);
+
+    if (entityType === "incidencia") {
+        await openIncidencias();
+        return;
+    }
+
+    if (entityType === "checklist") {
+        await startPreparation();
+    }
+};
 
 window.marcarNotificacionLeida = async function(id) {
 
