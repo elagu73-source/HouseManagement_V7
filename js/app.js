@@ -772,6 +772,71 @@ async function editarDatosComerciales(
     await abrirSuperadmin();
 }
 
+async function iniciarIngreso() {
+
+    const ok = await probarLogin();
+
+    if (ok) {
+        await abrirDestinoInicial();
+    }
+}
+
+async function abrirDestinoInicial() {
+
+    const {
+        data: esSuperadmin,
+        error
+    } = await supabaseClient.rpc(
+        "current_user_is_superadmin"
+    );
+
+    if (!error && esSuperadmin === true) {
+        await abrirSuperadmin();
+        return;
+    }
+
+    await go("home");
+}
+
+
+async function ingresarOrganizacionSuperadmin(
+    organizationId,
+    organizationName
+) {
+
+    mostrarLoader(
+        `Ingresando a ${organizationName}...`
+    );
+
+    const { error } = await supabaseClient.rpc(
+        "superadmin_select_organization",
+        {
+            p_organization_id: organizationId
+        }
+    );
+
+    if (error) {
+
+        ocultarLoader();
+
+        console.error(
+            "Error seleccionando organización:",
+            error
+        );
+
+        alert(
+            "No se pudo ingresar a la organización."
+        );
+
+        return;
+    }
+
+    propertyFilter = "Todas";
+    current = 0;
+
+    await go("home");
+}
+
 async function abrirSuperadmin() {
 
     const {
@@ -844,6 +909,25 @@ async function abrirSuperadmin() {
 
             titulo.textContent =
                 organizacion.nombre;
+
+                const botonIngresar =
+    document.createElement("button");
+
+botonIngresar.type = "button";
+botonIngresar.className = "btn";
+botonIngresar.textContent =
+    "Ingresar a la empresa";
+
+botonIngresar.disabled =
+    organizacion.activo !== true;
+
+botonIngresar.addEventListener(
+    "click",
+    () => ingresarOrganizacionSuperadmin(
+        organizacion.id,
+        organizacion.nombre
+    )
+);
 
             const estado =
                 document.createElement("p");
@@ -968,6 +1052,7 @@ acciones.className =
     "superadmin-actions";
 
 acciones.append(
+    botonIngresar,
     botonEditarComercial,
     botonEstado
 );
