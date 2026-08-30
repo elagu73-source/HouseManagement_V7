@@ -58,11 +58,24 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
+public void onBackPressed() {
+    webView.evaluateJavascript(
+        "(function() {" +
+        "return window.hmHandleBack " +
+        "? window.hmHandleBack() " +
+        ": false;" +
+        "})();",
+        handled -> {
+            if ("true".equals(handled)) {
+                return;
+            }
+
+            if (webView.canGoBack()) {
+                webView.goBack();
+            } else {
+                MainActivity.super.onBackPressed();
+            }
         }
-    }
+    );
+}
 }

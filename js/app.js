@@ -467,6 +467,114 @@ if(id === 'home'){
 }
 }
 
+window.hmHandleBack = function() {
+
+    const notificationsPanel =
+        document.getElementById(
+            "notificationsContent"
+        );
+
+    if (
+        notificationsPanel &&
+        notificationsPanel.style.display ===
+            "block"
+    ) {
+        notificationsPanel.style.display =
+            "none";
+
+        return true;
+    }
+
+    const visibleModal =
+        Array.from(
+            document.querySelectorAll(
+                ".hm-modal"
+            )
+        ).find(
+            modal =>
+                window.getComputedStyle(
+                    modal
+                ).display !== "none"
+        );
+
+    if (visibleModal) {
+        visibleModal.style.display = "none";
+        return true;
+    }
+
+    const activeScreen =
+        document.querySelector(
+            ".screen.active"
+        )?.id;
+
+    if (activeScreen === "cover") {
+        return false;
+    }
+
+    if (activeScreen === "home") {
+
+        const superadminAccess =
+            document.getElementById(
+                "superadminAccess"
+            );
+
+        if (
+            superadminAccess &&
+            superadminAccess.style.display ===
+                "block"
+        ) {
+            abrirSuperadmin();
+        } else {
+            go("cover");
+        }
+
+        return true;
+    }
+
+    if (
+        activeScreen === "activityHistory" ||
+        activeScreen === "property" ||
+        activeScreen === "usuarios" ||
+        activeScreen ===
+            "configuracionOrganizacion"
+    ) {
+        go("home");
+        return true;
+    }
+
+    if (activeScreen === "superadmin") {
+        go("cover");
+        return true;
+    }
+
+    if (activeScreen === "manualEdit") {
+        go("manual");
+        return true;
+    }
+
+    if (activeScreen === "prep") {
+        actualizarEstadoCasa();
+        openHouse(current);
+        return true;
+    }
+
+    if (
+        activeScreen === "infoGeneral" ||
+        activeScreen === "incidencias" ||
+        activeScreen === "inventario" ||
+        activeScreen === "manual" ||
+        activeScreen === "photos" ||
+        activeScreen === "edit" ||
+        activeScreen === "editChecklist"
+    ) {
+        openHouse(current);
+        return true;
+    }
+
+    go("home");
+    return true;
+};
+
 function calcularPorcentajeChecklist(datos) {
 
     let totalChecks = 0;
