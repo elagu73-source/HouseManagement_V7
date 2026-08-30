@@ -725,6 +725,26 @@ async function editarUsuario(userId) {
         return;
     }
 
+const {
+    data: perfilUsuario,
+    error: perfilError
+} = await supabaseClient
+    .from("profiles")
+    .select("nombre")
+    .eq("id", userId)
+    .maybeSingle();
+
+if (perfilError || !perfilUsuario) {
+
+    console.error(
+        "❌ Error obteniendo el nombre:",
+        perfilError
+    );
+
+    alert("No se pudo obtener el nombre del usuario.");
+    return;
+}
+
     const boton =
         document.querySelector(
             `.usuario-edit-btn[onclick="editarUsuario('${userId}')"]`
@@ -795,7 +815,18 @@ async function editarUsuario(userId) {
     editor.className = "usuario-editor";
 
     editor.innerHTML = `
-        <div class="usuario-editor-campo">
+
+    <div class="usuario-editor-campo">
+    <label>Nombre</label>
+
+    <input
+        type="text"
+        id="usuarioNombre-${userId}"
+        maxlength="80"
+        autocomplete="name"
+    >
+</div>
+    <div class="usuario-editor-campo">
             <label>Rol</label>
 
             <select
@@ -878,6 +909,17 @@ async function editarUsuario(userId) {
     `;
 
     tarjeta.appendChild(editor);
+
+const nombreInput =
+    document.getElementById(
+        `usuarioNombre-${userId}`
+    );
+
+if (nombreInput) {
+    nombreInput.value =
+        perfilUsuario.nombre || "";
+}
+
 }
 
 function actualizarEditorPropiedades(userId) {
@@ -903,6 +945,11 @@ function actualizarEditorPropiedades(userId) {
 
 async function guardarEdicionUsuario(userId) {
 
+    const nombre =
+    document.getElementById(
+        `usuarioNombre-${userId}`
+    )?.value.trim() || "";
+
     const rol =
         document.getElementById(
             `usuarioRol-${userId}`
@@ -913,10 +960,33 @@ async function guardarEdicionUsuario(userId) {
             `usuarioEstado-${userId}`
         )?.value;
 
-    if (!rol || !estado) {
-        alert("No se pudo leer la información del usuario.");
+    if (nombre.length < 2 || !rol || !estado) {
+        alert("Ingresá un nombre de al menos 2 caracteres.");
         return;
     }
+
+const { error: errorNombre } =
+    await supabaseClient.rpc(
+        "admin_update_member_name",
+        {
+            p_user_id: userId,
+            p_nombre: nombre
+        }
+    );
+
+if (errorNombre) {
+
+    console.error(
+        "❌ Error actualizando nombre:",
+        errorNombre
+    );
+
+    alert(
+        "No se pudo actualizar el nombre del usuario."
+    );
+
+    return;
+}
 
     // ============================================
     // 1. GUARDAR ROL Y ESTADO
