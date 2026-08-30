@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0e2f49">
+  <title>Instalar House Management</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      padding: max(24px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
+      display: grid;
+      place-items: center;
+      background: #0e2f49;
+      color: #0e2f49;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    main {
+      width: min(100%, 460px);
+      background: #f7f4ed;
+      border-radius: 28px;
+      padding: 30px 24px;
+      text-align: center;
+      box-shadow: 0 16px 45px rgba(0,0,0,.22);
+    }
+    .mark {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 22px;
+      background: #0e2f49;
+      color: #fff;
+      font-family: Georgia, serif;
+      font-size: 42px;
+    }
+    h1 { margin: 0 0 8px; font: 700 30px/1.1 Georgia, serif; }
+    .gold { color: #9c7f36; font-weight: 700; letter-spacing: .04em; }
+    p { line-height: 1.5; }
+    .panel { display: none; margin-top: 24px; }
+    .panel.active { display: block; }
+    .button {
+      width: 100%;
+      min-height: 54px;
+      margin: 10px 0;
+      padding: 15px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 12px;
+      background: #6f7c58;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .button.secondary { background: #0e2f49; }
+    ol { padding-left: 22px; text-align: left; line-height: 1.55; }
+    small { display: block; margin-top: 18px; color: #68737b; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="mark">HM</div>
+    <h1>HOUSE MANAGEMENT</h1>
+    <div class="gold">INSTALÁ LA APP EN TU CELULAR</div>
+
+    <section id="android" class="panel">
+      <h2>Android</h2>
+      <p>Descargá la versión más reciente de House Management.</p>
+      <a class="button" href="https://github.com/elagu73-source/HouseManagement_V7/releases/latest/download/HouseManagement.apk">Descargar para Android</a>
+      <small>Android puede pedir autorización para instalar aplicaciones descargadas desde el navegador.</small>
+    </section>
+
+    <section id="ios" class="panel">
+      <h2>iPhone</h2>
+      <p>Apple instala House Management desde Safari.</p>
+      <a class="button" href="https://elagu73-source.github.io/HouseManagement_V7/">Abrir House Management</a>
+      <ol>
+        <li>Abrí el enlace en Safari.</li>
+        <li>Tocá <strong>Compartir</strong>.</li>
+        <li>Elegí <strong>Agregar a pantalla de inicio</strong>.</li>
+        <li>Tocá <strong>Agregar</strong>.</li>
+      </ol>
+    </section>
+
+    <section id="other" class="panel">
+      <h2>Elegí tu celular</h2>
+      <a class="button" href="https://github.com/elagu73-source/HouseManagement_V7/releases/latest/download/HouseManagement.apk">Android</a>
+      <a class="button secondary" href="https://elagu73-source.github.io/HouseManagement_V7/">iPhone</a>
+    </section>
+  </main>
+
+  <script>
+    const ua = navigator.userAgent || navigator.vendor || '';
+    const isAndroid = /android/i.test(ua);
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    document.getElementById(isAndroid ? 'android' : isIOS ? 'ios' : 'other').classList.add('active');
+  </script>
+</body>
+</html>
