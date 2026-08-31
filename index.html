@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#0D2B45">
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>House Management V7</title>
-<link rel="stylesheet" href="css/style.css?v=8"></head><body>
+<link rel="stylesheet" href="css/style.css?v=9"></head><body>
 
 <section id="cover" class="screen active">
     <div class="cover-content">
@@ -19,18 +19,6 @@
 
 <div class="cover-btn" onclick="iniciarIngreso()">
     INGRESAR
-</div>
-
-<div
-    class="cover-btn"
-    style="
-        margin-top:14px;
-        background:#B6A978;
-        color:#0D2B45;
-    "
-    onclick="abrirRegistroCliente()"
->
-    CREAR CUENTA
 </div>
 
 <div class="forgot-password" onclick="recuperarPassword()">
@@ -1224,7 +1212,7 @@ onclick="cerrarVisorFoto()">
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase.js?v=107"></script>
+<script src="js/supabase.js?v=109"></script>
 <script src="js/storage.js?v=2"></script>
 <script src="js/photos.js"></script>
 <script src="js/app.js?v=136"></script>
@@ -1443,6 +1431,14 @@ document.addEventListener("DOMContentLoaded", () => {
     <p>
         Gestión global de organizaciones y clientes de House Management.
     </p>
+
+<button
+    type="button"
+    class="btn superadmin-create-account"
+    onclick="abrirRegistroCliente()"
+>
+    + Crear nueva empresa
+</button>
 
     <div id="superadminContent">
         Cargando organizaciones...

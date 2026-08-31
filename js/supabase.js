@@ -14,7 +14,24 @@ window.supabaseClient = supabaseClient;
 
 let registroClienteEnProceso = false;
 
-function abrirRegistroCliente() {
+async function abrirRegistroCliente() {
+
+    const {
+        data: esSuperadmin,
+        error: permisoError
+    } = await supabaseClient.rpc(
+        "current_user_is_superadmin"
+    );
+
+    if (
+        permisoError ||
+        esSuperadmin !== true
+    ) {
+        console.warn(
+            "Intento de acceso al registro sin permisos."
+        );
+        return;
+    }
 
     const modal =
         document.getElementById(
@@ -86,6 +103,23 @@ function cerrarRegistroCliente() {
 async function enviarRegistroCliente() {
 
     if (registroClienteEnProceso) return;
+
+        const {
+        data: esSuperadmin,
+        error: permisoError
+    } = await supabaseClient.rpc(
+        "current_user_is_superadmin"
+    );
+
+    if (
+        permisoError ||
+        esSuperadmin !== true
+    ) {
+        console.warn(
+            "Intento de crear una cuenta sin permisos."
+        );
+        return;
+    }
 
     const nombre =
         document

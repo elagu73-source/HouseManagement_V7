@@ -3248,3 +3248,14 @@ ACTIVIDAD RECIENTE - MOBILE
         grid-column: auto;
     }
 }
+
+.superadmin-create-account {
+    width: 100%;
+    max-width: 720px;
+    min-height: 50px;
+    margin: 4px 0 20px;
+    border-radius: 12px;
+    background: #B6A978;
+    color: #0D2B45;
+    font-weight: 800;
+}
