@@ -3259,3 +3259,11 @@ ACTIVIDAD RECIENTE - MOBILE
     color: #0D2B45;
     font-weight: 800;
 }
+
+/* Campanita junto a Propiedades en celulares */
+
+@media (max-width: 600px) {
+    #home .notifications-button {
+        right: 140px !important;
+    }
+}
