@@ -1328,6 +1328,13 @@ navigator.serviceWorker.addEventListener(
     "controllerchange",
     () => {
 
+const modalPassword =
+    document.getElementById("modalNuevaPassword");
+
+if (modalPassword?.style.display === "flex") {
+    return;
+}
+
         if (recargandoPorActualizacion) return;
 
         recargandoPorActualizacion = true;
