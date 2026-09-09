@@ -1212,7 +1212,7 @@ onclick="cerrarVisorFoto()">
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase.js?v=109"></script>
+<script src="js/supabase.js?v=110"></script>
 <script src="js/storage.js?v=2"></script>
 <script src="js/photos.js"></script>
 <script src="js/app.js?v=136"></script>
@@ -1633,12 +1633,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <div class="hm-modal-card">
 
-        <h2>Crear nueva contraseña</h2>
+        <h2>Activar cuenta</h2>
 
-        <p>
-            Ingresá tu nueva contraseña.
-            Debe tener al menos 8 caracteres.
-        </p>
+<p>
+    Confirmá tu correo y creá una contraseña.
+    Debe tener al menos 8 caracteres.
+</p>
+
+<input
+    type="email"
+    id="emailCuentaInvitada"
+    placeholder="Correo electrónico"
+    readonly
+    autocomplete="email"
+    style="margin-bottom:12px;"
+>
 
         <input
             type="password"
@@ -1672,7 +1681,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 class="btn"
                 onclick="guardarNuevaPassword()"
             >
-                Guardar contraseña
+                Activar cuenta
             </button>
 
         </div>

@@ -1185,7 +1185,8 @@ async function detectarRecuperacionPassword() {
 
             const esInvitacion =
                 url.hash.includes("type=invite") ||
-                url.searchParams.get("type") === "invite";
+                url.searchParams.get("type") === "invite" ||
+                url.searchParams.get("hm_invite") === "1";
 
             const esRecuperacion =
                 event === "PASSWORD_RECOVERY";
@@ -1219,6 +1220,16 @@ async function detectarRecuperacionPassword() {
                 document.getElementById(
                     "repetirNuevaPassword"
                 );
+
+            const inputEmail =
+    document.getElementById(
+        "emailCuentaInvitada"
+    );
+
+if (inputEmail) {
+    inputEmail.value =
+        session?.user?.email || "";
+}
 
             const errorTexto =
                 document.getElementById(
@@ -1341,15 +1352,16 @@ async function guardarNuevaPassword() {
         modal.style.display = "none";
     }
 
-    alert(
-        "Contraseña creada correctamente."
-    );
-
     window.history.replaceState(
         {},
         document.title,
         window.location.pathname
     );
+
+    if (typeof abrirDestinoInicial === "function") {
+    await abrirDestinoInicial();
+}
+
 }
 
 window.guardarNuevaPassword = guardarNuevaPassword;
