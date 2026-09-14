@@ -2137,6 +2137,28 @@ calendarioPuedeEditar =
     caja.style.boxShadow =
         "0 20px 60px rgba(0,0,0,0.25)";
 
+        const volverCalendario = document.createElement("button");
+
+volverCalendario.innerText = "← CASA";
+
+volverCalendario.style.border = "none";
+volverCalendario.style.borderRadius = "10px";
+volverCalendario.style.padding = "11px 18px";
+volverCalendario.style.marginBottom = "20px";
+volverCalendario.style.background = "#0D2B45";
+volverCalendario.style.color = "#FFFFFF";
+volverCalendario.style.fontFamily =
+    "Montserrat, Arial, sans-serif";
+volverCalendario.style.fontSize = "13px";
+volverCalendario.style.fontWeight = "700";
+volverCalendario.style.cursor = "pointer";
+
+volverCalendario.onclick = function() {
+    document
+        .getElementById("modalCalendarioCasa")
+        ?.remove();
+};
+
     const titulo = document.createElement("div");
 
     titulo.innerText = "Calendario";
@@ -2165,6 +2187,7 @@ calendarioPuedeEditar =
 
     calendario.id = "calendarioCasaContenido";
 
+caja.appendChild(volverCalendario);
     caja.appendChild(titulo);
     caja.appendChild(nombreCasa);
     caja.appendChild(calendario);
@@ -3482,28 +3505,21 @@ botonValoracion.onclick = function(event) {
     modal.id = "modalQRValoracion";
 
     modal.style.position = "fixed";
-    modal.style.top = "0";
-    modal.style.left = "0";
-    modal.style.right = "0";
-    modal.style.bottom = "0";
-    modal.style.background = "rgba(0,0,0,0.55)";
-    modal.style.display = "flex";
-    modal.style.alignItems = "center";
-    modal.style.justifyContent = "center";
-    modal.style.zIndex = "99999";
-    modal.style.padding = "20px";
-    modal.style.boxSizing = "border-box";
+modal.style.inset = "0";
+modal.style.zIndex = "99999";
+modal.style.background = "#F7F3EA";
+modal.style.overflowY = "auto";
+modal.style.boxSizing = "border-box";
 
-    const caja = document.createElement("div");
+const caja = document.createElement("div");
 
-    caja.style.background = "#F7F3EA";
-caja.style.borderRadius = "18px";
-caja.style.padding = "24px 20px";
-caja.style.maxWidth = "360px";
-caja.style.width = "calc(100% - 40px)";
+caja.style.width = "100%";
+caja.style.maxWidth = "1100px";
+caja.style.minHeight = "100vh";
+caja.style.margin = "0 auto";
+caja.style.padding = "24px";
+caja.style.background = "#F7F3EA";
 caja.style.boxSizing = "border-box";
-caja.style.textAlign = "center";
-    caja.style.boxShadow = "0 20px 60px rgba(0,0,0,0.25)";
 
     const titulo = document.createElement("div");
 
