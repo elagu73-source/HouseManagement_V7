@@ -5272,6 +5272,133 @@ async function decidirPresupuestoIncidencia(
     await openIncidencias();
 }
 
+function confirmarAccionHM(mensaje) {
+    return new Promise((resolve) => {
+        const anterior =
+            document.getElementById("modalConfirmacionHM");
+
+        if (anterior) {
+            anterior.remove();
+        }
+
+        const fondo = document.createElement("div");
+        fondo.id = "modalConfirmacionHM";
+
+        fondo.style.cssText = `
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(13, 43, 69, 0.48);
+            box-sizing: border-box;
+        `;
+
+        fondo.innerHTML = `
+            <div style="
+                width: min(100%, 390px);
+                box-sizing: border-box;
+                padding: 32px 26px 26px;
+                background: #FFFFFF;
+                border-radius: 18px;
+                box-shadow: 0 18px 50px rgba(13, 43, 69, 0.24);
+                text-align: center;
+                font-family: Montserrat, Arial, sans-serif;
+            ">
+                <div style="
+                    width: 58px;
+                    height: 58px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 18px;
+                    border: 2px solid #8B4B4B;
+                    border-radius: 50%;
+                    color: #8B4B4B;
+                    font-size: 30px;
+                    font-weight: 700;
+                ">!</div>
+
+                <div style="
+                    margin-bottom: 10px;
+                    color: #0D2B45;
+                    font-size: 20px;
+                    font-weight: 700;
+                ">
+                    Eliminar incidencia
+                </div>
+
+                <div style="
+                    margin-bottom: 24px;
+                    color: #59636B;
+                    font-size: 15px;
+                    line-height: 1.5;
+                ">
+                    ${mensaje}
+                </div>
+
+                <div style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 10px;
+                ">
+                    <button
+                        id="cancelarConfirmacionHM"
+                        type="button"
+                        style="
+                            padding: 13px;
+                            border: 1px solid #0D2B45;
+                            border-radius: 10px;
+                            background: #FFFFFF;
+                            color: #0D2B45;
+                            font-family: Montserrat, Arial, sans-serif;
+                            font-weight: 700;
+                            cursor: pointer;
+                        "
+                    >
+                        CANCELAR
+                    </button>
+
+                    <button
+                        id="aceptarConfirmacionHM"
+                        type="button"
+                        style="
+                            padding: 13px;
+                            border: none;
+                            border-radius: 10px;
+                            background: #8B4B4B;
+                            color: #FFFFFF;
+                            font-family: Montserrat, Arial, sans-serif;
+                            font-weight: 700;
+                            cursor: pointer;
+                        "
+                    >
+                        ELIMINAR
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(fondo);
+
+        document
+            .getElementById("cancelarConfirmacionHM")
+            .onclick = () => {
+                fondo.remove();
+                resolve(false);
+            };
+
+        document
+            .getElementById("aceptarConfirmacionHM")
+            .onclick = () => {
+                fondo.remove();
+                resolve(true);
+            };
+    });
+}
+
 async function cambiarEstadoIncidencia(id){
 
     const { data: incidencia, error: errorCarga } = await supabaseClient
@@ -5503,45 +5630,93 @@ document.getElementById("incEstadoEconomico").value = "pendiente";
 actualizarTotalesIncidencia();
 }
 
-function mostrarAvisoHM(mensaje, tipo = "exito") {
-    const avisoAnterior = document.getElementById("avisoHM");
+function mostrarAvisoHM(mensaje) {
+    const anterior = document.getElementById("modalAvisoHM");
 
-    if (avisoAnterior) {
-        avisoAnterior.remove();
+    if (anterior) {
+        anterior.remove();
     }
 
-    const aviso = document.createElement("div");
-    aviso.id = "avisoHM";
-    aviso.textContent = mensaje;
+    const fondo = document.createElement("div");
+    fondo.id = "modalAvisoHM";
 
-    const color =
-        tipo === "error"
-            ? "#8B4B4B"
-            : "#6B7A5A";
-
-    aviso.style.cssText = `
+    fondo.style.cssText = `
         position: fixed;
-        left: 50%;
-        bottom: 28px;
-        transform: translateX(-50%);
+        inset: 0;
         z-index: 10000;
-        width: min(86vw, 420px);
-        padding: 15px 20px;
-        background: ${color};
-        color: white;
-        border-radius: 14px;
-        box-shadow: 0 8px 24px rgba(13, 43, 69, 0.25);
-        font-family: Montserrat, Arial, sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(13, 43, 69, 0.48);
+        box-sizing: border-box;
     `;
 
-    document.body.appendChild(aviso);
+    fondo.innerHTML = `
+        <div style="
+            width: min(100%, 390px);
+            box-sizing: border-box;
+            padding: 32px 26px 26px;
+            background: #FFFFFF;
+            border-radius: 18px;
+            box-shadow: 0 18px 50px rgba(13, 43, 69, 0.24);
+            text-align: center;
+            font-family: Montserrat, Arial, sans-serif;
+        ">
+            <div style="
+                width: 58px;
+                height: 58px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 18px;
+                border: 2px solid #6B7A5A;
+                border-radius: 50%;
+                color: #6B7A5A;
+                font-size: 30px;
+                font-weight: 700;
+            ">✓</div>
 
-    setTimeout(() => {
-        aviso.remove();
-    }, 2800);
+            <div style="
+                margin-bottom: 10px;
+                color: #0D2B45;
+                font-size: 20px;
+                font-weight: 700;
+            ">
+                Operación realizada
+            </div>
+
+            <div style="
+                margin-bottom: 24px;
+                color: #59636B;
+                font-size: 15px;
+                line-height: 1.5;
+            ">
+                ${mensaje}
+            </div>
+
+            <button
+                type="button"
+                onclick="document.getElementById('modalAvisoHM').remove()"
+                style="
+                    width: 100%;
+                    padding: 13px 18px;
+                    border: none;
+                    border-radius: 10px;
+                    background: #0D2B45;
+                    color: #FFFFFF;
+                    font-family: Montserrat, Arial, sans-serif;
+                    font-size: 14px;
+                    font-weight: 700;
+                    cursor: pointer;
+                "
+            >
+                ACEPTAR
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(fondo);
 }
 
 async function guardarIncidencia(){
@@ -5657,9 +5832,14 @@ await openIncidencias();
 
 async function eliminarIncidencia(id){
 
-    if(!confirm('¿Eliminar esta incidencia?')) {
-        return;
-    }
+    const confirmarEliminacion =
+    await confirmarAccionHM(
+        "Esta acción eliminará la incidencia definitivamente."
+    );
+
+if (!confirmarEliminacion) {
+    return;
+}
 
     const { error } = await supabaseClient
         .from("house_incidencias")
