@@ -2055,6 +2055,10 @@ let calendarioCasaActual = null;
 let calendarioReservas = [];
 let calendarioReservaEditando = null;
 let calendarioPuedeEditar = false;
+let calendarioInquilinoNombre = "";
+let calendarioInquilinoEmail = "";
+let calendarioInquilinoTelefono = "";
+let calendarioCantidadHuespedes = "";
 
 async function cargarReservasCasa(houseId) {
 
@@ -2065,7 +2069,17 @@ async function cargarReservasCasa(houseId) {
     const { data, error } =
         await supabaseClient
             .from("house_reservations")
-            .select("id, check_in, check_out")
+            .select(`
+    id,
+    check_in,
+    check_out,
+    reservation_details (
+        tenant_name,
+        tenant_email,
+        tenant_phone,
+        guest_count
+    )
+`)
             .eq("house_id", houseId)
             .order("check_in", { ascending: true });
 
@@ -2099,6 +2113,10 @@ async function abrirCalendarioCasa(h) {
     calendarioIngreso = null;
     calendarioEgreso = null;
     calendarioReservaEditando = null;
+    calendarioInquilinoNombre = "";
+calendarioInquilinoEmail = "";
+calendarioInquilinoTelefono = "";
+calendarioCantidadHuespedes = "";
     calendarioFechaActual = new Date();
 
     const nombreCasa =
@@ -2457,6 +2475,112 @@ calendarioReservas.forEach(reserva => {
 
     contenedor.appendChild(info);
 
+    const datosInquilino =
+    document.createElement("div");
+
+datosInquilino.className = "card";
+datosInquilino.style.marginTop = "16px";
+datosInquilino.style.cursor = "default";
+
+datosInquilino.innerHTML = `
+    <h3 style="
+        margin-top:0;
+        color:#0D2B45;
+    ">
+        Datos del inquilino
+    </h3>
+
+    <label for="calTenantName">
+        Nombre y apellido
+    </label>
+    <input
+        id="calTenantName"
+        type="text"
+        placeholder="Nombre completo"
+    >
+
+    <label for="calTenantEmail">
+        Correo electrónico
+    </label>
+    <input
+        id="calTenantEmail"
+        type="email"
+        placeholder="correo@ejemplo.com"
+    >
+
+    <label for="calTenantPhone">
+        Celular
+    </label>
+    <input
+        id="calTenantPhone"
+        type="tel"
+        placeholder="+54 9..."
+    >
+
+    <label for="calGuestCount">
+        Cantidad de huéspedes
+    </label>
+    <input
+        id="calGuestCount"
+        type="number"
+        min="1"
+        placeholder="Cantidad"
+    >
+`;
+
+contenedor.appendChild(datosInquilino);
+
+const campoNombre =
+    document.getElementById("calTenantName");
+
+const campoEmail =
+    document.getElementById("calTenantEmail");
+
+const campoTelefono =
+    document.getElementById("calTenantPhone");
+
+const campoHuespedes =
+    document.getElementById("calGuestCount");
+
+campoNombre.value =
+    calendarioInquilinoNombre;
+
+campoEmail.value =
+    calendarioInquilinoEmail;
+
+campoTelefono.value =
+    calendarioInquilinoTelefono;
+
+campoHuespedes.value =
+    calendarioCantidadHuespedes;
+
+campoNombre.oninput = () => {
+    calendarioInquilinoNombre =
+        campoNombre.value;
+};
+
+campoEmail.oninput = () => {
+    calendarioInquilinoEmail =
+        campoEmail.value;
+};
+
+campoTelefono.oninput = () => {
+    calendarioInquilinoTelefono =
+        campoTelefono.value;
+};
+
+campoHuespedes.oninput = () => {
+    calendarioCantidadHuespedes =
+        campoHuespedes.value;
+};
+
+if (!calendarioPuedeEditar) {
+    campoNombre.disabled = true;
+    campoEmail.disabled = true;
+    campoTelefono.disabled = true;
+    campoHuespedes.disabled = true;
+}
+
 // ============================================
 // RESERVAS EXISTENTES
 // ============================================
@@ -2511,6 +2635,65 @@ if (calendarioReservas.length > 0) {
             );
 
         fechas.style.fontSize = "13px";
+        const detalleReserva =
+    Array.isArray(reserva.reservation_details)
+        ? reserva.reservation_details[0]
+        : reserva.reservation_details;
+
+if (detalleReserva) {
+    const datosReserva =
+        document.createElement("div");
+
+    datosReserva.style.marginTop = "8px";
+    datosReserva.style.color = "#59636B";
+    datosReserva.style.lineHeight = "1.5";
+
+    if (detalleReserva.tenant_name) {
+        const nombre =
+            document.createElement("div");
+
+        nombre.textContent =
+            "Inquilino: " +
+            detalleReserva.tenant_name;
+
+        datosReserva.appendChild(nombre);
+    }
+
+    if (detalleReserva.tenant_email) {
+        const email =
+            document.createElement("div");
+
+        email.textContent =
+            "Correo: " +
+            detalleReserva.tenant_email;
+
+        datosReserva.appendChild(email);
+    }
+
+    if (detalleReserva.tenant_phone) {
+        const telefono =
+            document.createElement("div");
+
+        telefono.textContent =
+            "Celular: " +
+            detalleReserva.tenant_phone;
+
+        datosReserva.appendChild(telefono);
+    }
+
+    if (detalleReserva.guest_count) {
+        const huespedes =
+            document.createElement("div");
+
+        huespedes.textContent =
+            "Huéspedes: " +
+            detalleReserva.guest_count;
+
+        datosReserva.appendChild(huespedes);
+    }
+
+    fechas.appendChild(datosReserva);
+}
 
 const editarReserva =
     document.createElement("button");
@@ -2529,7 +2712,6 @@ editarReserva.style.fontSize = "12px";
 editarReserva.style.cursor = "pointer";
 
 editarReserva.onclick = function() {
-
     calendarioReservaEditando = reserva.id;
 
     calendarioIngreso =
@@ -2538,16 +2720,31 @@ editarReserva.onclick = function() {
     calendarioEgreso =
         fechaDesdeISO(reserva.check_out);
 
-    info.innerHTML =
-        "<b>Ingreso:</b> " +
-        formatearFecha(calendarioIngreso) +
-        "<br>" +
-        "<b>Egreso:</b> " +
-        formatearFecha(calendarioEgreso) +
-        "<br><br>" +
-        "<strong>Editando reserva existente</strong>";
+    const detalle =
+        Array.isArray(reserva.reservation_details)
+            ? reserva.reservation_details[0]
+            : reserva.reservation_details;
 
-    guardar.innerText = "Guardar cambios";
+    calendarioInquilinoNombre =
+        detalle?.tenant_name || "";
+
+    calendarioInquilinoEmail =
+        detalle?.tenant_email || "";
+
+    calendarioInquilinoTelefono =
+        detalle?.tenant_phone || "";
+
+    calendarioCantidadHuespedes =
+        detalle?.guest_count || "";
+
+    renderCalendarioCasa();
+
+    document
+        .getElementById("calTenantName")
+        ?.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
 };
 
         const eliminarReserva =
@@ -2667,7 +2864,10 @@ if (calendarioPuedeEditar) {
     const guardar =
         document.createElement("button");
 
-    guardar.innerText = "OK";
+    guardar.innerText =
+    calendarioReservaEditando
+        ? "Guardar cambios"
+        : "Guardar reserva";
 
     guardar.style.flex = "1";
     guardar.style.padding = "12px";
@@ -2885,6 +3085,79 @@ guardar.style.cursor = "pointer";
 
     return;
 
+}
+
+const reservaGuardada =
+    data && data.length > 0
+        ? data[0]
+        : null;
+
+const reservationId =
+    calendarioReservaEditando ||
+    reservaGuardada?.id;
+
+if (!reservationId) {
+    ocultarLoader();
+
+    guardar.disabled = false;
+    guardar.style.opacity = "1";
+    guardar.style.cursor = "pointer";
+
+    mostrarAvisoHM(
+        "La reserva se guardó, pero no pudimos identificarla para guardar los datos del inquilino"
+    );
+
+    return;
+}
+
+const { error: errorDetalle } =
+    await supabaseClient
+        .from("reservation_details")
+        .upsert(
+            {
+                reservation_id: reservationId,
+
+                tenant_name:
+                    calendarioInquilinoNombre.trim() ||
+                    null,
+
+                tenant_email:
+                    calendarioInquilinoEmail.trim() ||
+                    null,
+
+                tenant_phone:
+                    calendarioInquilinoTelefono.trim() ||
+                    null,
+
+                guest_count:
+                    calendarioCantidadHuespedes
+                        ? Number(
+                            calendarioCantidadHuespedes
+                        )
+                        : null
+            },
+            {
+                onConflict: "reservation_id"
+            }
+        );
+
+if (errorDetalle) {
+    console.error(
+        "❌ Error guardando datos del inquilino:",
+        errorDetalle
+    );
+
+    ocultarLoader();
+
+    guardar.disabled = false;
+    guardar.style.opacity = "1";
+    guardar.style.cursor = "pointer";
+
+    mostrarAvisoHM(
+        "La reserva se guardó, pero no pudimos guardar los datos del inquilino"
+    );
+
+    return;
 }
 
 ocultarLoader();
