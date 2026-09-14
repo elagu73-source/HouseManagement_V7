@@ -606,6 +606,69 @@
 
     <input id="incResponsable" placeholder="Nombre del responsable">
 
+    <label>Proveedor</label>
+<input
+    id="incProveedor"
+    placeholder="Nombre del proveedor"
+>
+
+<label>Contacto del proveedor</label>
+<input
+    id="incProveedorContacto"
+    placeholder="Teléfono o correo"
+>
+
+<label>Costo del trabajo</label>
+<input
+    id="incCosto"
+    type="number"
+    min="0"
+    step="0.01"
+    value="0"
+    placeholder="0"
+>
+
+<label>Comisión (%)</label>
+<input
+    id="incComision"
+    type="number"
+    min="0"
+    step="0.01"
+    value="0"
+    placeholder="0"
+>
+
+<label>Estado económico</label>
+<select id="incEstadoEconomico">
+    <option value="pendiente">Pendiente</option>
+    <option value="presupuestado">Presupuestado</option>
+    <option value="aprobado" disabled>
+    Aprobado por el propietario
+</option>
+
+<option value="rechazado" disabled>
+    Rechazado por el propietario
+</option>
+    <option value="pagado">Pagado</option>
+</select>
+
+<div class="card" style="margin-top:16px;">
+    <div class="sub">
+        Costo del trabajo:
+        <strong id="incCostoVista">$ 0,00</strong>
+    </div>
+
+    <div class="sub">
+        Comisión:
+        <strong id="incComisionVista">$ 0,00</strong>
+    </div>
+
+    <div style="margin-top:8px;">
+        Total:
+        <strong id="incTotalVista">$ 0,00</strong>
+    </div>
+</div>
+
     <div class="btn" onclick="guardarIncidencia()">
         <span class="cb-icon white">
     <svg viewBox="0 0 24 24">
@@ -1232,7 +1295,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=111"></script>
 <script src="js/storage.js?v=2"></script>
 <script src="js/photos.js?v=1"></script>
-<script src="js/app.js?v=140"></script>
+<script src="js/app.js?v=141"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();

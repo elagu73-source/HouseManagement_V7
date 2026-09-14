@@ -4468,6 +4468,9 @@ const puedeGestionarIncidencias =
         rolIncidencias
     );
 
+    const esPropietarioIncidencias =
+    rolIncidencias === "propietario";
+
 const botonNuevaIncidencia =
     document.getElementById(
         "btnNuevaIncidencia"
@@ -4565,6 +4568,29 @@ if (botonNuevaIncidencia) {
             incidencia.estado === 'En curso' ? '#DCC9A6' :
             '#0D2B45';
 
+            const formatoDineroIncidencia =
+    new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: incidencia.currency || "ARS"
+    });
+
+const costoTrabajo =
+    Number(incidencia.work_cost) || 0;
+
+const montoComision =
+    Number(incidencia.commission_amount) || 0;
+
+const costoTotal =
+    Number(incidencia.total_cost) || 0;
+
+const estadoEconomicoTexto = {
+    pendiente: "Pendiente",
+    presupuestado: "Presupuestado",
+    aprobado: "Aprobado",
+    rechazado: "Rechazado",
+    pagado: "Pagado"
+}[incidencia.economic_status] || "Pendiente";
+
         lista.innerHTML += `
             <div class="card">
 
@@ -4661,6 +4687,89 @@ if (botonNuevaIncidencia) {
 
                 </div>
 
+                <div
+    style="
+        margin-top:14px;
+        padding:14px;
+        border:1px solid #ddd;
+        border-radius:10px;
+    "
+>
+    <div>
+        <strong>Información económica</strong>
+    </div>
+
+    <div class="sub" style="margin-top:8px;">
+        Proveedor:
+        ${incidencia.provider_name || "Sin proveedor asignado"}
+    </div>
+
+    ${incidencia.provider_contact ? `
+        <div class="sub">
+            Contacto: ${incidencia.provider_contact}
+        </div>
+    ` : ""}
+
+    <div class="sub">
+        Costo del trabajo:
+        ${formatoDineroIncidencia.format(costoTrabajo)}
+    </div>
+
+    <div class="sub">
+        Comisión (${Number(incidencia.commission_percentage) || 0}%):
+        ${formatoDineroIncidencia.format(montoComision)}
+    </div>
+
+    <div style="margin-top:6px;">
+        <strong>
+            Total:
+            ${formatoDineroIncidencia.format(costoTotal)}
+        </strong>
+    </div>
+
+    <div class="sub" style="margin-top:8px;">
+        Estado económico:
+        <strong>${estadoEconomicoTexto}</strong>
+    </div>
+</div>
+
+${esPropietarioIncidencias &&
+  incidencia.economic_status === "presupuestado" ? `
+    <div
+        style="
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:10px;
+            margin-top:12px;
+        "
+    >
+        <button
+            class="btn"
+            onclick="decidirPresupuestoIncidencia('${incidencia.id}', 'aprobado')"
+        >
+            Aprobar
+        </button>
+
+        <button
+            class="btn"
+            onclick="decidirPresupuestoIncidencia('${incidencia.id}', 'rechazado')"
+            style="background:#8b3a3a;"
+        >
+            Rechazar
+        </button>
+    </div>
+` : ""}
+
+${puedeGestionarIncidencias ? `
+    <div
+        class="btn"
+        onclick="editarEconomiaIncidencia('${incidencia.id}')"
+        style="margin-top:10px;"
+    >
+        Editar presupuesto
+    </div>
+` : ""}
+
                 <div class="sub">
 
                     <span class="cb-icon">
@@ -4701,6 +4810,75 @@ if (botonNuevaIncidencia) {
     go('incidencias');
 }
  
+async function decidirPresupuestoIncidencia(
+    incidenciaId,
+    decision
+) {
+
+    const esAprobacion =
+        decision === "aprobado";
+
+    let motivo = null;
+
+    if (esAprobacion) {
+
+        const confirmar = confirm(
+            "¿Confirmás la aprobación de este presupuesto?"
+        );
+
+        if (!confirmar) return;
+
+    } else {
+
+        motivo = prompt(
+            "Indicá el motivo del rechazo:"
+        );
+
+        if (motivo === null) return;
+
+        motivo = motivo.trim();
+
+        if (!motivo) {
+            alert(
+                "Para rechazar el presupuesto debés indicar un motivo."
+            );
+            return;
+        }
+    }
+
+    const { error } =
+        await supabaseClient.rpc(
+            "decide_incident_budget",
+            {
+                p_incident_id: Number(incidenciaId),
+                p_decision: decision,
+                p_reason: motivo
+            }
+        );
+
+    if (error) {
+
+        console.error(
+            "Error registrando la decisión:",
+            error
+        );
+
+        alert(
+            "No se pudo registrar la decisión."
+        );
+
+        return;
+    }
+
+    alert(
+        esAprobacion
+            ? "Presupuesto aprobado correctamente."
+            : "Presupuesto rechazado correctamente."
+    );
+
+    await openIncidencias();
+}
+
 async function cambiarEstadoIncidencia(id){
 
     const { data: incidencia, error: errorCarga } = await supabaseClient
@@ -4759,7 +4937,135 @@ async function cambiarEstadoIncidencia(id){
 
     document.getElementById('formIncidencia').style.display='none';
 
+    function actualizarTotalesIncidencia() {
+
+    const costo =
+        Number(document.getElementById("incCosto")?.value) || 0;
+
+    const porcentaje =
+        Number(document.getElementById("incComision")?.value) || 0;
+
+    const comision =
+        costo * porcentaje / 100;
+
+    const total =
+        costo + comision;
+
+    const formatoDinero =
+        new Intl.NumberFormat("es-AR", {
+            style: "currency",
+            currency: "ARS"
+        });
+
+    const costoVista =
+        document.getElementById("incCostoVista");
+
+    const comisionVista =
+        document.getElementById("incComisionVista");
+
+    const totalVista =
+        document.getElementById("incTotalVista");
+
+    if (costoVista) {
+        costoVista.textContent =
+            formatoDinero.format(costo);
+    }
+
+    if (comisionVista) {
+        comisionVista.textContent =
+            formatoDinero.format(comision);
+    }
+
+    if (totalVista) {
+        totalVista.textContent =
+            formatoDinero.format(total);
+    }
+}
+
+document
+    .getElementById("incCosto")
+    ?.addEventListener(
+        "input",
+        actualizarTotalesIncidencia
+    );
+
+document
+    .getElementById("incComision")
+    ?.addEventListener(
+        "input",
+        actualizarTotalesIncidencia
+    );
+
+    let incidenciaEditandoId = null;
+
+async function editarEconomiaIncidencia(id) {
+
+    const { data: incidencia, error } =
+        await supabaseClient
+            .from("house_incidencias")
+            .select("*")
+            .eq("id", id)
+            .single();
+
+    if (error || !incidencia) {
+
+        console.error(
+            "Error cargando la incidencia:",
+            error
+        );
+
+        alert("No se pudo abrir el presupuesto.");
+        return;
+    }
+
+    incidenciaEditandoId = id;
+
+    document.getElementById("incAmbiente").value =
+        incidencia.ambiente || "";
+
+    document.getElementById("incDescripcion").value =
+        incidencia.descripcion || "";
+
+    document.getElementById("incPrioridad").value =
+        incidencia.prioridad || "Media";
+
+    document.getElementById("incEstado").value =
+        incidencia.estado || "Abierta";
+
+    document.getElementById("incResponsable").value =
+        incidencia.responsable || "";
+
+    document.getElementById("incProveedor").value =
+        incidencia.provider_name || "";
+
+    document.getElementById("incProveedorContacto").value =
+        incidencia.provider_contact || "";
+
+    document.getElementById("incCosto").value =
+        Number(incidencia.work_cost) || 0;
+
+    document.getElementById("incComision").value =
+        Number(incidencia.commission_percentage) || 0;
+
+    document.getElementById("incEstadoEconomico").value =
+        incidencia.economic_status || "pendiente";
+
+    actualizarTotalesIncidencia();
+
+    const formulario =
+        document.getElementById("formIncidencia");
+
+    formulario.style.display = "block";
+
+    formulario.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
+
 function nuevaIncidencia(){
+
+    incidenciaEditandoId = null;
 
     document.getElementById('formIncidencia').style.display='block';
 
@@ -4768,6 +5074,13 @@ function nuevaIncidencia(){
     document.getElementById('incPrioridad').value='Media';
     document.getElementById('incEstado').value='Abierta';
     document.getElementById('incResponsable').value='';
+    document.getElementById("incProveedor").value = "";
+document.getElementById("incProveedorContacto").value = "";
+document.getElementById("incCosto").value = "0";
+document.getElementById("incComision").value = "0";
+document.getElementById("incEstadoEconomico").value = "pendiente";
+
+actualizarTotalesIncidencia();
 }
 
 async function guardarIncidencia(){
@@ -4800,17 +5113,58 @@ async function guardarIncidencia(){
             document.getElementById('incEstado').value,
 
         responsable:
-            document.getElementById('incResponsable').value,
+    document.getElementById("incResponsable").value.trim(),
 
-        fecha:
-            new Date().toISOString().split('T')[0]
+provider_name:
+    document.getElementById("incProveedor").value.trim(),
+
+provider_contact:
+    document.getElementById("incProveedorContacto").value.trim(),
+
+work_cost:
+    Number(document.getElementById("incCosto").value) || 0,
+
+commission_percentage:
+    Number(document.getElementById("incComision").value) || 0,
+
+currency:
+    "ARS",
+
+economic_status:
+    document.getElementById("incEstadoEconomico").value,
+
+fecha:
+    new Date().toISOString().split("T")[0]
     };
 
-    const { data, error } = await supabaseClient
-        .from("house_incidencias")
-        .insert(incidencia)
-        .select()
-        .single();
+    if (incidencia.economic_status === "presupuestado") {
+    incidencia.budgeted_at =
+        new Date().toISOString();
+}
+
+let resultadoIncidencia;
+
+if (incidenciaEditandoId) {
+
+    resultadoIncidencia =
+        await supabaseClient
+            .from("house_incidencias")
+            .update(incidencia)
+            .eq("id", incidenciaEditandoId)
+            .select()
+            .single();
+
+} else {
+
+    resultadoIncidencia =
+        await supabaseClient
+            .from("house_incidencias")
+            .insert(incidencia)
+            .select()
+            .single();
+}
+
+const { data, error } = resultadoIncidencia;
 
     if (error) {
 
@@ -4826,7 +5180,13 @@ async function guardarIncidencia(){
         return;
     }
 
-    alert('Incidencia guardada');
+    alert(
+    incidenciaEditandoId
+        ? "Incidencia actualizada"
+        : "Incidencia guardada"
+);
+
+incidenciaEditandoId = null;
 
     document.getElementById('formIncidencia').style.display = 'none';
 
@@ -5033,11 +5393,11 @@ if (diagnostico) {
     diagnostico.textContent = "☁️ Cargando checklist desde Supabase...";
 }
 
-    const { data, error } = await supabaseClient
-        .from("house_checklists")
-        .select("data, observaciones")
-        .eq("house_id", house.id)
-        .maybeSingle();
+const { data, error } = await supabaseClient
+    .from("house_checklists")
+    .select("data, observaciones")
+    .eq("house_id", house.id)
+    .maybeSingle();
 
     if (error) {
 
@@ -5597,10 +5957,6 @@ async function cargarManualCasa(){
         return {};
     }
 
-        // ============================================
-    // YA EXISTE EN SUPABASE
-    // ============================================
-
     if (data) {
 
         manualCasa =
@@ -5612,14 +5968,9 @@ async function cargarManualCasa(){
         return manualCasa;
     }
 
-    // ============================================
-    // NO HAY MANUAL EN SUPABASE
-    // ============================================
-
     manualCasa = {};
 
     return manualCasa;
-
 }
 
 async function guardarManual() {
@@ -6489,7 +6840,10 @@ async function procesarDestinoNotificacionPendiente() {
 
     await openHouse(houseIndex);
 
-    if (entityType === "incidencia") {
+    if (
+    entityType === "incidencia" ||
+    entityType === "house_incidencia"
+) {
         await openIncidencias();
         return;
     }
@@ -6542,7 +6896,10 @@ window.abrirNotificacion = async function(
 
     await openHouse(houseIndex);
 
-    if (entityType === "incidencia") {
+    if (
+    entityType === "incidencia" ||
+    entityType === "house_incidencia"
+) {
         await openIncidencias();
         return;
     }
