@@ -5263,11 +5263,11 @@ async function decidirPresupuestoIncidencia(
         return;
     }
 
-    alert(
-        esAprobacion
-            ? "Presupuesto aprobado correctamente."
-            : "Presupuesto rechazado correctamente."
-    );
+   mostrarAvisoHM(
+    esAprobacion
+        ? "Presupuesto aprobado correctamente"
+        : "Presupuesto rechazado correctamente"
+);
 
     await openIncidencias();
 }
@@ -5456,6 +5456,33 @@ async function editarEconomiaIncidencia(id) {
     });
 }
 
+function cancelarFormularioIncidencia() {
+
+    const formulario =
+        document.getElementById(
+            "formIncidencia"
+        );
+
+    if (formulario) {
+        formulario.style.display =
+            "none";
+    }
+
+    incidenciaEditandoId = null;
+
+    const botonNueva =
+        document.getElementById(
+            "btnNuevaIncidencia"
+        );
+
+    if (botonNueva) {
+        botonNueva.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+}
+
 function nuevaIncidencia(){
 
     incidenciaEditandoId = null;
@@ -5474,6 +5501,47 @@ document.getElementById("incComision").value = "0";
 document.getElementById("incEstadoEconomico").value = "pendiente";
 
 actualizarTotalesIncidencia();
+}
+
+function mostrarAvisoHM(mensaje, tipo = "exito") {
+    const avisoAnterior = document.getElementById("avisoHM");
+
+    if (avisoAnterior) {
+        avisoAnterior.remove();
+    }
+
+    const aviso = document.createElement("div");
+    aviso.id = "avisoHM";
+    aviso.textContent = mensaje;
+
+    const color =
+        tipo === "error"
+            ? "#8B4B4B"
+            : "#6B7A5A";
+
+    aviso.style.cssText = `
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        transform: translateX(-50%);
+        z-index: 10000;
+        width: min(86vw, 420px);
+        padding: 15px 20px;
+        background: ${color};
+        color: white;
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(13, 43, 69, 0.25);
+        font-family: Montserrat, Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+    `;
+
+    document.body.appendChild(aviso);
+
+    setTimeout(() => {
+        aviso.remove();
+    }, 2800);
 }
 
 async function guardarIncidencia(){
@@ -5573,10 +5641,10 @@ const { data, error } = resultadoIncidencia;
         return;
     }
 
-    alert(
+    mostrarAvisoHM(
     incidenciaEditandoId
-        ? "Incidencia actualizada"
-        : "Incidencia guardada"
+        ? "Incidencia actualizada correctamente"
+        : "Incidencia guardada correctamente"
 );
 
 incidenciaEditandoId = null;
