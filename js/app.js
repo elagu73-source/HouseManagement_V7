@@ -3168,7 +3168,7 @@ const {
         .from("reservation_details")
         .upsert(
             {
-                reservation_id: reservaGuardada.id,
+                reservation_id: reservationId,
                 tenant_name:
                     calendarioInquilinoNombre.trim() || null,
                 tenant_email:
