@@ -597,10 +597,10 @@ if (rolError) {
 
             div.appendChild(img);
 
-           // Botón eliminar SOLO para admin y supervisor
+           // Botón eliminar SOLO para admin y colaborador
 if (
     rolActual === "admin" ||
-    rolActual === "supervisor"
+    rolActual === "colaborador"
 ) {
 
     const botonEliminar =

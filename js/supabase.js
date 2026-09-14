@@ -599,7 +599,7 @@ function nuevoUsuario() {
 
     if (email) email.value = "";
     if (nombre) nombre.value = "";
-    if (rol) rol.value = "colaborador";
+    if (rol) rol.value = "propietario";
 
     if (errorTexto) {
         errorTexto.textContent = "";
@@ -672,8 +672,8 @@ async function enviarNuevoUsuario() {
     }
 
     if (
-        !["admin", "supervisor", "colaborador"]
-            .includes(rol)
+        !["admin", "colaborador", "propietario"]
+    .includes(rol)
     ) {
         mostrarError("Seleccioná un rol válido.");
         return;
@@ -872,15 +872,15 @@ if (perfilError || !perfilUsuario) {
                     Admin
                 </option>
 
-                <option value="supervisor"
-                    ${miembro.rol === "supervisor" ? "selected" : ""}>
-                    Supervisor
-                </option>
-
                 <option value="colaborador"
-                    ${miembro.rol === "colaborador" ? "selected" : ""}>
-                    Colaborador
-                </option>
+    ${miembro.rol === "colaborador" ? "selected" : ""}>
+    Colaborador
+</option>
+
+<option value="propietario"
+    ${miembro.rol === "propietario" ? "selected" : ""}>
+    Propietario
+</option>
             </select>
         </div>
 

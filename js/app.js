@@ -1802,7 +1802,7 @@ const {
 );
 
 if (
-    ["admin", "supervisor"].includes(
+    ["admin", "colaborador"].includes(
         rolParaCrearPropiedad
     )
 ) {
@@ -1867,7 +1867,7 @@ async function prepararDashboardActividad() {
 
     if (
         rolError ||
-        !["admin", "supervisor"].includes(rolActual)
+        !["admin", "colaborador"].includes(rolActual)
     ) {
         contenedor.style.display = "none";
         return;
@@ -3585,7 +3585,7 @@ const {
 );
 
 const puedeEditarInfoGeneral =
-    ["admin", "supervisor"].includes(
+    ["admin", "colaborador"].includes(
         rolInfoGeneral
     );
 
