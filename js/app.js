@@ -2888,13 +2888,15 @@ editarReserva.onclick = function() {
         eliminarReserva.onclick =
             async function() {
 
-                const confirmar = confirm(
-                    "¿Querés eliminar esta reserva?"
-                );
+                const confirmar =
+    await confirmarAccionHM(
+        "Esta acción eliminará la reserva y todos los datos del inquilino asociados.",
+        "Eliminar reserva"
+    );
 
-                if (!confirmar) {
-                    return;
-                }
+if (!confirmar) {
+    return;
+}
 
                 const { error } =
                     await supabaseClient
@@ -2909,18 +2911,31 @@ editarReserva.onclick = function() {
                         error
                     );
 
-                    alert(
-                        "No se pudo eliminar la reserva."
-                    );
+                    mostrarAvisoHM(
+    "No se pudo eliminar la reserva"
+);
 
                     return;
                 }
 
-                await render();
-await openHouse(current);
+                await cargarReservasCasa(
+    calendarioCasaActual.id ||
+    calendarioCasaActual.house_id
+);
+
+calendarioReservaViendo = null;
+calendarioReservaEditando = null;
+calendarioIngreso = null;
+calendarioEgreso = null;
+calendarioInquilinoNombre = "";
+calendarioInquilinoEmail = "";
+calendarioInquilinoTelefono = "";
+calendarioCantidadHuespedes = "";
+
+renderCalendarioCasa();
 
 mostrarAvisoHM(
-    "Reserva eliminada correctamente"
+    "Reserva y datos del inquilino eliminados correctamente"
 );
             };
 
@@ -3679,13 +3694,15 @@ botonEliminar.style.transform = "translateY(-8px)";
             h.nombre_casa ||
             "esta propiedad";
 
-        const confirmar = confirm(
-            "¿Querés eliminar " +
+        const confirmar =
+    await confirmarAccionHM(
+        "Esta acción quitará " +
             nombreCasa +
-            " de las propiedades disponibles?"
-        );
+            " de las propiedades disponibles.",
+        "Eliminar propiedad"
+    );
 
-        if (!confirmar) return;
+if (!confirmar) return;
 
         // Marcar la casa como eliminada en Supabase
 const { error } = await supabaseClient
@@ -4468,7 +4485,11 @@ function renderInventario(items){
 async function nuevoItemInventario(){
 
     const nombre =
-        prompt("¿Qué elemento querés agregar al inventario?");
+    await solicitarTextoHM(
+        "Escribí el nombre del elemento que querés agregar.",
+        "Agregar elemento",
+        "Nombre del elemento"
+    );
 
     if(!nombre || !nombre.trim()) return;
 
@@ -4498,13 +4519,15 @@ async function nuevoItemInventario(){
 
 async function eliminarItemInventario(index){
 
-    if(
-        !confirm(
-            "¿Querés eliminar este elemento del inventario?"
-        )
-    ) {
-        return;
-    }
+    const confirmar =
+    await confirmarAccionHM(
+        "Esta acción eliminará el elemento del inventario.",
+        "Eliminar elemento"
+    );
+
+if (!confirmar) {
+    return;
+}
 
     const items =
         await obtenerInventarioCasa();
@@ -5554,17 +5577,24 @@ async function decidirPresupuestoIncidencia(
 
     if (esAprobacion) {
 
-        const confirmar = confirm(
-            "¿Confirmás la aprobación de este presupuesto?"
-        );
+        const confirmar =
+    await confirmarAccionHM(
+        "Confirmá que querés aprobar este presupuesto.",
+        "Aprobar presupuesto",
+        "APROBAR",
+        "#6B7A5A"
+    );
 
-        if (!confirmar) return;
+if (!confirmar) return;
 
     } else {
 
-        motivo = prompt(
-            "Indicá el motivo del rechazo:"
-        );
+        motivo =
+    await solicitarTextoHM(
+        "Explicá brevemente por qué rechazás este presupuesto.",
+        "Rechazar presupuesto",
+        "Motivo del rechazo"
+    );
 
         if (motivo === null) return;
 
@@ -5611,7 +5641,12 @@ async function decidirPresupuestoIncidencia(
     await openIncidencias();
 }
 
-function confirmarAccionHM(mensaje) {
+function confirmarAccionHM(
+    mensaje,
+    titulo = "Eliminar incidencia",
+    textoAceptar = "ELIMINAR",
+    colorAceptar = "#8B4B4B"
+) {
     return new Promise((resolve) => {
         const anterior =
             document.getElementById("modalConfirmacionHM");
@@ -5638,10 +5673,10 @@ function confirmarAccionHM(mensaje) {
         fondo.innerHTML = `
             <div style="
                 width: min(100%, 390px);
-                box-sizing: border-box;
-                padding: 32px 26px 26px;
-                background: #FFFFFF;
-                border-radius: 18px;
+box-sizing: border-box;
+padding: 32px 26px 26px;
+background: #FFFFFF;
+border-radius: 18px;
                 box-shadow: 0 18px 50px rgba(13, 43, 69, 0.24);
                 text-align: center;
                 font-family: Montserrat, Arial, sans-serif;
@@ -5661,13 +5696,13 @@ function confirmarAccionHM(mensaje) {
                 ">!</div>
 
                 <div style="
-                    margin-bottom: 10px;
-                    color: #0D2B45;
-                    font-size: 20px;
-                    font-weight: 700;
-                ">
-                    Eliminar incidencia
-                </div>
+    margin-bottom: 10px;
+    color: #0D2B45;
+    font-size: 20px;
+    font-weight: 700;
+">
+    ${titulo}
+</div>
 
                 <div style="
                     margin-bottom: 24px;
@@ -5708,13 +5743,13 @@ function confirmarAccionHM(mensaje) {
                             border: none;
                             border-radius: 10px;
                             background: #8B4B4B;
-                            color: #FFFFFF;
+                            background: ${colorAceptar};
                             font-family: Montserrat, Arial, sans-serif;
                             font-weight: 700;
                             cursor: pointer;
                         "
                     >
-                        ELIMINAR
+                        ${textoAceptar}
                     </button>
                 </div>
             </div>
@@ -5735,6 +5770,164 @@ function confirmarAccionHM(mensaje) {
                 fondo.remove();
                 resolve(true);
             };
+    });
+}
+
+function solicitarTextoHM(
+    mensaje,
+    titulo = "Ingresar información",
+    placeholder = ""
+) {
+    return new Promise((resolve) => {
+        const anterior =
+            document.getElementById("modalTextoHM");
+
+        if (anterior) {
+            anterior.remove();
+        }
+
+        const fondo =
+            document.createElement("div");
+
+        fondo.id = "modalTextoHM";
+
+        fondo.style.cssText = `
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(13, 43, 69, 0.48);
+            box-sizing: border-box;
+        `;
+
+        fondo.innerHTML = `
+            <div style="
+                width: min(100%, 390px);
+                box-sizing: border-box;
+                padding: 32px 26px 26px;
+                background: #FFFFFF;
+                border-radius: 18px;
+                box-shadow: 0 18px 50px rgba(13, 43, 69, 0.24);
+                text-align: center;
+                font-family: Montserrat, Arial, sans-serif;
+            ">
+                <div style="
+                    margin-bottom: 10px;
+                    color: #0D2B45;
+                    font-size: 20px;
+                    font-weight: 700;
+                ">
+                    ${titulo}
+                </div>
+
+                <div style="
+                    margin-bottom: 18px;
+                    color: #59636B;
+                    font-size: 15px;
+                    line-height: 1.5;
+                ">
+                    ${mensaje}
+                </div>
+
+                <input
+                    id="campoTextoHM"
+                    type="text"
+                    placeholder="${placeholder}"
+                    style="
+                        width: 100%;
+                        box-sizing: border-box;
+                        margin-bottom: 22px;
+                        padding: 13px 14px;
+                        border: 1px solid #D7DDE2;
+                        border-radius: 10px;
+                        background: #FFFFFF;
+                        color: #0D2B45;
+                        font-family: Montserrat, Arial, sans-serif;
+                        font-size: 14px;
+                        outline: none;
+                    "
+                >
+
+                <div style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 10px;
+                ">
+                    <button
+                        id="cancelarTextoHM"
+                        type="button"
+                        style="
+                            padding: 13px;
+                            border: 1px solid #0D2B45;
+                            border-radius: 10px;
+                            background: #FFFFFF;
+                            color: #0D2B45;
+                            font-family: Montserrat, Arial, sans-serif;
+                            font-weight: 700;
+                            cursor: pointer;
+                        "
+                    >
+                        CANCELAR
+                    </button>
+
+                    <button
+                        id="aceptarTextoHM"
+                        type="button"
+                        style="
+                            padding: 13px;
+                            border: none;
+                            border-radius: 10px;
+                            background: #0D2B45;
+                            color: #FFFFFF;
+                            font-family: Montserrat, Arial, sans-serif;
+                            font-weight: 700;
+                            cursor: pointer;
+                        "
+                    >
+                        ACEPTAR
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(fondo);
+
+        const campo =
+            document.getElementById("campoTextoHM");
+
+        const cancelar =
+            document.getElementById("cancelarTextoHM");
+
+        const aceptar =
+            document.getElementById("aceptarTextoHM");
+
+        const cerrar = (resultado) => {
+            fondo.remove();
+            resolve(resultado);
+        };
+
+        cancelar.onclick = () => {
+            cerrar(null);
+        };
+
+        aceptar.onclick = () => {
+            cerrar(campo.value);
+        };
+
+        campo.onkeydown = (event) => {
+            if (event.key === "Enter") {
+                aceptar.click();
+            }
+
+            if (event.key === "Escape") {
+                cancelar.click();
+            }
+        };
+
+        campo.focus();
     });
 }
 
@@ -5970,6 +6163,21 @@ actualizarTotalesIncidencia();
 }
 
 function mostrarAvisoHM(mensaje) {
+    const esError =
+        /no se pudo|no pudimos|error|seleccioná|ingresá|debés|todavía no|no tenés|no encontramos/i
+            .test(mensaje);
+
+    const colorAviso =
+        esError ? "#8B4B4B" : "#6B7A5A";
+
+    const iconoAviso =
+        esError ? "!" : "✓";
+
+    const tituloAviso =
+        esError
+            ? "Atención"
+            : "Operación realizada";
+
     const anterior = document.getElementById("modalAvisoHM");
 
     if (anterior) {
@@ -6009,12 +6217,12 @@ function mostrarAvisoHM(mensaje) {
                 align-items: center;
                 justify-content: center;
                 margin: 0 auto 18px;
-                border: 2px solid #6B7A5A;
+                border: 2px solid ${colorAviso};
                 border-radius: 50%;
-                color: #6B7A5A;
+                color: ${colorAviso};
                 font-size: 30px;
                 font-weight: 700;
-            ">✓</div>
+            ">${iconoAviso}</div>
 
             <div style="
                 margin-bottom: 10px;
@@ -6022,7 +6230,7 @@ function mostrarAvisoHM(mensaje) {
                 font-size: 20px;
                 font-weight: 700;
             ">
-                Operación realizada
+                ${tituloAviso}
             </div>
 
             <div style="
@@ -6057,6 +6265,12 @@ function mostrarAvisoHM(mensaje) {
 
     document.body.appendChild(fondo);
 }
+
+window.alert = function(mensaje) {
+    mostrarAvisoHM(
+        String(mensaje)
+    );
+};
 
 async function guardarIncidencia(){
 

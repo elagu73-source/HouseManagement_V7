@@ -621,13 +621,19 @@ if (
         Eliminar
     `;
 
-    botonEliminar.onclick = function() {
+    botonEliminar.onclick = async function() {
+    const confirmar =
+        await confirmarAccionHM(
+            "Esta acción eliminará la foto definitivamente.",
+            "Eliminar foto"
+        );
 
-        if (confirm("¿Querés eliminar esta foto?")) {
-            deletePhoto(foto);
-        }
+    if (!confirmar) {
+        return;
+    }
 
-    };
+    await deletePhoto(foto);
+};
 
     div.appendChild(botonEliminar);
 }
