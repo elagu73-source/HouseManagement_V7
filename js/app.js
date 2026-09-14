@@ -2084,132 +2084,47 @@ async function cargarReservasCasa(houseId) {
 }
 
 async function abrirCalendarioCasa(h) {
-
     calendarioCasaActual = h;
+
     const { data: rolCalendario } =
-    await supabaseClient.rpc(
-        "current_organization_role"
-    );
+        await supabaseClient.rpc(
+            "current_organization_role"
+        );
 
-calendarioPuedeEditar =
-    ["admin", "colaborador"].includes(
-        rolCalendario
-    );
-
-    const modalExistente =
-        document.getElementById("modalCalendarioCasa");
-
-    if (modalExistente) {
-        modalExistente.remove();
-    }
+    calendarioPuedeEditar =
+        ["admin", "colaborador"].includes(
+            rolCalendario
+        );
 
     calendarioIngreso = null;
     calendarioEgreso = null;
+    calendarioReservaEditando = null;
     calendarioFechaActual = new Date();
 
-    const modal = document.createElement("div");
+    const nombreCasa =
+        document.getElementById(
+            "calendarioNombreCasa"
+        );
 
-    modal.id = "modalCalendarioCasa";
+    if (nombreCasa) {
+        nombreCasa.textContent =
+            h.nombre ||
+            h.name ||
+            h.nombreCasa ||
+            h.nombre_casa ||
+            "";
+    }
 
-    modal.style.position = "fixed";
-    modal.style.top = "0";
-    modal.style.left = "0";
-    modal.style.right = "0";
-    modal.style.bottom = "0";
-    modal.style.background = "rgba(0,0,0,0.55)";
-    modal.style.display = "flex";
-    modal.style.alignItems = "center";
-    modal.style.justifyContent = "center";
-    modal.style.zIndex = "99999";
-    modal.style.padding = "20px";
-    modal.style.boxSizing = "border-box";
+    await cargarReservasCasa(
+        calendarioCasaActual.id ||
+        calendarioCasaActual.house_id
+    );
 
-    const caja = document.createElement("div");
+    await go("calendarioCasa");
 
-    caja.style.background = "#F7F3EA";
-    caja.style.borderRadius = "18px";
-    caja.style.padding = "22px";
-    caja.style.width = "100%";
-    caja.style.maxWidth = "390px";
-    caja.style.maxHeight = "90vh";
-    caja.style.overflowY = "auto";
-    caja.style.boxSizing = "border-box";
-    caja.style.boxShadow =
-        "0 20px 60px rgba(0,0,0,0.25)";
+    renderCalendarioCasa();
 
-        const volverCalendario = document.createElement("button");
-
-volverCalendario.innerText = "← CASA";
-
-volverCalendario.style.border = "none";
-volverCalendario.style.borderRadius = "10px";
-volverCalendario.style.padding = "11px 18px";
-volverCalendario.style.marginBottom = "20px";
-volverCalendario.style.background = "#0D2B45";
-volverCalendario.style.color = "#FFFFFF";
-volverCalendario.style.fontFamily =
-    "Montserrat, Arial, sans-serif";
-volverCalendario.style.fontSize = "13px";
-volverCalendario.style.fontWeight = "700";
-volverCalendario.style.cursor = "pointer";
-
-volverCalendario.onclick = function() {
-    document
-        .getElementById("modalCalendarioCasa")
-        ?.remove();
-};
-
-    const titulo = document.createElement("div");
-
-    titulo.innerText = "Calendario";
-
-    titulo.style.fontFamily = "Georgia, serif";
-    titulo.style.fontSize = "24px";
-    titulo.style.color = "#0D2B45";
-    titulo.style.textAlign = "center";
-    titulo.style.marginBottom = "4px";
-
-    const nombreCasa = document.createElement("div");
-
-    nombreCasa.innerText =
-        h.nombre ||
-        h.name ||
-        h.nombreCasa ||
-        h.nombre_casa ||
-        "";
-
-    nombreCasa.style.textAlign = "center";
-    nombreCasa.style.color = "#556B4F";
-    nombreCasa.style.fontSize = "14px";
-    nombreCasa.style.marginBottom = "20px";
-
-    const calendario = document.createElement("div");
-
-    calendario.id = "calendarioCasaContenido";
-
-caja.appendChild(volverCalendario);
-    caja.appendChild(titulo);
-    caja.appendChild(nombreCasa);
-    caja.appendChild(calendario);
-
-    modal.appendChild(caja);
-
-    document.body.appendChild(modal);
-
-await cargarReservasCasa(
-    calendarioCasaActual.id ||
-    calendarioCasaActual.house_id
-);
-
-renderCalendarioCasa();
-
-    modal.onclick = function(event) {
-
-        if (event.target === modal) {
-            modal.remove();
-        }
-
-    };
+    window.scrollTo(0, 0);
 }
 
 function renderCalendarioCasa() {
@@ -2684,17 +2599,12 @@ editarReserva.onclick = function() {
                     return;
                 }
 
-                alert(
-                    "Reserva eliminada correctamente."
-                );
+                await render();
+await openHouse(current);
 
-                document
-                    .getElementById(
-                        "modalCalendarioCasa"
-                    )
-                    ?.remove();
-
-                await openHouse(current);
+mostrarAvisoHM(
+    "Reserva eliminada correctamente"
+);
             };
 
         fila.appendChild(fechas);
@@ -2749,14 +2659,10 @@ if (calendarioPuedeEditar) {
     cancelar.style.color = "#0D2B45";
     cancelar.style.cursor = "pointer";
 
-    cancelar.onclick = function() {
-
-        document
-            .getElementById("modalCalendarioCasa")
-            .remove();
-
-    };
-
+       cancelar.onclick = async function() {
+    await render();
+    await openHouse(current);
+};
 
     const guardar =
         document.createElement("button");
@@ -2983,13 +2889,19 @@ guardar.style.cursor = "pointer";
 
 ocultarLoader();
 
+const reservaFueEditada =
+    Boolean(calendarioReservaEditando);
+
 calendarioReservaEditando = null;
 
-document
-    .getElementById("modalCalendarioCasa")
-    .remove();
-
+await render();
 await openHouse(current);
+
+mostrarAvisoHM(
+    reservaFueEditada
+        ? "Reserva actualizada correctamente"
+        : "Reserva guardada correctamente"
+);
 
 };
 

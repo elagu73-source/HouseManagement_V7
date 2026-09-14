@@ -501,6 +501,39 @@
 
 </section>
 
+<section id="calendarioCasa" class="screen">
+
+    <div class="back" onclick="render(); openHouse(current)">
+        <span class="cb-icon white">
+            <svg viewBox="0 0 24 24">
+                <path d="M15 5 8 12l7 7"></path>
+            </svg>
+        </span>
+        <span>Casa</span>
+    </div>
+
+    <h2>
+        <span class="cb-icon">
+            <svg viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                <line x1="7" y1="3" x2="7" y2="7"></line>
+                <line x1="17" y1="3" x2="17" y2="7"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+        </span>
+        Calendario
+    </h2>
+
+    <div
+        id="calendarioNombreCasa"
+        class="sub"
+        style="margin-bottom:20px;">
+    </div>
+
+    <div id="calendarioCasaContenido"></div>
+
+</section>
+
 <section id="incidencias" class="screen">
 
 <div class="back" onclick="render(); openHouse(current)">
@@ -1387,7 +1420,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=111"></script>
 <script src="js/storage.js?v=2"></script>
 <script src="js/photos.js?v=1"></script>
-<script src="js/app.js?v=146"></script>
+<script src="js/app.js?v=7"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
