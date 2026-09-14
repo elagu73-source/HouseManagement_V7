@@ -1496,6 +1496,55 @@ if (superadminAccess) {
 }
 
 await aplicarModulosOrganizacion();
+const { data: rolHome } =
+    await supabaseClient.rpc(
+        "current_organization_role"
+    );
+
+const campanaHome =
+    document.getElementById(
+        "notificationsButton"
+    );
+
+const actividadHome =
+    document.getElementById(
+        "activityDashboard"
+    );
+
+const panelNotificacionesHome =
+    document.getElementById(
+        "notificationsContent"
+    );
+
+if (rolHome === "propietario") {
+
+    campanaHome?.style.setProperty(
+        "display",
+        "none",
+        "important"
+    );
+
+    actividadHome?.style.setProperty(
+        "display",
+        "none",
+        "important"
+    );
+
+    if (panelNotificacionesHome) {
+        panelNotificacionesHome.style.display =
+            "none";
+    }
+
+} else {
+
+    campanaHome?.style.removeProperty(
+        "display"
+    );
+
+    actividadHome?.style.removeProperty(
+        "display"
+    );
+}
 
     // ============================================
 // CHECKLISTS DESDE SUPABASE PARA HOME
