@@ -1893,7 +1893,23 @@ agregar.onclick = function() {
 c.appendChild(agregar);
 }
 
-await prepararDashboardActividad();
+if (rolHome !== "propietario") {
+
+    await prepararDashboardActividad();
+
+} else {
+
+    const actividadPropietario =
+        document.getElementById(
+            "activityDashboard"
+        );
+
+    actividadPropietario?.style.setProperty(
+        "display",
+        "none",
+        "important"
+    );
+}
 await mostrarNotificaciones();
 await mostrarBienvenidaOnboardingSiCorresponde();
 
