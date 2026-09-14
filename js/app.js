@@ -2054,6 +2054,7 @@ let calendarioEgreso = null;
 let calendarioCasaActual = null;
 let calendarioReservas = [];
 let calendarioReservaEditando = null;
+let calendarioReservaViendo = null;
 let calendarioPuedeEditar = false;
 let calendarioInquilinoNombre = "";
 let calendarioInquilinoEmail = "";
@@ -2163,6 +2164,7 @@ async function abrirCalendarioCasa(h) {
     calendarioIngreso = null;
     calendarioEgreso = null;
     calendarioReservaEditando = null;
+    calendarioReservaViendo = null;
     calendarioInquilinoNombre = "";
 calendarioInquilinoEmail = "";
 calendarioInquilinoTelefono = "";
@@ -2474,20 +2476,17 @@ calendarioReservas.forEach(reserva => {
         "white";
 }
 
-        if (calendarioPuedeEditar) {
-
+        if (
+    calendarioPuedeEditar &&
+    !calendarioReservaViendo
+) {
     celda.onclick = function() {
-
         seleccionarFechaCalendario(
             fecha
         );
-
     };
-
 } else {
-
     celda.style.cursor = "default";
-
 }
 
         dias.appendChild(celda);
@@ -2624,7 +2623,10 @@ campoHuespedes.oninput = () => {
         campoHuespedes.value;
 };
 
-if (!calendarioPuedeEditar) {
+if (
+    !calendarioPuedeEditar ||
+    calendarioReservaViendo
+) {
     campoNombre.disabled = true;
     campoEmail.disabled = true;
     campoTelefono.disabled = true;
@@ -2745,6 +2747,66 @@ if (detalleReserva) {
     fechas.appendChild(datosReserva);
 }
 
+const verReserva =
+    document.createElement("button");
+
+verReserva.innerText = "Ver";
+
+verReserva.style.width = "auto";
+verReserva.style.minHeight = "0";
+verReserva.style.height = "30px";
+verReserva.style.padding = "0 12px";
+verReserva.style.border = "none";
+verReserva.style.borderRadius = "7px";
+verReserva.style.background = "#0D2B45";
+verReserva.style.color = "white";
+verReserva.style.fontSize = "12px";
+verReserva.style.cursor = "pointer";
+
+verReserva.onclick = function() {
+    calendarioReservaViendo = reserva.id;
+    calendarioReservaEditando = null;
+
+    calendarioIngreso =
+        fechaDesdeISO(reserva.check_in);
+
+    calendarioEgreso =
+        fechaDesdeISO(reserva.check_out);
+
+    calendarioFechaActual =
+        new Date(
+            calendarioIngreso.getFullYear(),
+            calendarioIngreso.getMonth(),
+            1
+        );
+
+    const detalle =
+        Array.isArray(reserva.reservation_details)
+            ? reserva.reservation_details[0]
+            : reserva.reservation_details;
+
+    calendarioInquilinoNombre =
+        detalle?.tenant_name || "";
+
+    calendarioInquilinoEmail =
+        detalle?.tenant_email || "";
+
+    calendarioInquilinoTelefono =
+        detalle?.tenant_phone || "";
+
+    calendarioCantidadHuespedes =
+        detalle?.guest_count || "";
+
+    renderCalendarioCasa();
+
+    document
+        .getElementById("calTenantName")
+        ?.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+};
+
 const editarReserva =
     document.createElement("button");
 
@@ -2762,6 +2824,7 @@ editarReserva.style.fontSize = "12px";
 editarReserva.style.cursor = "pointer";
 
 editarReserva.onclick = function() {
+    calendarioReservaViendo = null;
     calendarioReservaEditando = reserva.id;
 
     calendarioIngreso =
@@ -2769,6 +2832,13 @@ editarReserva.onclick = function() {
 
     calendarioEgreso =
         fechaDesdeISO(reserva.check_out);
+
+    calendarioFechaActual =
+        new Date(
+            calendarioIngreso.getFullYear(),
+            calendarioIngreso.getMonth(),
+            1
+        );
 
     const detalle =
         Array.isArray(reserva.reservation_details)
@@ -2861,9 +2931,14 @@ const botonesReserva =
 
 botonesReserva.style.display = "flex";
 botonesReserva.style.gap = "6px";
+botonesReserva.style.flexWrap = "wrap";
+botonesReserva.style.justifyContent = "flex-end";
+
+botonesReserva.appendChild(
+    verReserva
+);
 
 if (calendarioPuedeEditar) {
-
     botonesReserva.appendChild(
         editarReserva
     );
@@ -2871,11 +2946,11 @@ if (calendarioPuedeEditar) {
     botonesReserva.appendChild(
         eliminarReserva
     );
-
-    fila.appendChild(
-        botonesReserva
-    );
 }
+
+fila.appendChild(
+    botonesReserva
+);
 
         reservasGuardadas.appendChild(fila);
     });
@@ -2907,6 +2982,21 @@ if (calendarioPuedeEditar) {
     cancelar.style.cursor = "pointer";
 
        cancelar.onclick = async function() {
+    if (calendarioReservaViendo) {
+        calendarioReservaViendo = null;
+        calendarioReservaEditando = null;
+        calendarioIngreso = null;
+        calendarioEgreso = null;
+        calendarioInquilinoNombre = "";
+        calendarioInquilinoEmail = "";
+        calendarioInquilinoTelefono = "";
+        calendarioCantidadHuespedes = "";
+
+        renderCalendarioCasa();
+        window.scrollTo(0, 0);
+        return;
+    }
+
     await render();
     await openHouse(current);
 };
@@ -2928,12 +3018,16 @@ if (calendarioPuedeEditar) {
     guardar.style.cursor = "pointer";
     guardar.style.fontWeight = "600";
 
-if (!calendarioPuedeEditar) {
-
+if (
+    !calendarioPuedeEditar ||
+    calendarioReservaViendo
+) {
     guardar.style.display = "none";
 
-    cancelar.innerText = "Cerrar";
-
+    cancelar.innerText =
+        calendarioReservaViendo
+            ? "Volver al calendario"
+            : "Cerrar";
 }
 
    guardar.onclick = async function() {
