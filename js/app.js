@@ -2061,40 +2061,90 @@ let calendarioInquilinoTelefono = "";
 let calendarioCantidadHuespedes = "";
 
 async function cargarReservasCasa(houseId) {
-
     calendarioReservas = [];
 
     if (!houseId) return;
 
-    const { data, error } =
+    const {
+        data: reservas,
+        error: errorReservas
+    } =
         await supabaseClient
             .from("house_reservations")
-            .select(`
-    id,
-    check_in,
-    check_out,
-    reservation_details (
-        tenant_name,
-        tenant_email,
-        tenant_phone,
-        guest_count
-    )
-`)
+            .select("id, check_in, check_out")
             .eq("house_id", houseId)
-            .order("check_in", { ascending: true });
+            .order("check_in", {
+                ascending: true
+            });
 
-    if (error) {
-
+    if (errorReservas) {
         console.error(
             "❌ Error cargando reservas:",
-            error
+            errorReservas
         );
 
         return;
     }
 
-    calendarioReservas = data || [];
+    calendarioReservas = reservas || [];
 
+    const idsReservas =
+        calendarioReservas.map(
+            reserva => reserva.id
+        );
+
+    if (idsReservas.length === 0) {
+        return;
+    }
+
+    const {
+        data: detalles,
+        error: errorDetalles
+    } =
+        await supabaseClient
+            .from("reservation_details")
+            .select(`
+                reservation_id,
+                tenant_name,
+                tenant_email,
+                tenant_phone,
+                guest_count
+            `)
+            .in(
+                "reservation_id",
+                idsReservas
+            );
+
+    if (errorDetalles) {
+        console.error(
+            "❌ Error cargando datos de inquilinos:",
+            errorDetalles
+        );
+
+        return;
+    }
+
+    const detallesPorReserva =
+        new Map(
+            (detalles || []).map(
+                detalle => [
+                    detalle.reservation_id,
+                    detalle
+                ]
+            )
+        );
+
+    calendarioReservas =
+        calendarioReservas.map(
+            reserva => ({
+                ...reserva,
+
+                reservation_details:
+                    detallesPorReserva.get(
+                        reserva.id
+                    ) || null
+            })
+        );
 }
 
 async function abrirCalendarioCasa(h) {
@@ -3110,38 +3160,32 @@ if (!reservationId) {
     return;
 }
 
-const { error: errorDetalle } =
+const {
+    data: detalleGuardado,
+    error: errorDetalle
+} =
     await supabaseClient
         .from("reservation_details")
         .upsert(
             {
-                reservation_id: reservationId,
-
+                reservation_id: reservaGuardada.id,
                 tenant_name:
-                    calendarioInquilinoNombre.trim() ||
-                    null,
-
+                    calendarioInquilinoNombre.trim() || null,
                 tenant_email:
-                    calendarioInquilinoEmail.trim() ||
-                    null,
-
+                    calendarioInquilinoEmail.trim() || null,
                 tenant_phone:
-                    calendarioInquilinoTelefono.trim() ||
-                    null,
-
+                    calendarioInquilinoTelefono.trim() || null,
                 guest_count:
-                    calendarioCantidadHuespedes
-                        ? Number(
-                            calendarioCantidadHuespedes
-                        )
-                        : null
+                    Number(calendarioCantidadHuespedes) || null
             },
             {
                 onConflict: "reservation_id"
             }
-        );
+        )
+        .select("reservation_id")
+        .single();
 
-if (errorDetalle) {
+if (errorDetalle || !detalleGuardado) {
     console.error(
         "❌ Error guardando datos del inquilino:",
         errorDetalle
