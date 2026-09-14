@@ -4447,6 +4447,387 @@ async function cambiarEstadoInventario(index, estado){
     await renderControlInventario();
 }
 
+async function openDashboardMensual() {
+
+    const house = houses[current];
+
+    if (!house || !house.id) {
+        console.error(
+            "La casa no tiene UUID de Supabase"
+        );
+        return;
+    }
+
+    const selectorMes =
+        document.getElementById(
+            "estadoCuentaMes"
+        );
+
+    if (!selectorMes.value) {
+
+        const hoy = new Date();
+
+        const anio =
+            hoy.getFullYear();
+
+        const mes =
+            String(
+                hoy.getMonth() + 1
+            ).padStart(2, "0");
+
+        selectorMes.value =
+            `${anio}-${mes}`;
+    }
+
+    selectorMes.onchange =
+        cargarDashboardMensual;
+
+    go("estadoCuenta");
+
+    await cargarDashboardMensual();
+}
+
+async function cargarDashboardMensual() {
+
+    const house = houses[current];
+
+    const selectorMes =
+        document.getElementById(
+            "estadoCuentaMes"
+        );
+
+    const resumen =
+        document.getElementById(
+            "estadoCuentaResumen"
+        );
+
+    const detalle =
+        document.getElementById(
+            "estadoCuentaDetalle"
+        );
+
+    if (
+        !house?.id ||
+        !selectorMes?.value ||
+        !resumen ||
+        !detalle
+    ) {
+        return;
+    }
+
+    resumen.innerHTML =
+        `<div class="card">Cargando estado de cuenta...</div>`;
+
+    detalle.innerHTML = "";
+
+    const fechaMes =
+        `${selectorMes.value}-01`;
+
+    const { data, error } =
+        await supabaseClient
+            .from(
+                "house_monthly_cost_summary"
+            )
+            .select("*")
+            .eq("house_id", house.id)
+            .eq("month", fechaMes)
+            .maybeSingle();
+
+    if (error) {
+
+        console.error(
+            "Error cargando el estado de cuenta:",
+            error
+        );
+
+        resumen.innerHTML = `
+            <div class="card">
+                No se pudo cargar el estado de cuenta.
+            </div>
+        `;
+
+        return;
+    }
+
+    const datos = data || {};
+
+    const moneda =
+        datos.currency || "ARS";
+
+    const formatoDinero =
+        new Intl.NumberFormat(
+            "es-AR",
+            {
+                style: "currency",
+                currency: moneda
+            }
+        );
+
+    resumen.innerHTML = `
+        <div
+            style="
+                display:grid;
+                grid-template-columns:
+                    repeat(auto-fit, minmax(150px, 1fr));
+                gap:12px;
+            "
+        >
+            <div class="card">
+                <div class="sub">Incidencias</div>
+                <strong>
+                    ${Number(datos.incident_count) || 0}
+                </strong>
+            </div>
+
+            <div class="card">
+                <div class="sub">Trabajos</div>
+                <strong>
+                    ${formatoDinero.format(
+                        Number(datos.work_subtotal) || 0
+                    )}
+                </strong>
+            </div>
+
+            <div class="card">
+                <div class="sub">Comisiones</div>
+                <strong>
+                    ${formatoDinero.format(
+                        Number(datos.commission_subtotal) || 0
+                    )}
+                </strong>
+            </div>
+
+            <div class="card">
+                <div class="sub">Total del mes</div>
+                <strong>
+                    ${formatoDinero.format(
+                        Number(datos.total) || 0
+                    )}
+                </strong>
+            </div>
+
+            <div class="card">
+                <div class="sub">Total aprobado</div>
+                <strong>
+                    ${formatoDinero.format(
+                        Number(datos.approved_total) || 0
+                    )}
+                </strong>
+            </div>
+
+            <div class="card">
+                <div class="sub">Total pagado</div>
+                <strong>
+                    ${formatoDinero.format(
+                        Number(datos.paid_total) || 0
+                    )}
+                </strong>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:12px;">
+            Pendientes:
+            <strong>${Number(datos.pending_count) || 0}</strong>
+            · Presupuestadas:
+            <strong>${Number(datos.budgeted_count) || 0}</strong>
+            · Aprobadas:
+            <strong>${Number(datos.approved_count) || 0}</strong>
+            · Rechazadas:
+            <strong>${Number(datos.rejected_count) || 0}</strong>
+            · Pagadas:
+            <strong>${Number(datos.paid_count) || 0}</strong>
+        </div>
+    `;
+
+    await cargarDetalleEstadoCuenta(
+        house.id,
+        selectorMes.value,
+        moneda
+    );
+}
+
+async function cargarDetalleEstadoCuenta(
+    houseId,
+    mesSeleccionado,
+    moneda
+) {
+
+    const contenedor =
+        document.getElementById(
+            "estadoCuentaDetalle"
+        );
+
+    if (!contenedor) return;
+
+    const [anio, mes] =
+        mesSeleccionado
+            .split("-")
+            .map(Number);
+
+    const fechaInicio =
+        `${anio}-${String(mes).padStart(2, "0")}-01`;
+
+    const siguienteAnio =
+        mes === 12
+            ? anio + 1
+            : anio;
+
+    const siguienteMes =
+        mes === 12
+            ? 1
+            : mes + 1;
+
+    const fechaFin =
+        `${siguienteAnio}-${String(siguienteMes).padStart(2, "0")}-01`;
+
+    const { data: incidencias, error } =
+        await supabaseClient
+            .from("house_incidencias")
+            .select(`
+                id,
+                fecha,
+                ambiente,
+                descripcion,
+                provider_name,
+                work_cost,
+                commission_percentage,
+                commission_amount,
+                total_cost,
+                economic_status
+            `)
+            .eq("house_id", houseId)
+            .gte("fecha", fechaInicio)
+            .lt("fecha", fechaFin)
+            .order("fecha", {
+                ascending: false
+            });
+
+    if (error) {
+
+        console.error(
+            "Error cargando el detalle mensual:",
+            error
+        );
+
+        contenedor.innerHTML = `
+            <div class="card">
+                No se pudo cargar el detalle.
+            </div>
+        `;
+
+        return;
+    }
+
+    if (!incidencias?.length) {
+
+        contenedor.innerHTML = `
+            <div class="card">
+                No hay incidencias registradas
+                durante este mes.
+            </div>
+        `;
+
+        return;
+    }
+
+    const formatoDinero =
+        new Intl.NumberFormat(
+            "es-AR",
+            {
+                style: "currency",
+                currency: moneda || "ARS"
+            }
+        );
+
+    const nombresEstado = {
+        pendiente: "Pendiente",
+        presupuestado: "Presupuestado",
+        aprobado: "Aprobado",
+        rechazado: "Rechazado",
+        pagado: "Pagado"
+    };
+
+    contenedor.innerHTML =
+        incidencias
+            .map(incidencia => {
+
+                const costo =
+                    Number(
+                        incidencia.work_cost
+                    ) || 0;
+
+                const comision =
+                    Number(
+                        incidencia.commission_amount
+                    ) || 0;
+
+                const total =
+                    Number(
+                        incidencia.total_cost
+                    ) || 0;
+
+                const estado =
+                    nombresEstado[
+                        incidencia.economic_status
+                    ] || "Pendiente";
+
+                const fecha =
+                    incidencia.fecha
+                        ? new Date(
+                            `${incidencia.fecha}T12:00:00`
+                        ).toLocaleDateString("es-AR")
+                        : "Sin fecha";
+
+                return `
+                    <div class="card">
+                        <div class="title">
+                            ${incidencia.ambiente || "Incidencia"}
+                        </div>
+
+                        <div class="sub">
+                            ${incidencia.descripcion || ""}
+                        </div>
+
+                        <div class="sub" style="margin-top:8px;">
+                            Fecha: ${fecha}
+                        </div>
+
+                        <div class="sub">
+                            Proveedor:
+                            ${incidencia.provider_name ||
+                              "Sin proveedor"}
+                        </div>
+
+                        <div class="sub">
+                            Trabajo:
+                            ${formatoDinero.format(costo)}
+                        </div>
+
+                        <div class="sub">
+                            Comisión
+                            (${Number(
+                                incidencia.commission_percentage
+                            ) || 0}%):
+                            ${formatoDinero.format(comision)}
+                        </div>
+
+                        <div style="margin-top:6px;">
+                            <strong>
+                                Total:
+                                ${formatoDinero.format(total)}
+                            </strong>
+                        </div>
+
+                        <div class="sub" style="margin-top:6px;">
+                            Estado:
+                            <strong>${estado}</strong>
+                        </div>
+                    </div>
+                `;
+            })
+            .join("");
+}
+
 async function openIncidencias(){
 
     const lista = document.getElementById('listaIncidencias');
