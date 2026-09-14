@@ -367,7 +367,10 @@
                 <span>Fotos</span>
             </div>
 
-            <div class="house-menu-btn" onclick="editCurrent()">
+            <div
+    id="houseMenuEditHouse"
+    class="house-menu-btn"
+    onclick="editCurrent()">
                 <span class="house-icon">
                     <svg viewBox="0 0 24 24">
                         <path d="M4 20L8 19L19 8L16 5L5 16L4 20Z"></path>
@@ -495,7 +498,10 @@
 
 <div id="listaIncidencias"></div>
 
-<div class="btn" onclick="nuevaIncidencia()">
+<div
+    id="btnNuevaIncidencia"
+    class="btn"
+    onclick="nuevaIncidencia()">
     <span class="cb-icon white">
         <svg viewBox="0 0 24 24">
             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -638,7 +644,10 @@ Guardar incidencia
     Inventario
 </h2>
 
-<div class="btn" onclick="iniciarControlInventario()">
+<div
+    id="btnControlarInventario"
+    class="btn"
+    onclick="iniciarControlInventario()">
     <span class="cb-icon white">
         <svg viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="6"></circle>
@@ -650,7 +659,10 @@ Guardar incidencia
 
 <div id="listaInventario"></div>
 
-<div class="btn" onclick="nuevoItemInventario()">
+<div
+    id="btnAgregarInventario"
+    class="btn"
+    onclick="nuevoItemInventario()">
     Agregar elemento
 </div>
 
@@ -887,7 +899,10 @@ Guardar incidencia
         id="manualTexto"
         style="width:100%;height:350px;margin-top:15px;padding:10px;font-size:15px;border-radius:8px;"></textarea>
 
-<div class="btn" onclick="guardarManual()">
+<div
+    id="btnGuardarManual"
+    class="btn"
+    onclick="guardarManual()">
     <span class="cb-icon white">
         <svg viewBox="0 0 24 24">
             <path d="M5 4H19V20H5Z"></path>
@@ -922,7 +937,9 @@ Guardar incidencia
     Fotos de la Casa
 </h2>
 
-    <div class="card">
+   <div
+    id="panelAgregarFoto"
+    class="card">
 
     <h3>Agregar foto</h3>
 
@@ -1215,7 +1232,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=111"></script>
 <script src="js/storage.js?v=2"></script>
 <script src="js/photos.js?v=1"></script>
-<script src="js/app.js?v=137"></script>
+<script src="js/app.js?v=138"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();

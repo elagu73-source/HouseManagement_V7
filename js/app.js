@@ -1914,10 +1914,17 @@ window.abrirActividad = async function() {
     }
 };
 
-function openPhotos(){
+async function openPhotos(){
 
-    const selector = document.getElementById("photoAmbiente");
-    const texto = document.getElementById("photoAmbienteTexto");
+    const selector =
+        document.getElementById(
+            "photoAmbiente"
+        );
+
+    const texto =
+        document.getElementById(
+            "photoAmbienteTexto"
+        );
 
     if (selector) {
         selector.value = "fachada";
@@ -1927,9 +1934,28 @@ function openPhotos(){
         texto.textContent = "Fachada";
     }
 
+    const { data: rolFotos } =
+        await supabaseClient.rpc(
+            "current_organization_role"
+        );
+
+    const panelAgregarFoto =
+        document.getElementById(
+            "panelAgregarFoto"
+        );
+
+    if (panelAgregarFoto) {
+        panelAgregarFoto.style.display =
+            ["admin", "colaborador"].includes(
+                rolFotos
+            )
+                ? ""
+                : "none";
+    }
+
     go("photos");
 
-    mostrarFotos(current);
+    await mostrarFotos(current);
 }
 
 async function saveSelectedPhoto(){
@@ -1963,6 +1989,7 @@ let calendarioEgreso = null;
 let calendarioCasaActual = null;
 let calendarioReservas = [];
 let calendarioReservaEditando = null;
+let calendarioPuedeEditar = false;
 
 async function cargarReservasCasa(houseId) {
 
@@ -1994,6 +2021,15 @@ async function cargarReservasCasa(houseId) {
 async function abrirCalendarioCasa(h) {
 
     calendarioCasaActual = h;
+    const { data: rolCalendario } =
+    await supabaseClient.rpc(
+        "current_organization_role"
+    );
+
+calendarioPuedeEditar =
+    ["admin", "colaborador"].includes(
+        rolCalendario
+    );
 
     const modalExistente =
         document.getElementById("modalCalendarioCasa");
@@ -2367,13 +2403,21 @@ calendarioReservas.forEach(reserva => {
         "white";
 }
 
-        celda.onclick = function() {
+        if (calendarioPuedeEditar) {
 
-            seleccionarFechaCalendario(
-                fecha
-            );
+    celda.onclick = function() {
 
-        };
+        seleccionarFechaCalendario(
+            fecha
+        );
+
+    };
+
+} else {
+
+    celda.style.cursor = "default";
+
+}
 
         dias.appendChild(celda);
 
@@ -2573,10 +2617,20 @@ const botonesReserva =
 botonesReserva.style.display = "flex";
 botonesReserva.style.gap = "6px";
 
-botonesReserva.appendChild(editarReserva);
-botonesReserva.appendChild(eliminarReserva);
+if (calendarioPuedeEditar) {
 
-fila.appendChild(botonesReserva);
+    botonesReserva.appendChild(
+        editarReserva
+    );
+
+    botonesReserva.appendChild(
+        eliminarReserva
+    );
+
+    fila.appendChild(
+        botonesReserva
+    );
+}
 
         reservasGuardadas.appendChild(fila);
     });
@@ -2629,6 +2683,14 @@ fila.appendChild(botonesReserva);
     guardar.style.color = "white";
     guardar.style.cursor = "pointer";
     guardar.style.fontWeight = "600";
+
+if (!calendarioPuedeEditar) {
+
+    guardar.style.display = "none";
+
+    cancelar.innerText = "Cerrar";
+
+}
 
    guardar.onclick = async function() {
 
@@ -3516,7 +3578,52 @@ ratingElement.parentElement.appendChild(botonCalendario);
 }
 
 await aplicarModulosOrganizacion();
+const { data: rolPermisosCasa } =
+    await supabaseClient.rpc(
+        "current_organization_role"
+    );
 
+const botonEditarCasa =
+    document.getElementById(
+        "houseMenuEditHouse"
+    );
+
+if (botonEditarCasa) {
+    botonEditarCasa.style.display =
+        ["admin", "colaborador"].includes(
+            rolPermisosCasa
+        )
+            ? ""
+            : "none";
+}
+
+const botonEditarChecklist =
+    document.getElementById(
+        "houseMenuChecklistEditor"
+    );
+
+if (botonEditarChecklist) {
+    botonEditarChecklist.style.display =
+        ["admin", "colaborador"].includes(
+            rolPermisosCasa
+        )
+            ? ""
+            : "none";
+}
+
+const botonAgregarInventario =
+    document.getElementById(
+        "btnAgregarInventario"
+    );
+
+if (botonAgregarInventario) {
+    botonAgregarInventario.style.display =
+        ["admin", "colaborador"].includes(
+            rolPermisosCasa
+        )
+            ? ""
+            : "none";
+}
 
 const foto = document.getElementById("houseHeroPhoto");
 
@@ -3804,12 +3911,46 @@ async function guardarInventarioSupabase(items){
     return true;
 }
 
-
+let inventarioPuedeEditar = false;
 // ============================================
 // ABRIR INVENTARIO
 // ============================================
 
 async function openInventario(){
+
+    const { data: rolInventario } =
+    await supabaseClient.rpc(
+        "current_organization_role"
+    );
+
+inventarioPuedeEditar =
+    ["admin", "colaborador"].includes(
+        rolInventario
+    );
+
+const botonAgregarInventario =
+    document.getElementById(
+        "btnAgregarInventario"
+    );
+
+const botonControlarInventario =
+    document.getElementById(
+        "btnControlarInventario"
+    );
+
+if (botonAgregarInventario) {
+    botonAgregarInventario.style.display =
+        inventarioPuedeEditar
+            ? ""
+            : "none";
+}
+
+if (botonControlarInventario) {
+    botonControlarInventario.style.display =
+        inventarioPuedeEditar
+            ? ""
+            : "none";
+}
 
     go('inventario');
 
@@ -3901,12 +4042,14 @@ function renderInventario(items){
 
                 </div>
 
-                <button
-                    class="btn-eliminar-inventario"
-                    onclick="eliminarItemInventario(${index})"
-                >
-                    Eliminar
-                </button>
+                ${inventarioPuedeEditar ? `
+    <button
+        class="btn-eliminar-inventario"
+        onclick="eliminarItemInventario(${index})"
+    >
+        Eliminar
+    </button>
+` : ""}
 
             </div>
         `;
@@ -4250,6 +4393,28 @@ async function openIncidencias(){
         return;
     }
 
+const { data: rolIncidencias } =
+    await supabaseClient.rpc(
+        "current_organization_role"
+    );
+
+const puedeGestionarIncidencias =
+    ["admin", "colaborador"].includes(
+        rolIncidencias
+    );
+
+const botonNuevaIncidencia =
+    document.getElementById(
+        "btnNuevaIncidencia"
+    );
+
+if (botonNuevaIncidencia) {
+    botonNuevaIncidencia.style.display =
+        puedeGestionarIncidencias
+            ? ""
+            : "none";
+}
+
     const { data: incidencias, error } = await supabaseClient
         .from("house_incidencias")
         .select("*")
@@ -4354,24 +4519,24 @@ async function openIncidencias(){
 
                     </div>
 
-                    <button
-                        class="btn-delete-incidencia"
-                        onclick="eliminarIncidencia('${incidencia.id}')"
-                        title="Eliminar incidencia"
-                        aria-label="Eliminar incidencia"
-                    >
-
-                        <span class="cb-icon">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M6 7H18"></path>
-                                <path d="M9 7V5H15V7"></path>
-                                <path d="M8 7L9 20H15L16 7"></path>
-                                <path d="M10 11V17"></path>
-                                <path d="M14 11V17"></path>
-                            </svg>
-                        </span>
-
-                    </button>
+                    ${puedeGestionarIncidencias ? `
+    <button
+        class="btn-delete-incidencia"
+        onclick="eliminarIncidencia('${incidencia.id}')"
+        title="Eliminar incidencia"
+        aria-label="Eliminar incidencia"
+    >
+        <span class="cb-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M6 7H18"></path>
+                <path d="M9 7V5H15V7"></path>
+                <path d="M8 7L9 20H15L16 7"></path>
+                <path d="M10 11V17"></path>
+                <path d="M14 11V17"></path>
+            </svg>
+        </span>
+    </button>
+` : ""}
 
                 </div>
 
@@ -4446,23 +4611,23 @@ async function openIncidencias(){
 
                 </div>
 
-                <div
-                    class="btn"
-                    onclick="cambiarEstadoIncidencia('${incidencia.id}')"
-                >
+               ${puedeGestionarIncidencias ? `
+    <div
+        class="btn"
+        onclick="cambiarEstadoIncidencia('${incidencia.id}')"
+    >
+        <span class="cb-icon white">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 11a8 8 0 0 0-14.9-3"></path>
+                <polyline points="5,4 5,9 10,9"></polyline>
+                <path d="M4 13a8 8 0 0 0 14.9 3"></path>
+                <polyline points="19,20 19,15 14,15"></polyline>
+            </svg>
+        </span>
 
-                    <span class="cb-icon white">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M20 11a8 8 0 0 0-14.9-3"></path>
-                            <polyline points="5,4 5,9 10,9"></polyline>
-                            <path d="M4 13a8 8 0 0 0 14.9 3"></path>
-                            <polyline points="19,20 19,15 14,15"></polyline>
-                        </svg>
-                    </span>
-
-                    Cambiar estado
-
-                </div>
+        Cambiar estado
+    </div>
+` : ""}
 
             </div>
         `;
@@ -4734,6 +4899,7 @@ render();
 
 let paso = 0;
 let observaciones = {};
+let checklistPuedeEditar = false;
 
 async function guardarChecklistSupabase() {
 
@@ -4785,6 +4951,15 @@ async function startPreparation(){
         console.error("❌ La casa no tiene UUID de Supabase");
         return;
     }
+    const { data: rolChecklist } =
+    await supabaseClient.rpc(
+        "current_organization_role"
+    );
+
+checklistPuedeEditar =
+    ["admin", "colaborador"].includes(
+        rolChecklist
+    );
 
     const diagnostico = document.getElementById("diagnosticoChecklist");
 
@@ -4865,9 +5040,14 @@ env.items.forEach((c,i)=>{
 
     const marcado = checks[key][i] ? "checked" : "";
 
+    const bloqueado =
+    checklistPuedeEditar
+        ? ""
+        : "disabled";
+
     checklist.innerHTML += `
     <label class="chk">
-       <input type="checkbox" ${marcado}
+       <input type="checkbox" ${marcado} ${bloqueado}
     
        onchange="
     
@@ -4898,6 +5078,7 @@ checklist.innerHTML += `
 
 <textarea
 id="obsPrep"
+${bloqueado}
 style="width:100%;height:90px;margin-top:8px"
 oninput="
  observaciones['${obsKey}'] = this.value;
@@ -5044,8 +5225,7 @@ function nextStep(){
 
     const obs = document.getElementById("obsPrep");
 
-    if (obs) {
-
+if (obs && checklistPuedeEditar) {
         observaciones["c" + current + "_" + paso] = obs.value;
 
         guardarChecklistSupabase();
@@ -5484,7 +5664,7 @@ async function guardarManual() {
 // ABRIR UNA SECCIÓN DEL MANUAL
 // ============================================
 
-function abrirManual(tipo){
+async function abrirManual(tipo){
 
     manualActual = tipo;
 
@@ -5494,10 +5674,38 @@ function abrirManual(tipo){
         tipo.charAt(0).toUpperCase() +
         tipo.slice(1);
 
-    document.getElementById(
-        "manualTexto"
-    ).value =
+    const textoManual =
+        document.getElementById(
+            "manualTexto"
+        );
+
+    textoManual.value =
         manualCasa[tipo] || "";
+
+    const { data: rolManual } =
+        await supabaseClient.rpc(
+            "current_organization_role"
+        );
+
+    const puedeEditarManual =
+        ["admin", "colaborador"].includes(
+            rolManual
+        );
+
+    textoManual.readOnly =
+        !puedeEditarManual;
+
+    const botonGuardarManual =
+        document.getElementById(
+            "btnGuardarManual"
+        );
+
+    if (botonGuardarManual) {
+        botonGuardarManual.style.display =
+            puedeEditarManual
+                ? ""
+                : "none";
+    }
 
     go("manualEdit");
 }
