@@ -4832,6 +4832,18 @@ async function openIncidencias(){
 
     const lista = document.getElementById('listaIncidencias');
 
+    const formularioIncidencia =
+    document.getElementById(
+        "formIncidencia"
+    );
+
+if (formularioIncidencia) {
+    formularioIncidencia.style.display =
+        "none";
+}
+
+incidenciaEditandoId = null;
+
     const house = houses[current];
 
     if (!house || !house.id) {
