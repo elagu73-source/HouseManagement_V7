@@ -572,6 +572,45 @@ if (!miembros || miembros.length === 0) {
     </button>
 `;
 
+if (miembro.user_id !== userData.user.id) {
+    const botonQuitar = document.createElement("button");
+    botonQuitar.type = "button";
+    botonQuitar.className = "usuario-quitar-btn";
+    botonQuitar.textContent = "Quitar de esta organización";
+
+    botonQuitar.onclick = async () => {
+        const confirmado = await confirmarAccionHM(
+            "Esta persona perderá acceso a esta empresa y sus casas. Su cuenta y el historial permanecerán intactos.",
+            "Quitar de esta organización",
+            "QUITAR",
+            "#8B4B4B"
+        );
+
+        if (!confirmado) return;
+
+        botonQuitar.disabled = true;
+
+        const { error } = await supabaseClient.rpc(
+            "quitar_usuario_organizacion",
+            { p_user_id: miembro.user_id }
+        );
+
+        if (error) {
+            console.error("Error quitando usuario:", error);
+            botonQuitar.disabled = false;
+            mostrarAvisoHM(
+                "No se pudo quitar al usuario. Revisá sus permisos e intentá nuevamente."
+            );
+            return;
+        }
+
+        mostrarAvisoHM("Usuario quitado de esta organización.");
+        await abrirUsuarios();
+    };
+
+    tarjeta.appendChild(botonQuitar);
+}
+
         contenedor.appendChild(tarjeta);
     });
 }
