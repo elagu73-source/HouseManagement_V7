@@ -2589,11 +2589,77 @@ function renderPreparacionReserva() {
 
             nombre.style.fontWeight = "700";
             nombre.style.color = "#0D2B45";
-            nombre.style.marginBottom = "12px";
+            nombre.style.marginBottom = "0";
+nombre.style.flex = "1";
             nombre.textContent =
                 tarea.sort_order +
                 ". " +
                 tarea.title;
+
+                const cabeceraTarea =
+    document.createElement("div");
+
+cabeceraTarea.style.display = "flex";
+cabeceraTarea.style.alignItems = "flex-start";
+cabeceraTarea.style.justifyContent =
+    "space-between";
+cabeceraTarea.style.gap = "12px";
+cabeceraTarea.style.marginBottom = "16px";
+
+cabeceraTarea.appendChild(nombre);
+
+if (preparacionPuedeEditar) {
+    const editarTitulo =
+        document.createElement("button");
+
+    editarTitulo.type = "button";
+    editarTitulo.title =
+        "Editar título";
+    editarTitulo.setAttribute(
+        "aria-label",
+        "Editar título"
+    );
+
+    editarTitulo.style.width = "36px";
+    editarTitulo.style.height = "36px";
+    editarTitulo.style.minWidth = "36px";
+    editarTitulo.style.padding = "7px";
+    editarTitulo.style.border =
+        "1px solid #D7DDE2";
+    editarTitulo.style.borderRadius =
+        "9px";
+    editarTitulo.style.background =
+        "#FFFFFF";
+    editarTitulo.style.color =
+        "#0D2B45";
+    editarTitulo.style.cursor =
+        "pointer";
+    editarTitulo.style.display = "flex";
+    editarTitulo.style.alignItems =
+        "center";
+    editarTitulo.style.justifyContent =
+        "center";
+
+    editarTitulo.innerHTML = `
+        <span class="cb-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M4 20H8L19 9L15 5L4 16V20Z"></path>
+                <path d="M13 7L17 11"></path>
+            </svg>
+        </span>
+    `;
+
+    editarTitulo.onclick =
+        function() {
+            editarTituloTareaPreparacion(
+                tarea
+            );
+        };
+
+    cabeceraTarea.appendChild(
+        editarTitulo
+    );
+}
 
             const etiquetaEstado =
     document.createElement("div");
@@ -2757,7 +2823,9 @@ observaciones.style.resize = "vertical";
                         observaciones.value;
                 };
 
-            tarjeta.appendChild(nombre);
+            tarjeta.appendChild(
+    cabeceraTarea
+);
             tarjeta.appendChild(
     etiquetaEstado
 );
@@ -2928,6 +2996,82 @@ async function guardarPreparacionReserva() {
 
     mostrarAvisoHM(
         "Preparación guardada correctamente"
+    );
+
+    await abrirPreparacionReserva(
+        preparacionReservaActual
+    );
+}
+
+async function editarTituloTareaPreparacion(
+    tarea
+) {
+    if (
+        !preparacionPuedeEditar ||
+        !tarea ||
+        !tarea.id
+    ) {
+        return;
+    }
+
+    const nuevoTitulo =
+        await solicitarTextoHM(
+    "Escribí el nuevo título de esta tarea.",
+    "Editar tarea",
+    "Título de la tarea",
+    tarea.title
+);
+
+    if (nuevoTitulo === null) {
+        return;
+    }
+
+    const tituloLimpio =
+        nuevoTitulo.trim();
+
+    if (tituloLimpio.length < 2) {
+        mostrarAvisoHM(
+            "Ingresá un título de al menos 2 caracteres"
+        );
+        return;
+    }
+
+    const aplicarFuturas =
+        await confirmarAccionHM(
+            "Elegí si el cambio corresponde solamente a esta reserva o también a las próximas reservas de esta casa.",
+            "Aplicar cambio",
+            "ESTA CASA EN ADELANTE",
+            "#6B7A5A",
+            "SOLO ESTA RESERVA"
+        );
+
+    const { error } =
+        await supabaseClient.rpc(
+            "edit_reservation_task_title",
+            {
+                p_task_id: tarea.id,
+                p_new_title: tituloLimpio,
+                p_apply_future:
+                    aplicarFuturas
+            }
+        );
+
+    if (error) {
+        console.error(
+            "❌ Error editando título de tarea:",
+            error
+        );
+
+        mostrarAvisoHM(
+            "No se pudo actualizar el título de la tarea"
+        );
+        return;
+    }
+
+    mostrarAvisoHM(
+        aplicarFuturas
+            ? "Título actualizado para esta casa y sus próximas reservas"
+            : "Título actualizado para esta reserva"
     );
 
     await abrirPreparacionReserva(
@@ -6274,7 +6418,8 @@ function confirmarAccionHM(
     mensaje,
     titulo = "Eliminar incidencia",
     textoAceptar = "ELIMINAR",
-    colorAceptar = "#8B4B4B"
+    colorAceptar = "#8B4B4B",
+    textoCancelar = "CANCELAR"
 ) {
     return new Promise((resolve) => {
         const anterior =
@@ -6361,7 +6506,7 @@ border-radius: 18px;
                             cursor: pointer;
                         "
                     >
-                        CANCELAR
+                        ${textoCancelar}
                     </button>
 
                     <button
@@ -6371,9 +6516,9 @@ border-radius: 18px;
                             padding: 13px;
                             border: none;
                             border-radius: 10px;
-                            background: #8B4B4B;
                             background: ${colorAceptar};
-                            font-family: Montserrat, Arial, sans-serif;
+color: #FFFFFF;
+font-family: Montserrat, Arial, sans-serif;
                             font-weight: 700;
                             cursor: pointer;
                         "
@@ -6405,8 +6550,10 @@ border-radius: 18px;
 function solicitarTextoHM(
     mensaje,
     titulo = "Ingresar información",
-    placeholder = ""
+    placeholder = "",
+    valorInicial = ""
 ) {
+
     return new Promise((resolve) => {
         const anterior =
             document.getElementById("modalTextoHM");
@@ -6526,6 +6673,9 @@ function solicitarTextoHM(
 
         const campo =
             document.getElementById("campoTextoHM");
+
+        campo.value = valorInicial;
+campo.select();
 
         const cancelar =
             document.getElementById("cancelarTextoHM");
