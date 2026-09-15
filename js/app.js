@@ -2060,6 +2060,10 @@ let calendarioInquilinoNombre = "";
 let calendarioInquilinoEmail = "";
 let calendarioInquilinoTelefono = "";
 let calendarioCantidadHuespedes = "";
+let preparacionReservaActual = null;
+let preparacionChecklistActual = null;
+let preparacionTareas = [];
+let preparacionPuedeEditar = false;
 
 async function cargarReservasCasa(houseId) {
     calendarioReservas = [];
@@ -2195,6 +2199,494 @@ calendarioCantidadHuespedes = "";
     renderCalendarioCasa();
 
     window.scrollTo(0, 0);
+}
+
+async function abrirPreparacionReserva(reserva) {
+    if (!reserva || !reserva.id) {
+        mostrarAvisoHM(
+            "No pudimos identificar la reserva"
+        );
+        return;
+    }
+
+    preparacionReservaActual = reserva;
+
+    const { data: rolPreparacion } =
+        await supabaseClient.rpc(
+            "current_organization_role"
+        );
+
+    preparacionPuedeEditar =
+        ["admin", "colaborador"].includes(
+            rolPreparacion
+        );
+
+    const {
+        data: checklist,
+        error: errorChecklist
+    } =
+        await supabaseClient
+            .from("reservation_checklists")
+            .select(`
+    id,
+    status,
+    started_at,
+    completed_at
+`)
+            .eq("reservation_id", reserva.id)
+            .eq("checklist_type", "preparacion")
+            .single();
+
+    if (errorChecklist || !checklist) {
+        console.error(
+            "❌ Error cargando preparación:",
+            errorChecklist
+        );
+
+        mostrarAvisoHM(
+            "No se pudo cargar la preparación de esta reserva"
+        );
+        return;
+    }
+
+    const {
+        data: tareas,
+        error: errorTareas
+    } =
+        await supabaseClient
+            .from("reservation_checklist_tasks")
+            .select(`
+                id,
+                task_code,
+                title,
+                responsible,
+                status,
+                observations,
+                verified_by,
+                verified_at,
+                task_date,
+                photo_path,
+                incident_id,
+                sort_order
+            `)
+            .eq("checklist_id", checklist.id)
+            .order("sort_order", {
+                ascending: true
+            });
+
+    if (errorTareas) {
+        console.error(
+            "❌ Error cargando tareas de preparación:",
+            errorTareas
+        );
+
+        mostrarAvisoHM(
+            "No se pudieron cargar las tareas de preparación"
+        );
+        return;
+    }
+
+    preparacionChecklistActual = checklist;
+    preparacionTareas = tareas || [];
+
+    const detalle =
+        Array.isArray(reserva.reservation_details)
+            ? reserva.reservation_details[0]
+            : reserva.reservation_details;
+
+    const datos =
+        document.getElementById(
+            "preparacionReservaDatos"
+        );
+
+    if (datos) {
+        const nombre =
+            detalle?.tenant_name ||
+            "Inquilino sin informar";
+
+        datos.textContent =
+            nombre +
+            " · " +
+            formatearFecha(
+                fechaDesdeISO(reserva.check_in)
+            ) +
+            " al " +
+            formatearFecha(
+                fechaDesdeISO(reserva.check_out)
+            );
+    }
+
+    await go("preparacionReserva");
+
+    renderPreparacionReserva();
+
+    window.scrollTo(0, 0);
+}
+
+async function volverAReservaDesdePreparacion() {
+    await go("calendarioCasa");
+    renderCalendarioCasa();
+    window.scrollTo(0, 0);
+}
+
+function renderPreparacionReserva() {
+    const contenedor =
+        document.getElementById(
+            "preparacionReservaContenido"
+        );
+
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+
+    if (preparacionTareas.length === 0) {
+        contenedor.textContent =
+            "No hay tareas de preparación.";
+        return;
+    }
+
+    const completadas =
+        preparacionTareas.filter(
+            tarea =>
+                tarea.status !== "pendiente"
+        ).length;
+
+    const resumen =
+        document.createElement("div");
+
+    resumen.className = "card";
+    resumen.style.cursor = "default";
+    resumen.style.marginBottom = "18px";
+    resumen.innerHTML = `
+        <strong>Avance</strong>
+        <div class="sub" style="margin-top:6px;">
+            ${completadas} de
+            ${preparacionTareas.length}
+            tareas controladas
+        </div>
+    `;
+
+    contenedor.appendChild(resumen);
+
+    const categorias = [
+        {
+            desde: 1,
+            hasta: 4,
+            titulo: "Insumos de baño y cocina"
+        },
+        {
+            desde: 5,
+            hasta: 7,
+            titulo: "Limpieza disponible en la casa"
+        },
+        {
+            desde: 8,
+            hasta: 8,
+            titulo: "Exterior y recreación"
+        },
+        {
+            desde: 9,
+            hasta: 18,
+            titulo: "Detalles de bienvenida"
+        }
+    ];
+
+    categorias.forEach(categoria => {
+        const tareasCategoria =
+            preparacionTareas.filter(
+                tarea =>
+                    tarea.sort_order >=
+                        categoria.desde &&
+                    tarea.sort_order <=
+                        categoria.hasta
+            );
+
+        if (tareasCategoria.length === 0) {
+            return;
+        }
+
+        const titulo =
+            document.createElement("h3");
+
+        titulo.textContent =
+            categoria.titulo;
+
+        titulo.style.color = "#0D2B45";
+        titulo.style.marginTop = "24px";
+
+        contenedor.appendChild(titulo);
+
+        tareasCategoria.forEach(tarea => {
+            const tarjeta =
+                document.createElement("div");
+
+            tarjeta.className = "card";
+            tarjeta.style.cursor = "default";
+            tarjeta.style.marginBottom = "12px";
+
+            const nombre =
+                document.createElement("div");
+
+            nombre.style.fontWeight = "700";
+            nombre.style.color = "#0D2B45";
+            nombre.style.marginBottom = "12px";
+            nombre.textContent =
+                tarea.sort_order +
+                ". " +
+                tarea.title;
+
+            const etiquetaEstado =
+                document.createElement("label");
+
+            etiquetaEstado.textContent =
+                "Estado";
+
+            const estado =
+                document.createElement("select");
+
+            estado.innerHTML = `
+                <option value="pendiente">
+                    Pendiente
+                </option>
+                <option value="si">
+                    Sí
+                </option>
+                <option value="no">
+                    No
+                </option>
+                <option value="no_aplica">
+                    No aplica
+                </option>
+            `;
+
+            estado.value =
+                tarea.status || "pendiente";
+
+            estado.disabled =
+                !preparacionPuedeEditar;
+
+            estado.onchange = function() {
+                tarea.status = estado.value;
+            };
+
+            const etiquetaResponsable =
+                document.createElement("label");
+
+            etiquetaResponsable.textContent =
+                "Responsable";
+
+            const responsable =
+                document.createElement("input");
+
+            responsable.type = "text";
+            responsable.placeholder =
+                "Nombre del responsable";
+            responsable.value =
+                tarea.responsible || "";
+            responsable.disabled =
+                !preparacionPuedeEditar;
+
+            responsable.oninput = function() {
+                tarea.responsible =
+                    responsable.value;
+            };
+
+            const etiquetaObservaciones =
+                document.createElement("label");
+
+            etiquetaObservaciones.textContent =
+                "Observaciones";
+
+            const observaciones =
+                document.createElement("textarea");
+
+            observaciones.placeholder =
+                "Agregar observaciones";
+            observaciones.value =
+                tarea.observations || "";
+            observaciones.disabled =
+                !preparacionPuedeEditar;
+
+            observaciones.oninput =
+                function() {
+                    tarea.observations =
+                        observaciones.value;
+                };
+
+            tarjeta.appendChild(nombre);
+            tarjeta.appendChild(
+                etiquetaEstado
+            );
+            tarjeta.appendChild(estado);
+            tarjeta.appendChild(
+                etiquetaResponsable
+            );
+            tarjeta.appendChild(
+                responsable
+            );
+            tarjeta.appendChild(
+                etiquetaObservaciones
+            );
+            tarjeta.appendChild(
+                observaciones
+            );
+
+            contenedor.appendChild(tarjeta);
+        });
+    });
+
+    if (preparacionPuedeEditar) {
+        const guardar =
+            document.createElement("button");
+
+        guardar.type = "button";
+        guardar.className = "btn";
+        guardar.style.width = "100%";
+        guardar.style.marginTop = "18px";
+        guardar.textContent =
+            "Guardar preparación";
+
+        guardar.onclick = function() {
+            guardarPreparacionReserva();
+        };
+
+        contenedor.appendChild(guardar);
+    }
+}
+
+async function guardarPreparacionReserva() {
+    if (
+        !preparacionChecklistActual ||
+        !preparacionChecklistActual.id
+    ) {
+        mostrarAvisoHM(
+            "No pudimos identificar el checklist de preparación"
+        );
+        return;
+    }
+
+    const tareasParaGuardar =
+        preparacionTareas.map(
+            tarea => ({
+                id: tarea.id,
+                checklist_id:
+                    preparacionChecklistActual.id,
+                task_code:
+                    tarea.task_code,
+                title:
+                    tarea.title,
+                responsible:
+                    tarea.responsible?.trim() ||
+                    null,
+                status:
+                    tarea.status ||
+                    "pendiente",
+                observations:
+                    tarea.observations?.trim() ||
+                    null,
+                sort_order:
+                    tarea.sort_order
+            })
+        );
+
+    const {
+        data: tareasGuardadas,
+        error: errorTareas
+    } =
+        await supabaseClient
+            .from(
+                "reservation_checklist_tasks"
+            )
+            .upsert(tareasParaGuardar)
+            .select("id");
+
+    if (
+        errorTareas ||
+        !tareasGuardadas ||
+        tareasGuardadas.length !==
+            tareasParaGuardar.length
+    ) {
+        console.error(
+            "❌ Error guardando preparación:",
+            errorTareas
+        );
+
+        mostrarAvisoHM(
+            "No se pudo guardar la preparación"
+        );
+        return;
+    }
+
+    const cantidadControladas =
+        preparacionTareas.filter(
+            tarea =>
+                tarea.status !== "pendiente"
+        ).length;
+
+    let estadoChecklist = "pendiente";
+
+    if (
+        cantidadControladas > 0 &&
+        cantidadControladas <
+            preparacionTareas.length
+    ) {
+        estadoChecklist = "en_proceso";
+    }
+
+    if (
+        cantidadControladas ===
+        preparacionTareas.length
+    ) {
+        estadoChecklist = "completado";
+    }
+
+    const datosChecklist = {
+        status: estadoChecklist,
+        updated_at:
+            new Date().toISOString()
+    };
+
+    if (
+        estadoChecklist !== "pendiente" &&
+        !preparacionChecklistActual.started_at
+    ) {
+        datosChecklist.started_at =
+            new Date().toISOString();
+    }
+
+    datosChecklist.completed_at =
+        estadoChecklist === "completado"
+            ? new Date().toISOString()
+            : null;
+
+    const { error: errorChecklist } =
+        await supabaseClient
+            .from("reservation_checklists")
+            .update(datosChecklist)
+            .eq(
+                "id",
+                preparacionChecklistActual.id
+            );
+
+    if (errorChecklist) {
+        console.error(
+            "❌ Error actualizando estado de preparación:",
+            errorChecklist
+        );
+
+        mostrarAvisoHM(
+            "Las tareas se guardaron, pero no se pudo actualizar el avance"
+        );
+        return;
+    }
+
+    mostrarAvisoHM(
+        "Preparación guardada correctamente"
+    );
+
+    await abrirPreparacionReserva(
+        preparacionReservaActual
+    );
 }
 
 function renderCalendarioCasa() {
@@ -2623,14 +3115,35 @@ campoHuespedes.oninput = () => {
         campoHuespedes.value;
 };
 
-if (
-    !calendarioPuedeEditar ||
-    calendarioReservaViendo
-) {
-    campoNombre.disabled = true;
-    campoEmail.disabled = true;
-    campoTelefono.disabled = true;
-    campoHuespedes.disabled = true;
+if (calendarioReservaViendo) {
+    const reservaSeleccionada =
+        calendarioReservas.find(
+            reserva =>
+                reserva.id ===
+                calendarioReservaViendo
+        );
+
+    if (reservaSeleccionada) {
+        const botonPreparacion =
+            document.createElement("button");
+
+        botonPreparacion.type = "button";
+        botonPreparacion.className = "btn";
+        botonPreparacion.style.marginTop = "14px";
+        botonPreparacion.style.width = "100%";
+        botonPreparacion.innerText =
+            "Preparación y bienvenida";
+
+        botonPreparacion.onclick = function() {
+            abrirPreparacionReserva(
+                reservaSeleccionada
+            );
+        };
+
+        datosInquilino.appendChild(
+            botonPreparacion
+        );
+    }
 }
 
 // ============================================

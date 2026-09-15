@@ -551,6 +551,48 @@
 
 </section>
 
+<section id="preparacionReserva" class="screen">
+
+    <div
+        class="back"
+        onclick="volverAReservaDesdePreparacion()"
+        style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+            width:fit-content;
+            background:#0D2B45;
+            color:#FFFFFF;
+            padding:8px 14px;
+            border-radius:8px;
+            font-size:15px;
+            font-weight:600;
+            margin-bottom:12px;
+            cursor:pointer;
+        "
+    >
+        <span class="cb-icon white">
+            <svg viewBox="0 0 24 24">
+                <path d="M15 5 8 12l7 7"></path>
+            </svg>
+        </span>
+        <span>Reserva</span>
+    </div>
+
+    <h2>
+        Preparación y bienvenida
+    </h2>
+
+    <div
+        id="preparacionReservaDatos"
+        class="sub"
+        style="margin-bottom:20px;">
+    </div>
+
+    <div id="preparacionReservaContenido"></div>
+
+</section>
+
 <section id="incidencias" class="screen">
 
 <div class="back" onclick="render(); openHouse(current)">
@@ -1437,7 +1479,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=111"></script>
 <script src="js/storage.js?v=2"></script>
 <script src="js/photos.js?v=2"></script>
-<script src="js/app.js?v=152"></script>
+<script src="js/app.js?v=153"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
