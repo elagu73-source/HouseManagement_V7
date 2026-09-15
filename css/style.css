@@ -3267,3 +3267,11 @@ ACTIVIDAD RECIENTE - MOBILE
         right: 140px !important;
     }
 }
+
+#btnReservaPreparacion {
+    background: #B86B5D;
+}
+
+#btnReservaPreparacion:hover {
+    background: #A85E52;
+}
