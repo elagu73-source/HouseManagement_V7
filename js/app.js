@@ -1087,7 +1087,63 @@ async function guardarDatosComerciales() {
     );
 }
 
+async function reanudarSesionHM() {
+    const url = new URL(window.location.href);
+
+    if (
+        url.hash.includes("type=recovery") ||
+        url.hash.includes("type=invite") ||
+        url.searchParams.get("hm_invite") === "1"
+    ) {
+        return false;
+    }
+
+    const { data: sesionData, error: sesionError } =
+        await supabaseClient.auth.getSession();
+
+    if (sesionError || !sesionData.session) {
+        return false;
+    }
+
+    mostrarLoader("Recuperando sesión...");
+
+    try {
+        const { data: usuarioData, error: usuarioError } =
+            await supabaseClient.auth.getUser();
+
+        if (usuarioError || !usuarioData.user) {
+            return false;
+        }
+
+        const { data: acceso, error: accesoError } =
+            await supabaseClient.rpc(
+                "current_user_access_status"
+            );
+
+        if (accesoError || acceso !== "activo") {
+            return false;
+        }
+
+        window.usuarioAutenticado = true;
+        await abrirDestinoInicial();
+        return true;
+
+    } catch (error) {
+        window.usuarioAutenticado = false;
+        console.error("Error recuperando sesión HM:", error);
+        return false;
+
+    } finally {
+        ocultarLoader();
+    }
+}
+
 async function iniciarIngreso() {
+    const sesionReanudada = await reanudarSesionHM();
+
+    if (sesionReanudada) {
+        return;
+    }
 
     const ok = await probarLogin();
 
@@ -1150,6 +1206,53 @@ async function ingresarOrganizacionSuperadmin(
     current = 0;
 
     await go("home");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    reanudarSesionHM();
+});
+
+async function cerrarSesionHM() {
+    const confirmado = await confirmarAccionHM(
+        "Saldrás de House Management en este dispositivo.",
+        "Cerrar sesión",
+        "CERRAR SESIÓN",
+        "#0D2B45",
+        "CANCELAR"
+    );
+
+    if (!confirmado) {
+        return;
+    }
+
+    mostrarLoader("Cerrando sesión...");
+
+    try {
+        const { error } =
+            await supabaseClient.auth.signOut({
+                scope: "local"
+            });
+
+        if (error) {
+            console.error("Error cerrando sesión HM:", error);
+            mostrarAvisoHM("No se pudo cerrar la sesión");
+            return;
+        }
+
+        window.usuarioAutenticado = false;
+        houses = [];
+        current = 0;
+        checks = {};
+
+        await go("cover");
+
+    } catch (error) {
+        console.error("Error cerrando sesión HM:", error);
+        mostrarAvisoHM("No se pudo cerrar la sesión");
+
+    } finally {
+        ocultarLoader();
+    }
 }
 
 async function abrirSuperadmin() {

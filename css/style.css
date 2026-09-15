@@ -3275,3 +3275,17 @@ ACTIVIDAD RECIENTE - MOBILE
 #btnReservaPreparacion:hover {
     background: #A85E52;
 }
+
+.hm-cerrar-sesion {
+    display: block;
+    width: fit-content;
+    margin: 8px 0 18px auto;
+    padding: 9px 14px;
+    background: #0D2B45;
+    color: #FFFFFF;
+    font-size: 13px;
+}
+
+.hm-cerrar-sesion:hover {
+    background: #1D4664;
+}
