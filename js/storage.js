@@ -45,9 +45,9 @@ async function saveHouseToSupabase(house) {
 
                         situacion: house.situacion || 'Disponible',
                         observaciones:
-                            house.obs ||
-                            house.observaciones ||
-                            '',
+    house.obs ??
+    house.observaciones ??
+    '',
                         estado: house.estado || 'Pendiente',
                         ingreso: house.ingreso || '',
                         rating: house.rating || '',
@@ -103,9 +103,9 @@ valoracion_url:
                             house.situacion ||
                             'Disponible',
                         observaciones:
-                            house.obs ||
-                            house.observaciones ||
-                            '',
+    house.obs ??
+    house.observaciones ??
+    '',
                         estado:
                             house.estado ||
                             'Pendiente',

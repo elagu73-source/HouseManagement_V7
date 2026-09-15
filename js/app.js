@@ -1642,6 +1642,23 @@ const checklistPorCasa = {};
     return coincideTexto && coincideSituacion;
 });
 
+casasFiltradas.sort((a, b) => {
+    const nombreA =
+        a.nombre ?? a.name ?? a.nombreCasa ?? a.nombre_casa ?? "";
+
+    const nombreB =
+        b.nombre ?? b.name ?? b.nombreCasa ?? b.nombre_casa ?? "";
+
+    const ordenNombre = nombreA.localeCompare(
+        nombreB,
+        "es-AR",
+        { sensitivity: "base" }
+    );
+
+    return ordenNombre ||
+        String(a.id ?? "").localeCompare(String(b.id ?? ""));
+});
+
 const { data: incidenciasSupabase, error: errorIncidencias } =
     await supabaseClient
         .from("house_incidencias")
