@@ -571,9 +571,55 @@ window.hmHandleBack = function() {
         return true;
     }
 
+if (activeScreen === "checkInReserva") {
+    volverAReservaDesdeCheckIn();
+    return true;
+}
+
+if (activeScreen === "checkOutReserva") {
+    volverAReservaDesdeCheckOut();
+    return true;
+}
+
+if (activeScreen === "preparacionReserva") {
+    volverAReservaDesdePreparacion();
+    return true;
+}
+
+if (activeScreen === "detalleReserva") {
+    volverAlCalendarioDesdeReserva();
+    return true;
+}
+
+if (activeScreen === "calendarioCasa") {
+    openHouse(current);
+    return true;
+}
+
+if (activeScreen === "estadoCuenta") {
+    go("property");
+    return true;
+}
+
     go("home");
     return true;
 };
+
+window.history.pushState(
+    { hmBackGuard: true },
+    "",
+    window.location.href
+);
+
+window.addEventListener("popstate", function() {
+    window.history.pushState(
+        { hmBackGuard: true },
+        "",
+        window.location.href
+    );
+
+    window.hmHandleBack();
+});
 
 function calcularPorcentajeChecklist(datos) {
 
