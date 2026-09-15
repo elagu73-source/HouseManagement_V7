@@ -1748,9 +1748,14 @@ casasFiltradas.forEach((h)=>{
     const i = houses.indexOf(h);
 
 const checklistCasa =
-    checklistPorCasa[h.id] ??
-    h.checklistPorcentaje ??
-    0;
+    checklistPorCasa[h.id] ?? 0;
+
+const estadoCasa =
+    checklistCasa === 0
+        ? "Pendiente"
+        : checklistCasa === 100
+            ? "Lista para entregar"
+            : "Preparación";
     const d=document.createElement('div');
 
    d.className = 'card';
@@ -1806,22 +1811,20 @@ d.innerHTML = `
     <div class="property-card-stats">
 
         <div class="property-status">
-            <span class="property-status-dot ${
-                h.estado === "Pendiente"
-                    ? "pending"
-                    : h.estado === "Preparación"
-                        ? "preparing"
-                        : "ready"
-            }"></span>
+    <span class="property-status-dot ${
+        estadoCasa === "Pendiente"
+            ? "pending"
+            : estadoCasa === "Preparación"
+                ? "preparing"
+                : "ready"
+    }"></span>
 
-           <span>${
-    h.estado === "Lista para entregar"
-        ? "Listo"
-        : h.estado === "En preparación"
-            ? "Preparación"
-            : (h.estado ?? "Pendiente")
-}</span>
-        </div>
+    <span>${
+        estadoCasa === "Lista para entregar"
+            ? "Listo"
+            : estadoCasa
+    }</span>
+</div>
 
       <div class="property-stat">
     ${cbIcon('calendar')}
@@ -5597,12 +5600,17 @@ if (h.id) {
     } else {
 
         // La casa no tiene checklist todavía
-        checklist = h.checklistPorcentaje ?? 0;
+        checklist = 0;
 
     }
 }
 
-const estado = h.estado ?? "Pendiente";
+const estado =
+    checklist === 0
+        ? "Pendiente"
+        : checklist === 100
+            ? "Lista para entregar"
+            : "Preparación";
 
     const estadoIcono =
         estado === "Pendiente" ? "●" :
