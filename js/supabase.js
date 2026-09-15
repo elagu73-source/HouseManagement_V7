@@ -424,6 +424,16 @@ async function abrirUsuarios() {
         return;
     }
 
+const { data: esSuperadminUsuarios, error: errorSuperadminUsuarios } =
+    await supabaseClient.rpc("current_user_is_superadmin");
+
+if (errorSuperadminUsuarios) {
+    console.error(
+        "No se pudo verificar el permiso de superadministrador:",
+        errorSuperadminUsuarios
+    );
+}
+
     go("usuarios");
 
     const contenedor =
@@ -609,6 +619,81 @@ if (miembro.user_id !== userData.user.id) {
     };
 
     tarjeta.appendChild(botonQuitar);
+}
+
+if (
+    esSuperadminUsuarios === true &&
+    miembro.user_id !== userData.user.id
+) {
+    const botonEliminar = document.createElement("button");
+    botonEliminar.type = "button";
+    botonEliminar.className = "usuario-eliminar-btn";
+    botonEliminar.textContent = "Eliminar cuenta definitivamente";
+botonEliminar.onclick = async () => {
+    const nombre = String(perfilUsuario?.nombre || "").trim();
+
+    if (!nombre) {
+        mostrarAvisoHM("No se pudo confirmar el nombre del usuario.");
+        return;
+    }
+
+    const nombreEscrito = await solicitarTextoHM(
+        "Esta acción no se puede deshacer. Escribí exactamente el nombre que figura en esta tarjeta.",
+        "Eliminar cuenta definitivamente",
+        "Nombre del usuario"
+    );
+
+    if (nombreEscrito === null) return;
+
+    if (nombreEscrito.trim() !== nombre) {
+        mostrarAvisoHM("No se pudo confirmar el nombre del usuario.");
+        return;
+    }
+
+    const confirmado = await confirmarAccionHM(
+        "La cuenta se eliminará definitivamente. La operación se bloqueará si pertenece a otra organización o tiene historial operativo.",
+        "Confirmar eliminación definitiva",
+        "ELIMINAR",
+        "#8B4B4B"
+    );
+
+    if (!confirmado) return;
+
+    botonEliminar.disabled = true;
+    mostrarLoader("Eliminando cuenta...");
+
+    try {
+        const { data, error } =
+            await supabaseClient.functions.invoke(
+                "delete-test-user",
+                {
+                    body: {
+                        user_id: miembro.user_id,
+                        confirm_name: nombreEscrito.trim()
+                    }
+                }
+            );
+
+        if (error || data?.ok !== true) {
+            console.error("Error eliminando cuenta:", error, data);
+            mostrarAvisoHM(
+                "No se pudo eliminar la cuenta. Verificá que sea de prueba, sin historial y sin acceso a otra organización."
+            );
+            return;
+        }
+
+        mostrarAvisoHM("Cuenta eliminada definitivamente.");
+        await abrirUsuarios();
+
+    } catch (error) {
+        console.error("Error eliminando cuenta:", error);
+        mostrarAvisoHM("No se pudo eliminar la cuenta.");
+    } finally {
+        botonEliminar.disabled = false;
+        ocultarLoader();
+    }
+};
+    tarjeta.appendChild(botonEliminar);
 }
 
         contenedor.appendChild(tarjeta);
