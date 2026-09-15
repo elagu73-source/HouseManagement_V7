@@ -6235,6 +6235,9 @@ async function guardarInfoGeneral() {
         document.getElementById("infoObservaciones").value;
 
 
+   mostrarLoader("Guardando casa...");
+
+try {
     await saveHouseToSupabase(h);
 
     const savedHouseId = h.id;
@@ -6253,6 +6256,9 @@ async function guardarInfoGeneral() {
     await openHouse(current);
 
     go("infoGeneral");
+} finally {
+    ocultarLoader();
+}
 }
 
 async function obtenerInventarioCasa(){
@@ -8533,13 +8539,14 @@ async function saveCurrent() {
     house.situacion =
         document.getElementById("situacion").value;
 
+    mostrarLoader("Guardando casa...");
+
+try {
     await saveHouseToSupabase(house);
 
     const savedHouseId = house.id;
 
-    const title =
-        document.getElementById("title");
-
+    const title = document.getElementById("title");
     if (title) {
         title.textContent = house.nombre;
     }
@@ -8556,6 +8563,9 @@ async function saveCurrent() {
     }
 
     await openHouse(current);
+} finally {
+    ocultarLoader();
+}
 }
 render();
 
