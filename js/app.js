@@ -2065,6 +2065,10 @@ let preparacionReservaActual = null;
 let preparacionChecklistActual = null;
 let preparacionTareas = [];
 let preparacionPuedeEditar = false;
+let checkInReservaActual = null;
+let checkInChecklistActual = null;
+let checkInTareas = [];
+let checkInPuedeEditar = false;
 
 async function cargarReservasCasa(houseId) {
     calendarioReservas = [];
@@ -2328,17 +2332,21 @@ async function abrirDetalleReserva(reserva) {
         );
     };
 
-    botonCheckIn.disabled = true;
-    botonCheckOut.disabled = true;
+    botonCheckIn.disabled = false;
+botonCheckIn.style.opacity = "1";
+botonCheckIn.textContent =
+    "Check-in";
 
-    botonCheckIn.style.opacity = "0.55";
-    botonCheckOut.style.opacity = "0.55";
+botonCheckIn.onclick = function() {
+    abrirCheckInReserva(
+        detalleReservaActual
+    );
+};
 
-    botonCheckIn.textContent =
-        "Check-in · próximo paso";
-
-    botonCheckOut.textContent =
-        "Check-out · próximo paso";
+botonCheckOut.disabled = true;
+botonCheckOut.style.opacity = "0.55";
+botonCheckOut.textContent =
+    "Check-out · próximo paso";
 
     await go("detalleReserva");
 
@@ -2352,6 +2360,777 @@ async function volverAlCalendarioDesdeReserva() {
     await go("calendarioCasa");
     renderCalendarioCasa();
     window.scrollTo(0, 0);
+}
+
+async function abrirCheckInReserva(reserva) {
+    if (!reserva || !reserva.id) {
+        mostrarAvisoHM(
+            "No pudimos identificar la reserva"
+        );
+        return;
+    }
+
+    checkInReservaActual = reserva;
+
+    const { data: rolCheckIn } =
+        await supabaseClient.rpc(
+            "current_organization_role"
+        );
+
+    checkInPuedeEditar =
+        ["admin", "colaborador"].includes(
+            rolCheckIn
+        );
+
+    const {
+        data: checklist,
+        error: errorChecklist
+    } =
+        await supabaseClient
+            .from("reservation_checklists")
+            .select(`
+                id,
+                status,
+                started_at,
+                completed_at
+            `)
+            .eq("reservation_id", reserva.id)
+            .eq("checklist_type", "check_in")
+            .single();
+
+    if (errorChecklist || !checklist) {
+        console.error(
+            "❌ Error cargando check-in:",
+            errorChecklist
+        );
+
+        mostrarAvisoHM(
+            "No se pudo cargar el check-in de esta reserva"
+        );
+        return;
+    }
+
+    const {
+        data: tareas,
+        error: errorTareas
+    } =
+        await supabaseClient
+            .from("reservation_checklist_tasks")
+            .select(`
+                id,
+                task_code,
+                title,
+                responsible,
+                status,
+                observations,
+                verified_by,
+                verified_at,
+                task_date,
+                photo_path,
+                incident_id,
+                sort_order
+            `)
+            .eq("checklist_id", checklist.id)
+            .order("sort_order", {
+                ascending: true
+            });
+
+    if (errorTareas) {
+        console.error(
+            "❌ Error cargando tareas de check-in:",
+            errorTareas
+        );
+
+        mostrarAvisoHM(
+            "No se pudieron cargar las tareas de check-in"
+        );
+        return;
+    }
+
+    checkInChecklistActual = checklist;
+    checkInTareas = tareas || [];
+
+    const detalle =
+        Array.isArray(reserva.reservation_details)
+            ? reserva.reservation_details[0]
+            : reserva.reservation_details;
+
+    const datos =
+        document.getElementById(
+            "checkInReservaDatos"
+        );
+
+    if (datos) {
+        datos.textContent =
+            (detalle?.tenant_name ||
+                "Inquilino sin informar") +
+            " · Ingreso: " +
+            formatearFecha(
+                fechaDesdeISO(reserva.check_in)
+            );
+    }
+
+    await go("checkInReserva");
+    renderCheckInReserva();
+    window.scrollTo(0, 0);
+}
+
+async function volverAReservaDesdeCheckIn() {
+    if (detalleReservaActual) {
+        await abrirDetalleReserva(
+            detalleReservaActual
+        );
+        return;
+    }
+
+    await go("calendarioCasa");
+    renderCalendarioCasa();
+    window.scrollTo(0, 0);
+}
+
+function renderCheckInReserva() {
+    const contenedor =
+        document.getElementById(
+            "checkInReservaContenido"
+        );
+
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+
+    if (checkInTareas.length === 0) {
+        contenedor.textContent =
+            "No hay tareas de check-in.";
+        return;
+    }
+
+    const controladas =
+        checkInTareas.filter(
+            tarea =>
+                tarea.status !== "pendiente"
+        ).length;
+
+    const resumen =
+        document.createElement("div");
+
+    resumen.className = "card";
+    resumen.style.cursor = "default";
+    resumen.style.marginBottom = "18px";
+
+    const tituloResumen =
+        document.createElement("strong");
+
+    tituloResumen.textContent = "Avance";
+
+    const textoResumen =
+        document.createElement("div");
+
+    textoResumen.className = "sub";
+    textoResumen.style.marginTop = "6px";
+    textoResumen.textContent =
+        controladas +
+        " de " +
+        checkInTareas.length +
+        " tareas controladas";
+
+    resumen.appendChild(tituloResumen);
+    resumen.appendChild(textoResumen);
+    contenedor.appendChild(resumen);
+
+    const categorias = [
+        {
+            desde: 1,
+            hasta: 9,
+            titulo: "Servicios y energía"
+        },
+        {
+            desde: 10,
+            hasta: 13,
+            titulo: "Exterior, riego y pileta"
+        },
+        {
+            desde: 14,
+            hasta: 20,
+            titulo: "Estado edilicio e interior"
+        },
+        {
+            desde: 21,
+            hasta: 22,
+            titulo: "Conectividad y confort"
+        },
+        {
+            desde: 23,
+            hasta: 25,
+            titulo: "Limpieza e inventario"
+        },
+        {
+            desde: 26,
+            hasta: 27,
+            titulo: "Administrativo opcional"
+        }
+    ];
+
+    categorias.forEach(categoria => {
+        const tareasCategoria =
+            checkInTareas.filter(
+                tarea =>
+                    tarea.sort_order >=
+                        categoria.desde &&
+                    tarea.sort_order <=
+                        categoria.hasta
+            );
+
+        if (tareasCategoria.length === 0) {
+            return;
+        }
+
+        const titulo =
+            document.createElement("h3");
+
+        titulo.textContent =
+            categoria.titulo;
+        titulo.style.color = "#0D2B45";
+        titulo.style.marginTop = "24px";
+
+        contenedor.appendChild(titulo);
+
+        tareasCategoria.forEach(tarea => {
+            contenedor.appendChild(
+                crearTarjetaTareaCheckIn(
+                    tarea
+                )
+            );
+        });
+    });
+
+    if (checkInPuedeEditar) {
+        const guardar =
+            document.createElement("button");
+
+        guardar.type = "button";
+        guardar.className = "btn";
+        guardar.style.width = "100%";
+        guardar.style.marginTop = "18px";
+        guardar.textContent =
+            "Guardar check-in";
+
+        guardar.onclick =
+            guardarCheckInReserva;
+
+        contenedor.appendChild(guardar);
+    }
+}
+
+function crearTarjetaTareaCheckIn(tarea) {
+    const tarjeta =
+        document.createElement("div");
+
+    tarjeta.className = "card";
+    tarjeta.style.cursor = "default";
+    tarjeta.style.marginBottom = "12px";
+
+    const cabecera =
+        document.createElement("div");
+
+    cabecera.style.display = "flex";
+    cabecera.style.alignItems =
+        "flex-start";
+    cabecera.style.justifyContent =
+        "space-between";
+    cabecera.style.gap = "12px";
+    cabecera.style.marginBottom = "16px";
+
+    const titulo =
+        document.createElement("div");
+
+    titulo.style.flex = "1";
+    titulo.style.fontWeight = "700";
+    titulo.style.color = "#0D2B45";
+    titulo.textContent =
+        tarea.sort_order +
+        ". " +
+        tarea.title;
+
+    cabecera.appendChild(titulo);
+
+    if (checkInPuedeEditar) {
+        const lapiz =
+            document.createElement("button");
+
+        lapiz.type = "button";
+        lapiz.title = "Editar título";
+        lapiz.setAttribute(
+            "aria-label",
+            "Editar título"
+        );
+
+        lapiz.style.width = "36px";
+        lapiz.style.height = "36px";
+        lapiz.style.minWidth = "36px";
+        lapiz.style.padding = "7px";
+        lapiz.style.border =
+            "1px solid #D7DDE2";
+        lapiz.style.borderRadius = "9px";
+        lapiz.style.background =
+            "#FFFFFF";
+        lapiz.style.color = "#0D2B45";
+        lapiz.style.cursor = "pointer";
+        lapiz.style.display = "flex";
+        lapiz.style.alignItems = "center";
+        lapiz.style.justifyContent =
+            "center";
+
+        lapiz.innerHTML = `
+            <span class="cb-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4 20H8L19 9L15 5L4 16V20Z"></path>
+                    <path d="M13 7L17 11"></path>
+                </svg>
+            </span>
+        `;
+
+        lapiz.onclick = function() {
+            editarTituloTareaCheckIn(
+                tarea
+            );
+        };
+
+        cabecera.appendChild(lapiz);
+    }
+
+    const etiquetaEstado =
+        document.createElement("div");
+
+    etiquetaEstado.textContent =
+        "Estado";
+    etiquetaEstado.style.fontWeight =
+        "700";
+    etiquetaEstado.style.color =
+        "#0D2B45";
+    etiquetaEstado.style.marginBottom =
+        "8px";
+
+    const grupoEstado =
+        document.createElement("div");
+
+    grupoEstado.style.display = "grid";
+    grupoEstado.style.gridTemplateColumns =
+        "repeat(2, minmax(0, 1fr))";
+    grupoEstado.style.gap = "8px";
+    grupoEstado.style.marginBottom =
+        "18px";
+
+    const opciones = [
+        {
+            valor: "pendiente",
+            texto: "Pendiente",
+            color: "#DCC9A6"
+        },
+        {
+            valor: "si",
+            texto: "Sí",
+            color: "#6B7A5A"
+        },
+        {
+            valor: "no",
+            texto: "No",
+            color: "#8B4B4B"
+        },
+        {
+            valor: "no_aplica",
+            texto: "No aplica",
+            color: "#59636B"
+        }
+    ];
+
+    const botones = [];
+
+    const actualizarBotones =
+        function() {
+            botones.forEach(
+                ({ boton, opcion }) => {
+                    const activo =
+                        tarea.status ===
+                        opcion.valor;
+
+                    boton.style.background =
+                        activo
+                            ? opcion.color
+                            : "#FFFFFF";
+
+                    boton.style.color =
+                        activo &&
+                        opcion.valor !==
+                            "pendiente"
+                            ? "#FFFFFF"
+                            : "#0D2B45";
+
+                    boton.style.borderColor =
+                        activo
+                            ? opcion.color
+                            : "#D7DDE2";
+                }
+            );
+        };
+
+    opciones.forEach(opcion => {
+        const boton =
+            document.createElement("button");
+
+        boton.type = "button";
+        boton.textContent =
+            opcion.texto;
+        boton.style.padding =
+            "10px 8px";
+        boton.style.border =
+            "1px solid";
+        boton.style.borderRadius =
+            "9px";
+        boton.style.fontWeight =
+            "700";
+        boton.disabled =
+            !checkInPuedeEditar;
+        boton.style.cursor =
+            checkInPuedeEditar
+                ? "pointer"
+                : "default";
+
+        boton.onclick = function() {
+            tarea.status =
+                opcion.valor;
+            actualizarBotones();
+        };
+
+        botones.push({
+            boton,
+            opcion
+        });
+
+        grupoEstado.appendChild(
+            boton
+        );
+    });
+
+    actualizarBotones();
+
+    const etiquetaResponsable =
+        document.createElement("label");
+
+    etiquetaResponsable.textContent =
+        "Responsable";
+    etiquetaResponsable.style.display =
+        "block";
+    etiquetaResponsable.style.fontWeight =
+        "700";
+    etiquetaResponsable.style.color =
+        "#0D2B45";
+    etiquetaResponsable.style.marginBottom =
+        "8px";
+
+    const responsable =
+        document.createElement("input");
+
+    responsable.type = "text";
+    responsable.placeholder =
+        "Nombre del responsable";
+    responsable.value =
+        tarea.responsible || "";
+    responsable.disabled =
+        !checkInPuedeEditar;
+    responsable.style.width = "100%";
+    responsable.style.boxSizing =
+        "border-box";
+    responsable.style.marginBottom =
+        "18px";
+
+    responsable.oninput = function() {
+        tarea.responsible =
+            responsable.value;
+    };
+
+    const etiquetaObservaciones =
+        document.createElement("label");
+
+    etiquetaObservaciones.textContent =
+        "Observaciones";
+    etiquetaObservaciones.style.display =
+        "block";
+    etiquetaObservaciones.style.fontWeight =
+        "700";
+    etiquetaObservaciones.style.color =
+        "#0D2B45";
+    etiquetaObservaciones.style.marginBottom =
+        "8px";
+
+    const observaciones =
+        document.createElement("textarea");
+
+    observaciones.placeholder =
+        "Agregar observaciones";
+    observaciones.value =
+        tarea.observations || "";
+    observaciones.disabled =
+        !checkInPuedeEditar;
+    observaciones.style.width =
+        "100%";
+    observaciones.style.boxSizing =
+        "border-box";
+    observaciones.style.minHeight =
+        "90px";
+    observaciones.style.resize =
+        "vertical";
+
+    observaciones.oninput =
+        function() {
+            tarea.observations =
+                observaciones.value;
+        };
+
+    tarjeta.appendChild(cabecera);
+    tarjeta.appendChild(
+        etiquetaEstado
+    );
+    tarjeta.appendChild(
+        grupoEstado
+    );
+    tarjeta.appendChild(
+        etiquetaResponsable
+    );
+    tarjeta.appendChild(
+        responsable
+    );
+    tarjeta.appendChild(
+        etiquetaObservaciones
+    );
+    tarjeta.appendChild(
+        observaciones
+    );
+
+    return tarjeta;
+}
+
+async function guardarCheckInReserva() {
+    if (
+        !checkInPuedeEditar ||
+        !checkInChecklistActual?.id ||
+        checkInTareas.length === 0
+    ) {
+        mostrarAvisoHM(
+            "No pudimos identificar el check-in de esta reserva"
+        );
+        return;
+    }
+
+    const tareasParaGuardar =
+        checkInTareas.map(tarea => ({
+            id: tarea.id,
+            checklist_id:
+                checkInChecklistActual.id,
+            task_code:
+                tarea.task_code,
+            title:
+                tarea.title,
+            responsible:
+                tarea.responsible?.trim() ||
+                null,
+            status:
+                tarea.status ||
+                "pendiente",
+            observations:
+                tarea.observations?.trim() ||
+                null,
+            sort_order:
+                tarea.sort_order
+        }));
+
+    const {
+        data: tareasGuardadas,
+        error: errorTareas
+    } =
+        await supabaseClient
+            .from(
+                "reservation_checklist_tasks"
+            )
+            .upsert(tareasParaGuardar)
+            .select("id");
+
+    if (
+        errorTareas ||
+        !tareasGuardadas ||
+        tareasGuardadas.length !==
+            tareasParaGuardar.length
+    ) {
+        console.error(
+            "❌ Error guardando tareas de check-in:",
+            errorTareas
+        );
+
+        mostrarAvisoHM(
+            "No se pudo guardar el check-in"
+        );
+        return;
+    }
+
+    const controladas =
+        checkInTareas.filter(
+            tarea =>
+                tarea.status !== "pendiente"
+        ).length;
+
+    let estado = "pendiente";
+
+    if (
+        controladas > 0 &&
+        controladas <
+            checkInTareas.length
+    ) {
+        estado = "en_proceso";
+    }
+
+    if (
+        controladas ===
+        checkInTareas.length
+    ) {
+        estado = "completado";
+    }
+
+    const ahora =
+        new Date().toISOString();
+
+    const datosChecklist = {
+        status: estado,
+        updated_at: ahora,
+        completed_at:
+            estado === "completado"
+                ? ahora
+                : null
+    };
+
+    if (
+        estado !== "pendiente" &&
+        !checkInChecklistActual.started_at
+    ) {
+        datosChecklist.started_at =
+            ahora;
+    }
+
+    const {
+        data: checklistGuardado,
+        error: errorChecklist
+    } =
+        await supabaseClient
+            .from(
+                "reservation_checklists"
+            )
+            .update(datosChecklist)
+            .eq(
+                "id",
+                checkInChecklistActual.id
+            )
+            .select("id")
+            .single();
+
+    if (
+        errorChecklist ||
+        !checklistGuardado
+    ) {
+        console.error(
+            "❌ Error guardando avance de check-in:",
+            errorChecklist
+        );
+
+        mostrarAvisoHM(
+            "Las tareas se guardaron, pero no se pudo actualizar el avance"
+        );
+        return;
+    }
+
+    await abrirCheckInReserva(
+        checkInReservaActual
+    );
+
+    mostrarAvisoHM(
+        "Check-in guardado correctamente"
+    );
+}
+
+async function editarTituloTareaCheckIn(
+    tarea
+) {
+    if (
+        !checkInPuedeEditar ||
+        !tarea?.id
+    ) {
+        return;
+    }
+
+    const nuevoTitulo =
+        await solicitarTextoHM(
+            "Escribí el nuevo título de este control.",
+            "Editar tarea de check-in",
+            "Título de la tarea",
+            tarea.title
+        );
+
+    if (nuevoTitulo === null) {
+        return;
+    }
+
+    const tituloLimpio =
+        nuevoTitulo.trim();
+
+    if (
+        tituloLimpio.length < 2
+    ) {
+        mostrarAvisoHM(
+            "Ingresá un título de al menos 2 caracteres"
+        );
+        return;
+    }
+
+    const aplicarFuturas =
+        await confirmarAccionHM(
+            "Elegí si el nuevo título corresponde solo a este alquiler o también a las próximas reservas de esta casa.",
+            "Aplicar cambio",
+            "ESTA CASA EN ADELANTE",
+            "#6B7A5A",
+            "SOLO ESTA RESERVA"
+        );
+
+    const { error } =
+        await supabaseClient.rpc(
+            "edit_reservation_task_title",
+            {
+                p_task_id:
+                    tarea.id,
+                p_new_title:
+                    tituloLimpio,
+                p_apply_future:
+                    aplicarFuturas
+            }
+        );
+
+    if (error) {
+        console.error(
+            "❌ Error editando título de check-in:",
+            error
+        );
+
+        mostrarAvisoHM(
+            "No se pudo actualizar el título"
+        );
+        return;
+    }
+
+    await abrirCheckInReserva(
+        checkInReservaActual
+    );
+
+    mostrarAvisoHM(
+        aplicarFuturas
+            ? "Título actualizado para esta casa y sus próximas reservas"
+            : "Título actualizado para esta reserva"
+    );
 }
 
 async function abrirPreparacionReserva(reserva) {
