@@ -6415,10 +6415,10 @@ if (botonControlarInventario) {
         document.getElementById('listaInventario');
 
     lista.innerHTML = `
-        <div class="card">
-            <b>📦 Cargando inventario...</b>
-        </div>
-    `;
+    <div class="card">
+        <b>Cargando inventario...</b>
+    </div>
+`;
 
     const items =
         await obtenerInventarioCasa();
@@ -6440,13 +6440,31 @@ if (botonControlarInventario) {
     if(items.length === 0){
 
         lista.innerHTML = `
-            <div class="card">
-                <b>📦 No hay elementos cargados</b>
-                <div class="sub">
-                    Todavía no cargaste el inventario de esta casa.
-                </div>
-            </div>
-        `;
+    <div class="card">
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+        ">
+            <span class="cb-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4 7L12 3L20 7L12 11L4 7Z"></path>
+                    <path d="M4 7V17L12 21L20 17V7"></path>
+                    <path d="M12 11V21"></path>
+                </svg>
+            </span>
+            <b>No hay elementos cargados</b>
+        </div>
+
+        <div class="sub" style="display:block;margin-top:6px;">
+            ${
+                inventarioPuedeEditar
+                    ? "Todavía no cargaste el inventario de esta casa."
+                    : "Esta casa todavía no tiene elementos registrados."
+            }
+        </div>
+    </div>
+`;
 
         return;
     }
