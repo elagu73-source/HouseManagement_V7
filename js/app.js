@@ -1255,6 +1255,27 @@ async function cerrarSesionHM() {
     }
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+    document
+        .querySelectorAll(".screen:not(#cover)")
+        .forEach(pantalla => {
+            const pie = document.createElement("div");
+            pie.className = "hm-session-footer";
+
+            const enlace = document.createElement("a");
+            enlace.href = "#";
+            enlace.textContent = "Cerrar sesión";
+
+            enlace.addEventListener("click", event => {
+                event.preventDefault();
+                cerrarSesionHM();
+            });
+
+            pie.appendChild(enlace);
+            pantalla.appendChild(pie);
+        });
+});
+
 async function abrirSuperadmin() {
 
     const {
