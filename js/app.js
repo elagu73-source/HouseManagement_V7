@@ -553,10 +553,9 @@ window.hmHandleBack = function() {
     }
 
     if (activeScreen === "prep") {
-        actualizarEstadoCasa();
-        openHouse(current);
-        return true;
-    }
+    volverDesdeChecklist();
+    return true;
+}
 
     if (
         activeScreen === "infoGeneral" ||
@@ -8956,6 +8955,17 @@ function actualizarEstadosTodasLasCasas() {
 
 }
 
+async function volverDesdeChecklist() {
+    actualizarEstadoCasa();
+
+    if (checklistPuedeEditar) {
+        await guardarChecklistSupabase();
+    }
+
+    await render();
+    await openHouse(current);
+}
+
 function nextStep(){
 
     const obs = document.getElementById("obsPrep");
@@ -8973,9 +8983,7 @@ if (obs && checklistPuedeEditar) {
 
     } else {
 
-        actualizarEstadoCasa();
-        render();
-        go("property");
+        volverDesdeChecklist();
     }
 }
 
