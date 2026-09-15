@@ -551,6 +551,90 @@
 
 </section>
 
+<section id="detalleReserva" class="screen">
+
+    <div
+        class="back"
+        onclick="volverAlCalendarioDesdeReserva()"
+        style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+            width:fit-content;
+            background:#0D2B45;
+            color:#FFFFFF;
+            padding:8px 14px;
+            border-radius:8px;
+            font-size:15px;
+            font-weight:600;
+            margin-bottom:12px;
+            cursor:pointer;
+        "
+    >
+        <span class="cb-icon white">
+            <svg viewBox="0 0 24 24">
+                <path d="M15 5 8 12l7 7"></path>
+            </svg>
+        </span>
+        <span>Calendario</span>
+    </div>
+
+    <h2>Detalle de reserva</h2>
+
+    <div
+        id="detalleReservaResumen"
+        class="card"
+        style="
+            cursor:default;
+            margin-bottom:16px;
+        ">
+    </div>
+
+    <div
+        id="detalleReservaInquilino"
+        class="card"
+        style="
+            cursor:default;
+            margin-bottom:20px;
+        ">
+    </div>
+
+    <h3>Operación de la reserva</h3>
+
+    <div
+        id="detalleReservaOperaciones"
+        style="
+            display:grid;
+            gap:12px;
+        "
+    >
+        <button
+            id="btnReservaPreparacion"
+            type="button"
+            class="btn"
+        >
+            Preparación y bienvenida
+        </button>
+
+        <button
+            id="btnReservaCheckIn"
+            type="button"
+            class="btn"
+        >
+            Check-in
+        </button>
+
+        <button
+            id="btnReservaCheckOut"
+            type="button"
+            class="btn"
+        >
+            Check-out
+        </button>
+    </div>
+
+</section>
+
 <section id="preparacionReserva" class="screen">
 
     <div
@@ -1479,7 +1563,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=111"></script>
 <script src="js/storage.js?v=2"></script>
 <script src="js/photos.js?v=2"></script>
-<script src="js/app.js?v=153"></script>
+<script src="js/app.js?v=154"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();

@@ -2060,6 +2060,7 @@ let calendarioInquilinoNombre = "";
 let calendarioInquilinoEmail = "";
 let calendarioInquilinoTelefono = "";
 let calendarioCantidadHuespedes = "";
+let detalleReservaActual = null;
 let preparacionReservaActual = null;
 let preparacionChecklistActual = null;
 let preparacionTareas = [];
@@ -2201,6 +2202,158 @@ calendarioCantidadHuespedes = "";
     window.scrollTo(0, 0);
 }
 
+async function abrirDetalleReserva(reserva) {
+    if (!reserva || !reserva.id) {
+        mostrarAvisoHM(
+            "No pudimos identificar la reserva"
+        );
+        return;
+    }
+
+    detalleReservaActual = reserva;
+    calendarioReservaViendo = reserva.id;
+
+    const detalle =
+        Array.isArray(reserva.reservation_details)
+            ? reserva.reservation_details[0]
+            : reserva.reservation_details;
+
+    const resumen =
+        document.getElementById(
+            "detalleReservaResumen"
+        );
+
+    const inquilino =
+        document.getElementById(
+            "detalleReservaInquilino"
+        );
+
+    if (resumen) {
+        resumen.innerHTML = "";
+
+        const titulo =
+            document.createElement("h3");
+
+        titulo.textContent = "Fechas";
+        titulo.style.marginTop = "0";
+        titulo.style.color = "#0D2B45";
+
+        const fechas =
+            document.createElement("div");
+
+        fechas.textContent =
+            "Ingreso: " +
+            formatearFecha(
+                fechaDesdeISO(reserva.check_in)
+            ) +
+            " · Egreso: " +
+            formatearFecha(
+                fechaDesdeISO(reserva.check_out)
+            );
+
+        resumen.appendChild(titulo);
+        resumen.appendChild(fechas);
+    }
+
+    if (inquilino) {
+        inquilino.innerHTML = "";
+
+        const titulo =
+            document.createElement("h3");
+
+        titulo.textContent =
+            "Datos del inquilino";
+        titulo.style.marginTop = "0";
+        titulo.style.color = "#0D2B45";
+
+        const datos =
+            document.createElement("div");
+
+        datos.style.display = "grid";
+        datos.style.gap = "8px";
+
+        const lineas = [
+            "Nombre: " +
+                (
+                    detalle?.tenant_name ||
+                    "Sin informar"
+                ),
+            "Correo: " +
+                (
+                    detalle?.tenant_email ||
+                    "Sin informar"
+                ),
+            "Celular: " +
+                (
+                    detalle?.tenant_phone ||
+                    "Sin informar"
+                ),
+            "Huéspedes: " +
+                (
+                    detalle?.guest_count ||
+                    "Sin informar"
+                )
+        ];
+
+        lineas.forEach(texto => {
+            const linea =
+                document.createElement("div");
+
+            linea.textContent = texto;
+            datos.appendChild(linea);
+        });
+
+        inquilino.appendChild(titulo);
+        inquilino.appendChild(datos);
+    }
+
+    const botonPreparacion =
+        document.getElementById(
+            "btnReservaPreparacion"
+        );
+
+    const botonCheckIn =
+        document.getElementById(
+            "btnReservaCheckIn"
+        );
+
+    const botonCheckOut =
+        document.getElementById(
+            "btnReservaCheckOut"
+        );
+
+    botonPreparacion.onclick = function() {
+        abrirPreparacionReserva(
+            detalleReservaActual
+        );
+    };
+
+    botonCheckIn.disabled = true;
+    botonCheckOut.disabled = true;
+
+    botonCheckIn.style.opacity = "0.55";
+    botonCheckOut.style.opacity = "0.55";
+
+    botonCheckIn.textContent =
+        "Check-in · próximo paso";
+
+    botonCheckOut.textContent =
+        "Check-out · próximo paso";
+
+    await go("detalleReserva");
+
+    window.scrollTo(0, 0);
+}
+
+async function volverAlCalendarioDesdeReserva() {
+    detalleReservaActual = null;
+    calendarioReservaViendo = null;
+
+    await go("calendarioCasa");
+    renderCalendarioCasa();
+    window.scrollTo(0, 0);
+}
+
 async function abrirPreparacionReserva(reserva) {
     if (!reserva || !reserva.id) {
         mostrarAvisoHM(
@@ -2324,6 +2477,13 @@ async function abrirPreparacionReserva(reserva) {
 }
 
 async function volverAReservaDesdePreparacion() {
+    if (detalleReservaActual) {
+        await abrirDetalleReserva(
+            detalleReservaActual
+        );
+        return;
+    }
+
     await go("calendarioCasa");
     renderCalendarioCasa();
     window.scrollTo(0, 0);
@@ -2436,44 +2596,116 @@ function renderPreparacionReserva() {
                 tarea.title;
 
             const etiquetaEstado =
-                document.createElement("label");
+    document.createElement("div");
 
-            etiquetaEstado.textContent =
-                "Estado";
+etiquetaEstado.textContent = "Estado";
+etiquetaEstado.style.fontWeight = "700";
+etiquetaEstado.style.color = "#0D2B45";
+etiquetaEstado.style.marginBottom = "8px";
 
-            const estado =
-                document.createElement("select");
+const grupoEstado =
+    document.createElement("div");
 
-            estado.innerHTML = `
-                <option value="pendiente">
-                    Pendiente
-                </option>
-                <option value="si">
-                    Sí
-                </option>
-                <option value="no">
-                    No
-                </option>
-                <option value="no_aplica">
-                    No aplica
-                </option>
-            `;
+grupoEstado.style.display = "grid";
+grupoEstado.style.gridTemplateColumns =
+    "repeat(2, minmax(0, 1fr))";
+grupoEstado.style.gap = "8px";
+grupoEstado.style.marginBottom = "18px";
 
-            estado.value =
-                tarea.status || "pendiente";
+const opcionesEstado = [
+    {
+        valor: "pendiente",
+        texto: "Pendiente",
+        color: "#DCC9A6"
+    },
+    {
+        valor: "si",
+        texto: "Sí",
+        color: "#6B7A5A"
+    },
+    {
+        valor: "no",
+        texto: "No",
+        color: "#8B4B4B"
+    },
+    {
+        valor: "no_aplica",
+        texto: "No aplica",
+        color: "#59636B"
+    }
+];
 
-            estado.disabled =
-                !preparacionPuedeEditar;
+const botonesEstado = [];
 
-            estado.onchange = function() {
-                tarea.status = estado.value;
-            };
+const actualizarBotonesEstado =
+    function() {
+        botonesEstado.forEach(
+            ({ boton, opcion }) => {
+                const seleccionado =
+                    tarea.status ===
+                    opcion.valor;
+
+                boton.style.background =
+                    seleccionado
+                        ? opcion.color
+                        : "#FFFFFF";
+
+                boton.style.color =
+                    seleccionado
+                        ? "#FFFFFF"
+                        : "#0D2B45";
+
+                boton.style.borderColor =
+                    seleccionado
+                        ? opcion.color
+                        : "#D7DDE2";
+            }
+        );
+    };
+
+opcionesEstado.forEach(opcion => {
+    const boton =
+        document.createElement("button");
+
+    boton.type = "button";
+    boton.textContent = opcion.texto;
+    boton.style.padding = "10px 8px";
+    boton.style.border = "1px solid";
+    boton.style.borderRadius = "9px";
+    boton.style.fontWeight = "700";
+    boton.style.cursor =
+        preparacionPuedeEditar
+            ? "pointer"
+            : "default";
+
+    boton.disabled =
+        !preparacionPuedeEditar;
+
+    boton.onclick = function() {
+        tarea.status = opcion.valor;
+        actualizarBotonesEstado();
+    };
+
+    botonesEstado.push({
+        boton,
+        opcion
+    });
+
+    grupoEstado.appendChild(boton);
+});
+
+actualizarBotonesEstado();
 
             const etiquetaResponsable =
                 document.createElement("label");
 
             etiquetaResponsable.textContent =
-                "Responsable";
+    "Responsable";
+
+etiquetaResponsable.style.display = "block";
+etiquetaResponsable.style.fontWeight = "700";
+etiquetaResponsable.style.color = "#0D2B45";
+etiquetaResponsable.style.marginBottom = "8px";
 
             const responsable =
                 document.createElement("input");
@@ -2485,6 +2717,9 @@ function renderPreparacionReserva() {
                 tarea.responsible || "";
             responsable.disabled =
                 !preparacionPuedeEditar;
+                responsable.style.width = "100%";
+responsable.style.boxSizing = "border-box";
+responsable.style.marginBottom = "18px";
 
             responsable.oninput = function() {
                 tarea.responsible =
@@ -2495,7 +2730,12 @@ function renderPreparacionReserva() {
                 document.createElement("label");
 
             etiquetaObservaciones.textContent =
-                "Observaciones";
+    "Observaciones";
+
+etiquetaObservaciones.style.display = "block";
+etiquetaObservaciones.style.fontWeight = "700";
+etiquetaObservaciones.style.color = "#0D2B45";
+etiquetaObservaciones.style.marginBottom = "8px";
 
             const observaciones =
                 document.createElement("textarea");
@@ -2506,6 +2746,10 @@ function renderPreparacionReserva() {
                 tarea.observations || "";
             observaciones.disabled =
                 !preparacionPuedeEditar;
+                observaciones.style.width = "100%";
+observaciones.style.boxSizing = "border-box";
+observaciones.style.minHeight = "90px";
+observaciones.style.resize = "vertical";
 
             observaciones.oninput =
                 function() {
@@ -2515,9 +2759,11 @@ function renderPreparacionReserva() {
 
             tarjeta.appendChild(nombre);
             tarjeta.appendChild(
-                etiquetaEstado
-            );
-            tarjeta.appendChild(estado);
+    etiquetaEstado
+);
+tarjeta.appendChild(
+    grupoEstado
+);
             tarjeta.appendChild(
                 etiquetaResponsable
             );
@@ -3115,37 +3361,6 @@ campoHuespedes.oninput = () => {
         campoHuespedes.value;
 };
 
-if (calendarioReservaViendo) {
-    const reservaSeleccionada =
-        calendarioReservas.find(
-            reserva =>
-                reserva.id ===
-                calendarioReservaViendo
-        );
-
-    if (reservaSeleccionada) {
-        const botonPreparacion =
-            document.createElement("button");
-
-        botonPreparacion.type = "button";
-        botonPreparacion.className = "btn";
-        botonPreparacion.style.marginTop = "14px";
-        botonPreparacion.style.width = "100%";
-        botonPreparacion.innerText =
-            "Preparación y bienvenida";
-
-        botonPreparacion.onclick = function() {
-            abrirPreparacionReserva(
-                reservaSeleccionada
-            );
-        };
-
-        datosInquilino.appendChild(
-            botonPreparacion
-        );
-    }
-}
-
 // ============================================
 // RESERVAS EXISTENTES
 // ============================================
@@ -3200,65 +3415,6 @@ if (calendarioReservas.length > 0) {
             );
 
         fechas.style.fontSize = "13px";
-        const detalleReserva =
-    Array.isArray(reserva.reservation_details)
-        ? reserva.reservation_details[0]
-        : reserva.reservation_details;
-
-if (detalleReserva) {
-    const datosReserva =
-        document.createElement("div");
-
-    datosReserva.style.marginTop = "8px";
-    datosReserva.style.color = "#59636B";
-    datosReserva.style.lineHeight = "1.5";
-
-    if (detalleReserva.tenant_name) {
-        const nombre =
-            document.createElement("div");
-
-        nombre.textContent =
-            "Inquilino: " +
-            detalleReserva.tenant_name;
-
-        datosReserva.appendChild(nombre);
-    }
-
-    if (detalleReserva.tenant_email) {
-        const email =
-            document.createElement("div");
-
-        email.textContent =
-            "Correo: " +
-            detalleReserva.tenant_email;
-
-        datosReserva.appendChild(email);
-    }
-
-    if (detalleReserva.tenant_phone) {
-        const telefono =
-            document.createElement("div");
-
-        telefono.textContent =
-            "Celular: " +
-            detalleReserva.tenant_phone;
-
-        datosReserva.appendChild(telefono);
-    }
-
-    if (detalleReserva.guest_count) {
-        const huespedes =
-            document.createElement("div");
-
-        huespedes.textContent =
-            "Huéspedes: " +
-            detalleReserva.guest_count;
-
-        datosReserva.appendChild(huespedes);
-    }
-
-    fechas.appendChild(datosReserva);
-}
 
 const verReserva =
     document.createElement("button");
@@ -3277,47 +3433,7 @@ verReserva.style.fontSize = "12px";
 verReserva.style.cursor = "pointer";
 
 verReserva.onclick = function() {
-    calendarioReservaViendo = reserva.id;
-    calendarioReservaEditando = null;
-
-    calendarioIngreso =
-        fechaDesdeISO(reserva.check_in);
-
-    calendarioEgreso =
-        fechaDesdeISO(reserva.check_out);
-
-    calendarioFechaActual =
-        new Date(
-            calendarioIngreso.getFullYear(),
-            calendarioIngreso.getMonth(),
-            1
-        );
-
-    const detalle =
-        Array.isArray(reserva.reservation_details)
-            ? reserva.reservation_details[0]
-            : reserva.reservation_details;
-
-    calendarioInquilinoNombre =
-        detalle?.tenant_name || "";
-
-    calendarioInquilinoEmail =
-        detalle?.tenant_email || "";
-
-    calendarioInquilinoTelefono =
-        detalle?.tenant_phone || "";
-
-    calendarioCantidadHuespedes =
-        detalle?.guest_count || "";
-
-    renderCalendarioCasa();
-
-    document
-        .getElementById("calTenantName")
-        ?.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-        });
+    abrirDetalleReserva(reserva);
 };
 
 const editarReserva =
