@@ -3343,3 +3343,29 @@ ACTIVIDAD RECIENTE - MOBILE
     text-underline-offset: 3px;
     cursor: pointer;
 }
+
+#mantenimientoCasaContenido .card > .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: min(100%, 250px) !important;
+    min-height: 46px;
+    margin: 14px 12px 0 0 !important;
+    box-sizing: border-box;
+    vertical-align: top;
+}
+
+#mantenimientoCasaContenido .card > .btn + .btn {
+    background: #0D2B45 !important;
+}
+
+#mantenimientoCasaContenido .card > .btn + .btn:hover {
+    background: #173D60 !important;
+}
+
+@media (max-width: 600px) {
+    #mantenimientoCasaContenido .card > .btn {
+        width: 100% !important;
+        margin: 10px 0 0 !important;
+    }
+}
