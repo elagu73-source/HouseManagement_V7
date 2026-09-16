@@ -2459,7 +2459,7 @@ async function abrirDetalleReserva(reserva) {
             document.createElement("h3");
 
         titulo.textContent =
-            "Datos del inquilino";
+            "Datos del Propietario / Inquilino";
         titulo.style.marginTop = "0";
         titulo.style.color = "#0D2B45";
 
@@ -4870,7 +4870,7 @@ datosInquilino.innerHTML = `
         margin-top:0;
         color:#0D2B45;
     ">
-        Datos del inquilino
+        Datos del Propietario / Inquilino
     </h3>
 
     <label for="calTenantName">
