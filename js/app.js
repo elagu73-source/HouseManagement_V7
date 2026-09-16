@@ -11263,6 +11263,45 @@ grupos.forEach(grupo => {
             : "Próximo control: sin programar";
 
         tarjeta.appendChild(titulo);
+        if (puedeEditarMantenimiento) {
+    tarjeta.style.position = "relative";
+    titulo.style.display = "block";
+    titulo.style.paddingRight = "48px";
+
+    const lapiz = document.createElement("button");
+    lapiz.type = "button";
+    lapiz.title = "Editar título";
+    lapiz.setAttribute("aria-label", "Editar título");
+
+    lapiz.style.position = "absolute";
+    lapiz.style.top = "16px";
+    lapiz.style.right = "16px";
+    lapiz.style.width = "36px";
+    lapiz.style.height = "36px";
+    lapiz.style.minWidth = "36px";
+    lapiz.style.padding = "7px";
+    lapiz.style.border = "1px solid #D7DDE2";
+    lapiz.style.borderRadius = "9px";
+    lapiz.style.background = "#FFFFFF";
+    lapiz.style.color = "#0D2B45";
+    lapiz.style.cursor = "pointer";
+    lapiz.style.display = "flex";
+    lapiz.style.alignItems = "center";
+    lapiz.style.justifyContent = "center";
+
+    lapiz.innerHTML = `
+        <span class="cb-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M4 20H8L19 9L15 5L4 16V20Z"></path>
+                <path d="M13 7L17 11"></path>
+            </svg>
+        </span>
+    `;
+
+    lapiz.onclick = () => editarTituloMantenimiento(plan);
+
+    tarjeta.appendChild(lapiz);
+}
         tarjeta.appendChild(fecha);
         const controlesDelPlan = (historialMantenimiento || [])
     .filter(control => control.plan_id === plan.id);
@@ -11655,4 +11694,51 @@ async function guardarRegistroMantenimiento() {
         boton.disabled = false;
         ocultarLoader();
     }
+}
+
+async function editarTituloMantenimiento(plan) {
+    const casa = houses[current];
+
+    if (!casa?.id || !plan?.id) return;
+
+    const { data: rol, error: errorRol } =
+        await supabaseClient.rpc("current_organization_role");
+
+    if (errorRol || !["admin", "colaborador"].includes(rol)) {
+        mostrarAvisoHM("No tenés permiso para editar mantenimiento.");
+        return;
+    }
+
+    const nuevoTitulo = await solicitarTextoHM(
+        "Escribí el nuevo título de este control para esta casa.",
+        "Editar tarea de mantenimiento",
+        "Título de la tarea",
+        plan.title
+    );
+
+    if (nuevoTitulo === null) return;
+
+    const tituloLimpio = nuevoTitulo.trim();
+
+    if (tituloLimpio.length < 2) {
+        mostrarAvisoHM("Ingresá un título de al menos 2 caracteres.");
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from("house_maintenance_plans")
+        .update({ title: tituloLimpio })
+        .eq("id", plan.id)
+        .eq("house_id", casa.id)
+        .select("id")
+        .single();
+
+    if (error) {
+        console.error("Error editando título de mantenimiento:", error);
+        mostrarAvisoHM("No se pudo editar el título.");
+        return;
+    }
+
+    mostrarAvisoHM("Título de mantenimiento actualizado.");
+    await abrirMantenimientoCasa();
 }

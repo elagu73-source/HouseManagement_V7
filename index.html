@@ -451,7 +451,9 @@
 
 <section id="mantenimientoCasa" class="screen">
 
-    <div class="back" onclick="render(); openHouse(current)">
+    <div class="back"
+     onclick="render(); openHouse(current)"
+     style="display:flex;align-items:center;gap:8px;width:fit-content;background:#0D2B45;color:#FFFFFF;padding:8px 14px;border-radius:8px;font-size:15px;font-weight:600;margin-bottom:12px;">
         <span class="cb-icon white">
             <svg viewBox="0 0 24 24">
                 <path d="M15 5 8 12l7 7"></path>
@@ -1734,7 +1736,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=113"></script>
 <script src="js/storage.js?v=3"></script>
 <script src="js/photos.js?v=2"></script>
-<script src="js/app.js?v=165"></script>
+<script src="js/app.js?v=166"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
