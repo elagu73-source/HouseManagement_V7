@@ -8388,6 +8388,7 @@ function cancelarFormularioIncidencia() {
     }
 
     incidenciaEditandoId = null;
+        mantenimientoOrigenTaskId = null;
 
     const botonNueva =
         document.getElementById(
@@ -8405,6 +8406,7 @@ function cancelarFormularioIncidencia() {
 function nuevaIncidencia(){
 
     incidenciaEditandoId = null;
+        mantenimientoOrigenTaskId = null;
 
     document.getElementById('formIncidencia').style.display='block';
 
@@ -8603,6 +8605,17 @@ if (incidenciaEditandoId) {
             .select()
             .single();
 
+} else if (mantenimientoOrigenTaskId) {
+
+    resultadoIncidencia =
+        await supabaseClient.rpc(
+            "crear_incidencia_desde_mantenimiento",
+            {
+                p_task_id: mantenimientoOrigenTaskId,
+                p_datos: incidencia
+            }
+        );
+
 } else {
 
     resultadoIncidencia =
@@ -8622,7 +8635,7 @@ const { data, error } = resultadoIncidencia;
             error
         );
 
-        alert(
+                mostrarAvisoHM(
             "No se pudo guardar la incidencia. Revisá la consola."
         );
 
@@ -8636,6 +8649,7 @@ const { data, error } = resultadoIncidencia;
 );
 
 incidenciaEditandoId = null;
+mantenimientoOrigenTaskId = null;
 
     document.getElementById('formIncidencia').style.display = 'none';
 
@@ -11135,6 +11149,30 @@ async function obtenerInventarioBaseOrganizacion() {
         : [];
 }
 
+let mantenimientoOrigenTaskId = null;
+
+async function abrirIncidenciaDesdeMantenimiento(control, plan) {
+    await openIncidencias();
+    nuevaIncidencia();
+
+    mantenimientoOrigenTaskId = control.id;
+
+    const descripcion =
+        "Mantenimiento periódico: " + plan.title +
+        (control.observations
+            ? "\nObservación: " + control.observations
+            : "");
+
+    document.getElementById("incDescripcion").value = descripcion;
+    document.getElementById("incResponsable").value =
+        control.responsible || "";
+
+    document.getElementById("formIncidencia").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
+
 async function abrirMantenimientoCasa() {
     const casa = houses[current];
     const contenido = document.getElementById("mantenimientoCasaContenido");
@@ -11357,6 +11395,21 @@ if (controlesDelPlan.length) {
             nota.className = "sub";
             nota.textContent = control.observations;
             fila.appendChild(nota);
+        }
+
+        if (
+            puedeEditarMantenimiento &&
+            control.status === "problema" &&
+            !control.incident_id
+        ) {
+            const botonIncidencia = document.createElement("button");
+            botonIncidencia.type = "button";
+            botonIncidencia.className = "btn";
+            botonIncidencia.textContent = "Crear incidencia";
+            botonIncidencia.style.marginTop = "10px";
+            botonIncidencia.onclick = () =>
+                abrirIncidenciaDesdeMantenimiento(control, plan);
+            fila.appendChild(botonIncidencia);
         }
 
         historial.appendChild(fila);
