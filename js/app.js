@@ -11134,3 +11134,525 @@ async function obtenerInventarioBaseOrganizacion() {
         ? inventoryBase
         : [];
 }
+
+async function abrirMantenimientoCasa() {
+    const casa = houses[current];
+    const contenido = document.getElementById("mantenimientoCasaContenido");
+    const nombre = document.getElementById("mantenimientoCasaNombre");
+
+    if (!casa?.id || !contenido || !nombre) {
+        mostrarAvisoHM("No se pudo abrir el mantenimiento de esta casa.");
+        return;
+    }
+
+    nombre.textContent =
+        casa.nombre || casa.name || casa.nombreCasa || casa.nombre_casa || "";
+
+    await go("mantenimientoCasa");
+    contenido.textContent = "Cargando mantenimiento...";
+
+    const { data: planes, error } = await supabaseClient
+        .from("house_maintenance_plans")
+        .select("id, template_code, title, description, frequency_type, interval_value, next_due_date, active")
+        .eq("house_id", casa.id)
+        .eq("active", true)
+        .order("template_code", { ascending: true });
+
+    if (error) {
+        console.error("Error cargando mantenimiento:", error);
+        contenido.textContent =
+            "No se pudo cargar el mantenimiento de esta casa.";
+        return;
+    }
+
+    if (!planes?.length) {
+    contenido.replaceChildren();
+
+    const aviso = document.createElement("div");
+    aviso.className = "card";
+
+    const texto = document.createElement("div");
+    texto.textContent =
+        "Esta casa todavía no tiene mantenimiento periódico cargado.";
+
+    aviso.appendChild(texto);
+
+    const { data: rol, error: errorRol } =
+        await supabaseClient.rpc("current_organization_role");
+
+    if (!errorRol && ["admin", "colaborador"].includes(rol)) {
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "btn";
+        boton.textContent = "Crear mantenimiento de esta casa";
+        boton.style.marginTop = "14px";
+        boton.onclick = crearPlantillaMantenimientoCasa;
+
+        aviso.appendChild(boton);
+    }
+
+    contenido.appendChild(aviso);
+    return;
+}
+
+const { data: historialMantenimiento, error: errorHistorial } =
+    await supabaseClient
+        .from("house_maintenance_tasks")
+        .select(
+            "id, plan_id, scheduled_date, responsible, status, observations, verified_at, incident_id, photo_path"
+        )
+        .in("plan_id", planes.map(plan => plan.id))
+        .order("scheduled_date", { ascending: false });
+
+if (errorHistorial) {
+    console.error(
+        "Error cargando historial de mantenimiento:",
+        errorHistorial
+    );
+    contenido.textContent =
+        "No se pudo cargar el historial de mantenimiento.";
+    return;
+}
+
+    contenido.replaceChildren();
+
+    const { data: rolMantenimiento, error: errorRolMantenimiento } =
+    await supabaseClient.rpc("current_organization_role");
+
+if (errorRolMantenimiento) {
+    console.error(
+        "Error verificando permisos de mantenimiento:",
+        errorRolMantenimiento
+    );
+}
+
+const puedeEditarMantenimiento =
+    !errorRolMantenimiento &&
+    ["admin", "colaborador"].includes(rolMantenimiento);
+
+    const grupos = [
+    "Pretemporada / anual",
+    "Jardín y exterior",
+    "Blanquería y textiles"
+];
+
+grupos.forEach(grupo => {
+    const tareasDelGrupo = planes.filter(
+        plan => plan.description === grupo
+    );
+
+    if (!tareasDelGrupo.length) return;
+
+    const tituloGrupo = document.createElement("h3");
+    tituloGrupo.textContent = grupo;
+    contenido.appendChild(tituloGrupo);
+
+    tareasDelGrupo.forEach(plan => {
+        const tarjeta = document.createElement("div");
+        tarjeta.className = "card";
+
+        const titulo = document.createElement("strong");
+        titulo.textContent = plan.title;
+
+        const fecha = document.createElement("div");
+        fecha.className = "sub";
+        fecha.style.marginTop = "8px";
+        fecha.textContent = plan.next_due_date
+            ? "Próximo control: " +
+              plan.next_due_date.split("-").reverse().join("/")
+            : "Próximo control: sin programar";
+
+        tarjeta.appendChild(titulo);
+        tarjeta.appendChild(fecha);
+        const controlesDelPlan = (historialMantenimiento || [])
+    .filter(control => control.plan_id === plan.id);
+
+if (controlesDelPlan.length) {
+    const nombresEstado = {
+        realizado: "Realizado",
+        problema: "Con problema",
+        no_aplica: "No aplica"
+    };
+
+    const ultimo = controlesDelPlan[0];
+
+    const ultimoEstado = document.createElement("div");
+    ultimoEstado.className = "sub";
+    ultimoEstado.style.marginTop = "6px";
+    ultimoEstado.style.color =
+        ultimo.status === "problema" ? "#8B4B4B" : "#556B4F";
+    ultimoEstado.textContent =
+        "Último control: " +
+        (nombresEstado[ultimo.status] || ultimo.status);
+
+    tarjeta.appendChild(ultimoEstado);
+
+    const historial = document.createElement("details");
+    historial.style.marginTop = "12px";
+
+    const encabezado = document.createElement("summary");
+    encabezado.textContent =
+        "Ver historial (" + controlesDelPlan.length + ")";
+    encabezado.style.cursor = "pointer";
+    encabezado.style.color = "#0D2B45";
+    encabezado.style.fontWeight = "600";
+
+    historial.appendChild(encabezado);
+
+    controlesDelPlan.forEach(control => {
+        const fila = document.createElement("div");
+        fila.style.padding = "10px 0";
+        fila.style.borderBottom = "1px solid #E5E0D7";
+
+        const fechaControl =
+            control.scheduled_date.split("-").reverse().join("/");
+
+        fila.textContent =
+            fechaControl + " · " +
+            (nombresEstado[control.status] || control.status) +
+            " · " +
+            (control.responsible || "Sin responsable");
+
+        if (control.observations) {
+            const nota = document.createElement("div");
+            nota.className = "sub";
+            nota.textContent = control.observations;
+            fila.appendChild(nota);
+        }
+
+        historial.appendChild(fila);
+    });
+
+    tarjeta.appendChild(historial);
+}
+        if (puedeEditarMantenimiento) {
+    const etiqueta = document.createElement("label");
+    etiqueta.textContent = "Programar próximo control";
+    etiqueta.style.display = "block";
+    etiqueta.style.marginTop = "14px";
+
+    const fechaInput = document.createElement("input");
+    fechaInput.type = "date";
+    fechaInput.value = plan.next_due_date || "";
+    fechaInput.style.width = "100%";
+    fechaInput.style.boxSizing = "border-box";
+
+    const guardarFecha = document.createElement("button");
+    guardarFecha.type = "button";
+    guardarFecha.className = "btn";
+    guardarFecha.textContent = "Guardar programación";
+    guardarFecha.style.marginTop = "10px";
+
+    guardarFecha.onclick = async () => {
+        const intervalo = Number(intervaloInput.value);
+
+if (
+    frecuenciaInput.value !== "personalizado" &&
+    (!Number.isInteger(intervalo) || intervalo < 1)
+) {
+    mostrarAvisoHM("Ingresá un intervalo válido.");
+    return;
+}
+        guardarFecha.disabled = true;
+        mostrarLoader("Guardando fecha...");
+
+        try {
+            const { error } = await supabaseClient
+                .from("house_maintenance_plans")
+                .update({
+    next_due_date: fechaInput.value || null,
+    frequency_type: frecuenciaInput.value,
+    interval_value:
+        frecuenciaInput.value === "personalizado"
+            ? 1
+            : intervalo
+})
+                .eq("id", plan.id)
+                .eq("house_id", casa.id)
+                .select("id")
+                .single();
+
+            if (error) {
+                console.error("Error guardando fecha:", error);
+                mostrarAvisoHM("No se pudo guardar la fecha.");
+                return;
+            }
+
+            mostrarAvisoHM("Programación de mantenimiento guardada.");
+            await abrirMantenimientoCasa();
+
+        } catch (error) {
+            console.error("Error guardando fecha:", error);
+            mostrarAvisoHM("No se pudo guardar la fecha.");
+        } finally {
+            guardarFecha.disabled = false;
+            ocultarLoader();
+        }
+    };
+
+    tarjeta.appendChild(etiqueta);
+    tarjeta.appendChild(fechaInput);
+    const frecuenciaLabel = document.createElement("label");
+frecuenciaLabel.textContent = "Frecuencia";
+frecuenciaLabel.style.display = "block";
+frecuenciaLabel.style.marginTop = "12px";
+
+const frecuenciaInput = document.createElement("select");
+frecuenciaInput.style.width = "100%";
+
+[
+    ["personalizado", "Manual"],
+    ["dias", "Cada cierta cantidad de días"],
+    ["semanas", "Cada cierta cantidad de semanas"],
+    ["meses", "Cada cierta cantidad de meses"],
+    ["anual", "Cada cierta cantidad de años"]
+].forEach(([valor, texto]) => {
+    frecuenciaInput.add(new Option(texto, valor));
+});
+
+frecuenciaInput.value = plan.frequency_type || "personalizado";
+
+const intervaloLabel = document.createElement("label");
+intervaloLabel.textContent = "Repetir cada";
+intervaloLabel.style.display = "block";
+intervaloLabel.style.marginTop = "12px";
+
+const intervaloInput = document.createElement("input");
+intervaloInput.type = "number";
+intervaloInput.min = "1";
+intervaloInput.step = "1";
+intervaloInput.value = plan.interval_value || 1;
+intervaloInput.style.width = "100%";
+intervaloInput.style.boxSizing = "border-box";
+
+function actualizarIntervalo() {
+    const esManual = frecuenciaInput.value === "personalizado";
+    intervaloLabel.style.display = esManual ? "none" : "block";
+    intervaloInput.style.display = esManual ? "none" : "block";
+}
+
+frecuenciaInput.onchange = actualizarIntervalo;
+actualizarIntervalo();
+
+tarjeta.appendChild(frecuenciaLabel);
+tarjeta.appendChild(frecuenciaInput);
+tarjeta.appendChild(intervaloLabel);
+tarjeta.appendChild(intervaloInput);
+    tarjeta.appendChild(guardarFecha);
+}
+
+if (puedeEditarMantenimiento && plan.next_due_date) {
+    const botonRegistrar = document.createElement("button");
+    botonRegistrar.type = "button";
+    botonRegistrar.className = "btn";
+    botonRegistrar.textContent = "Registrar control";
+    botonRegistrar.style.marginTop = "10px";
+
+    botonRegistrar.onclick = () => {
+        abrirRegistroMantenimiento(plan);
+    };
+
+    tarjeta.appendChild(botonRegistrar);
+}
+
+        contenido.appendChild(tarjeta);
+    });
+});
+}
+
+async function crearPlantillaMantenimientoCasa() {
+    const casa = houses[current];
+
+    if (!casa?.id) {
+        mostrarAvisoHM("No se pudo identificar la casa.");
+        return;
+    }
+
+    const { data: rol, error: errorRol } =
+        await supabaseClient.rpc("current_organization_role");
+
+    if (errorRol || !["admin", "colaborador"].includes(rol)) {
+        mostrarAvisoHM("No tenés permiso para crear mantenimiento.");
+        return;
+    }
+
+    const { data: existentes, error: errorExistentes } =
+        await supabaseClient
+            .from("house_maintenance_plans")
+            .select("template_code")
+            .eq("house_id", casa.id)
+            .not("template_code", "is", null);
+
+    if (errorExistentes) {
+        console.error("Error verificando plantilla:", errorExistentes);
+        mostrarAvisoHM("No se pudo verificar el mantenimiento existente.");
+        return;
+    }
+
+    if (existentes?.length) {
+        mostrarAvisoHM("Esta casa ya tiene la plantilla de mantenimiento.");
+        return;
+    }
+
+    const confirmado = await confirmarAccionHM(
+        "Se crearán 10 controles de mantenimiento solo para esta casa. Podrás configurar sus fechas después.",
+        "Crear mantenimiento periódico",
+        "CREAR",
+        "#0D2B45"
+    );
+
+    if (!confirmado) return;
+
+    const tareas = [
+        ["mp_01", "Fumigación (planificar con aprobación del propietario y bloquear fechas)", "Pretemporada / anual"],
+        ["mp_02", "Control de pozos (recomendado una vez al año antes de temporada)", "Pretemporada / anual"],
+        ["mp_03", "Limpieza de filtros de aire acondicionado (antes de temporada)", "Pretemporada / anual"],
+        ["mp_04", "Matafuegos: control de vencimiento y carga", "Pretemporada / anual"],
+        ["mp_05", "Control de plantas, canteros, yuyos, pasto y hormigas (coordinar con jardinero vía propietario)", "Jardín y exterior"],
+        ["mp_06", "Telas de araña (indicar atención especial al personal de limpieza)", "Jardín y exterior"],
+        ["mp_07", "Blanquería: verificar disponibilidad de juegos dobles", "Blanquería y textiles"],
+        ["mp_08", "Fundas de sillones dobles (para rotar mientras se lava)", "Blanquería y textiles"],
+        ["mp_09", "Acolchados: evaluar estado e informar al propietario antes de renovar (costo elevado)", "Blanquería y textiles"],
+        ["mp_10", "Cortinados: controlar estado e informar antes de tomar decisión", "Blanquería y textiles"]
+    ];
+
+    const planes = tareas.map(([template_code, title, description]) => ({
+        house_id: casa.id,
+        template_code,
+        title,
+        description,
+        frequency_type: "personalizado",
+        interval_value: 1,
+        next_due_date: null
+    }));
+
+    mostrarLoader("Creando mantenimiento...");
+
+    try {
+        const { error } = await supabaseClient
+            .from("house_maintenance_plans")
+            .insert(planes);
+
+        if (error) {
+            console.error("Error creando mantenimiento:", error);
+            mostrarAvisoHM("No se pudo crear el mantenimiento.");
+            return;
+        }
+
+        mostrarAvisoHM("Mantenimiento creado para esta casa.");
+        await abrirMantenimientoCasa();
+
+    } finally {
+        ocultarLoader();
+    }
+}
+
+let mantenimientoPlanEnRegistro = null;
+
+function abrirRegistroMantenimiento(plan) {
+    if (!plan?.id || !plan.next_due_date) {
+        mostrarAvisoHM(
+            "Programá la próxima fecha antes de registrar este control."
+        );
+        return;
+    }
+
+    const modal =
+        document.getElementById("modalRegistroMantenimiento");
+
+    if (!modal) return;
+
+    mantenimientoPlanEnRegistro = plan;
+
+    document.getElementById("registroMantenimientoTitulo")
+        .textContent = plan.title;
+
+    document.getElementById("registroMantenimientoEstado")
+        .value = "realizado";
+
+    document.getElementById("registroMantenimientoResponsable")
+        .value = "";
+
+    document.getElementById("registroMantenimientoObservaciones")
+        .value = "";
+
+    modal.style.display = "flex";
+}
+
+function cerrarRegistroMantenimiento() {
+    const modal =
+        document.getElementById("modalRegistroMantenimiento");
+
+    if (modal) modal.style.display = "none";
+
+    mantenimientoPlanEnRegistro = null;
+}
+
+async function guardarRegistroMantenimiento() {
+    const plan = mantenimientoPlanEnRegistro;
+    const boton =
+        document.getElementById("btnGuardarRegistroMantenimiento");
+
+    if (!plan?.id || !boton || boton.disabled) return;
+
+    const estado =
+        document.getElementById("registroMantenimientoEstado").value;
+
+    const responsable =
+        document.getElementById("registroMantenimientoResponsable")
+            .value.trim();
+
+    const observaciones =
+        document.getElementById("registroMantenimientoObservaciones")
+            .value.trim();
+
+    if (!responsable) {
+        mostrarAvisoHM("Ingresá el responsable del control.");
+        return;
+    }
+
+    if (estado === "problema" && !observaciones) {
+        mostrarAvisoHM("Ingresá qué problema se encontró.");
+        return;
+    }
+
+    boton.disabled = true;
+    mostrarLoader("Registrando control...");
+
+    try {
+        const { error } = await supabaseClient.rpc(
+            "registrar_mantenimiento",
+            {
+                p_plan_id: plan.id,
+                p_status: estado,
+                p_responsible: responsable,
+                p_observations: observaciones || null
+            }
+        );
+
+        if (error) {
+            console.error("Error registrando mantenimiento:", error);
+            mostrarAvisoHM(
+                "No se pudo registrar el control. Revisá la fecha y volvé a intentarlo."
+            );
+            return;
+        }
+
+        cerrarRegistroMantenimiento();
+
+        mostrarAvisoHM(
+            estado === "problema"
+                ? "Control registrado con un problema."
+                : "Control de mantenimiento registrado."
+        );
+
+        await abrirMantenimientoCasa();
+
+    } catch (error) {
+        console.error("Error registrando mantenimiento:", error);
+        mostrarAvisoHM("No se pudo registrar el control.");
+    } finally {
+        boton.disabled = false;
+        ocultarLoader();
+    }
+}

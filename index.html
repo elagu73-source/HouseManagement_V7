@@ -342,7 +342,7 @@
                 <span>Incidencias</span>
             </div>
 
-            <div
+<div
     id="houseMenuInventory"
     class="house-menu-btn"
     onclick="openInventario()">
@@ -422,11 +422,102 @@
     <span>Estado de cuenta</span>
 </div>
 
-        </div>
+<div
+    id="houseMenuMaintenance"
+    class="house-menu-btn"
+    onclick="abrirMantenimientoCasa()"
+    style="
+        grid-column:2;
+        background:#0D2B45;
+        border-color:#0D2B45;
+    ">
 
+    <span class="house-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M4 20L8 19L17 10"></path>
+            <path d="M14 6L18 10"></path>
+            <path d="M16 4L20 8"></path>
+            <circle cx="6" cy="18" r="2"></circle>
+        </svg>
+    </span>
+
+    <span>Mantenimiento periódico</span>
+</div>
+
+    </div>
     </div>
 
 </section>
+
+<section id="mantenimientoCasa" class="screen">
+
+    <div class="back" onclick="render(); openHouse(current)">
+        <span class="cb-icon white">
+            <svg viewBox="0 0 24 24">
+                <path d="M15 5 8 12l7 7"></path>
+            </svg>
+        </span>
+        <span>Casa</span>
+    </div>
+
+    <h2>Mantenimiento periódico</h2>
+
+    <div id="mantenimientoCasaNombre" class="sub"></div>
+
+    <div id="mantenimientoCasaContenido"></div>
+
+</section>
+
+<div id="modalRegistroMantenimiento" class="hm-modal" style="display:none;z-index:9000;">
+    <div class="hm-modal-card" style="max-height:90vh;overflow-y:auto;">
+
+        <h2>Registrar control</h2>
+        <p id="registroMantenimientoTitulo"></p>
+
+        <label for="registroMantenimientoEstado">Resultado</label>
+        <select id="registroMantenimientoEstado" style="width:100%;">
+            <option value="realizado">Realizado</option>
+            <option value="problema">Se encontró un problema</option>
+            <option value="no_aplica">No aplica</option>
+        </select>
+
+        <label for="registroMantenimientoResponsable"
+               style="display:block;margin-top:16px;">
+            Responsable
+        </label>
+        <input
+            id="registroMantenimientoResponsable"
+            type="text"
+            placeholder="Nombre del responsable">
+
+        <label for="registroMantenimientoObservaciones"
+               style="display:block;margin-top:16px;">
+            Observaciones
+        </label>
+        <textarea
+            id="registroMantenimientoObservaciones"
+            rows="4"
+            style="width:100%;box-sizing:border-box;"
+            placeholder="Agregá detalles del control"></textarea>
+
+        <div class="hm-modal-actions">
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="cerrarRegistroMantenimiento()">
+                Cancelar
+            </button>
+            <button
+                id="btnGuardarRegistroMantenimiento"
+                type="button"
+                class="btn"
+                onclick="guardarRegistroMantenimiento()">
+                Guardar control
+            </button>
+        </div>
+
+    </div>
+</div>
 
 <section id="infoGeneral" class="screen">
 
@@ -1643,7 +1734,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=113"></script>
 <script src="js/storage.js?v=3"></script>
 <script src="js/photos.js?v=2"></script>
-<script src="js/app.js?v=164"></script>
+<script src="js/app.js?v=165"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
