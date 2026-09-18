@@ -1334,6 +1334,9 @@ async function abrirSuperadmin() {
         return;
     }
 
+    const { data: casasVisibilidad, error: casasError } =
+        await supabaseClient.rpc("superadmin_list_houses_visibility");
+
     organizaciones.forEach(
         organizacion => {
 
@@ -1543,11 +1546,59 @@ detalle.append(
     alta
 );
 
+const casasEmpresa = document.createElement("div");
+casasEmpresa.className = "superadmin-house-visibility";
+const tituloCasas = document.createElement("h4");
+tituloCasas.textContent = "Casas visibles para el cliente";
+casasEmpresa.appendChild(tituloCasas);
+
+if (casasError) {
+    const aviso = document.createElement("p");
+    aviso.textContent = "No se pudo cargar el control de casas.";
+    casasEmpresa.appendChild(aviso);
+} else {
+    const casasDeEmpresa = (casasVisibilidad || [])
+        .filter(casa => String(casa.organization_id) === String(organizacion.id));
+    if (!casasDeEmpresa.length) {
+        const vacio = document.createElement("p");
+        vacio.textContent = "Esta empresa todavía no tiene casas.";
+        casasEmpresa.appendChild(vacio);
+    }
+    casasDeEmpresa.forEach(casa => {
+        const fila = document.createElement("div");
+        fila.className = "superadmin-house-row";
+        const nombre = document.createElement("span");
+        nombre.textContent = `${casa.nombre} — ${casa.visible_to_clients ? "Visible" : "Oculta"}`;
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "btn";
+        boton.textContent = casa.visible_to_clients ? "Apagar" : "Prender";
+        boton.addEventListener("click", async () => {
+            const accion = casa.visible_to_clients ? "ocultar" : "mostrar";
+            if (!window.confirm(`¿Querés ${accion} “${casa.nombre}” para sus usuarios? No se borrará ningún dato.`)) return;
+            boton.disabled = true;
+            const { error: cambioError } = await supabaseClient.rpc(
+                "superadmin_set_house_visibility",
+                { p_house_id: casa.id, p_visible: !casa.visible_to_clients }
+            );
+            if (cambioError) {
+                alert("No se pudo cambiar la visibilidad de esta casa.");
+                boton.disabled = false;
+                return;
+            }
+            await abrirSuperadmin();
+        });
+        fila.append(nombre, boton);
+        casasEmpresa.appendChild(fila);
+    });
+}
+
 tarjeta.append(
     titulo,
     estado,
     resumen,
     detalle,
+    casasEmpresa,
     acciones
 );
 
@@ -8787,8 +8838,23 @@ const ambientes=[
 {title:"Baños",items:["Inodoro","Ducha","Espejo","Papel","Jabón"]},
 {title:"Parrilla",items:["Limpia","Utensilios","Carbón"]},
 {title:"Pileta",items:["Agua","Filtro","Reposeras"]},
-{title:"Control Final",items:["Fotos","Alarma","Internet","Casa lista"]}
+{title:"Control Final",items:["Fotos","Alarma","Internet","Casa lista"]},
+{title:"Lavadero",items:["Lavarropas","Secarropas","Detergente","Piso"]}
 ];
+
+function ordenAmbientesChecklist(lista) {
+    const indices = lista.map((_, i) => i);
+    return indices.filter(i => lista[i].title !== "Control Final")
+        .concat(indices.filter(i => lista[i].title === "Control Final"));
+}
+
+function agregarLavaderoSiFalta(lista) {
+    const copia = JSON.parse(JSON.stringify(lista));
+    if (!copia.some(a => String(a.title || "").trim().toLowerCase() === "lavadero")) {
+        copia.push({title:"Lavadero",items:["Lavarropas","Secarropas","Detergente","Piso"]});
+    }
+    return copia;
+}
 
 let checks = {};
 actualizarEstadosTodasLasCasas();
@@ -8809,7 +8875,7 @@ async function guardarChecklistSupabase() {
 
     const dataCasa = {};
 
-    ambientes.forEach((ambiente, i) => {
+    ensureChecklist().forEach((ambiente, i) => {
 
         const key = "c" + current + "_" + i;
 
@@ -8848,6 +8914,7 @@ async function startPreparation(){
         console.error("❌ La casa no tiene UUID de Supabase");
         return;
     }
+    await cargarConfiguracionChecklistCasa();
     const { data: rolChecklist } =
     await supabaseClient.rpc(
         "current_organization_role"
@@ -8920,10 +8987,12 @@ observaciones =
 
 function renderPrep(){
 
-const env = ensureChecklist()[paso];
-const key = "c"+current+"_"+paso;
+const lista = ensureChecklist();
+const ambienteIndex = ordenAmbientesChecklist(lista)[paso];
+const env = lista[ambienteIndex];
+const key = "c"+current+"_"+ambienteIndex;
 
-const obsKey = "c" + current + "_" + paso;
+const obsKey = "c" + current + "_" + ambienteIndex;
 
 if(!checks[key]){
     checks[key] = new Array(env.items.length).fill(false);
@@ -8957,7 +9026,7 @@ actualizarEstadoCasa();
     </label>`;
 });
 
-progressBar.style.width=((paso+1)/ambientes.length*100)+"%";
+progressBar.style.width=((paso+1)/lista.length*100)+"%";
 
 checklist.innerHTML += `
 
@@ -8994,7 +9063,7 @@ function obtenerPorcentajeChecklist(houseIndex) {
     let totalChecks = 0;
     let checksCompletados = 0;
 
-    ambientes.forEach((ambiente, ambienteIndex) => {
+    ensureChecklist().forEach((ambiente, ambienteIndex) => {
 
         const key = "c" + houseIndex + "_" + ambienteIndex;
 
@@ -9030,7 +9099,7 @@ function actualizarEstadoCasa() {
     let totalChecks = 0;
     let checksCompletados = 0;
 
-    ambientes.forEach((ambiente, i) => {
+    ensureChecklist().forEach((ambiente, i) => {
 
         const key = "c" + current + "_" + i;
 
@@ -9081,7 +9150,7 @@ function actualizarEstadosTodasLasCasas() {
         let totalChecks = 0;
         let checksCompletados = 0;
 
-        ambientes.forEach((ambiente, ambienteIndex) => {
+        (checklistData["c" + houseIndex] || ambientes).forEach((ambiente, ambienteIndex) => {
 
             const key = "c" + houseIndex + "_" + ambienteIndex;
 
@@ -9134,12 +9203,13 @@ function nextStep(){
     const obs = document.getElementById("obsPrep");
 
 if (obs && checklistPuedeEditar) {
-        observaciones["c" + current + "_" + paso] = obs.value;
+        const ambienteIndex = ordenAmbientesChecklist(ensureChecklist())[paso];
+        observaciones["c" + current + "_" + ambienteIndex] = obs.value;
 
         guardarChecklistSupabase();
     }
 
-    if (paso < ambientes.length - 1) {
+    if (paso < ensureChecklist().length - 1) {
 
         paso++;
         renderPrep();
@@ -9192,10 +9262,17 @@ async function cargarConfiguracionChecklistCasa(){
     // SI EXISTE EN SUPABASE
     // ============================================
 
-    if (data && data.data) {
+    if (data && Array.isArray(data.data)) {
 
-        checklistData[key] =
-            JSON.parse(JSON.stringify(data.data));
+        checklistData[key] = agregarLavaderoSiFalta(data.data);
+
+        if (checklistData[key].length !== data.data.length) {
+            await supabaseClient.from("house_checklist_config").upsert({
+                house_id: house.id,
+                data: checklistData[key],
+                updated_at: new Date().toISOString()
+            }, { onConflict: "house_id" });
+        }
 
         return;
     }
@@ -9253,8 +9330,7 @@ function ensureChecklist(){
 
     if(!checklistData[key]){
 
-        checklistData[key] =
-            JSON.parse(JSON.stringify(ambientes));
+        checklistData[key] = agregarLavaderoSiFalta(ambientes);
     }
 
     return checklistData[key];
@@ -9274,7 +9350,9 @@ async function openChecklistEditor(){
 
     sel.innerHTML = "";
 
-    ensureChecklist().forEach((a, i) => {
+    const lista = ensureChecklist();
+    ordenAmbientesChecklist(lista).forEach(i => {
+        const a = lista[i];
 
         sel.innerHTML +=
             `<option value="${i}">
@@ -10673,17 +10751,20 @@ async function cargarConfiguracionOrganizacion() {
         "organizationModuleNotifications"
     ).checked = modules.notificaciones !== false;
 
-    const checklistBase =
+    const checklistBase = agregarLavaderoSiFalta(
     Array.isArray(
         organizationSettingsCurrent.checklist_base
     ) &&
     organizationSettingsCurrent.checklist_base.length
         ? organizationSettingsCurrent.checklist_base
-        : ambientes;
+        : ambientes);
+
+    const checklistBaseOrdenado = ordenAmbientesChecklist(checklistBase)
+        .map(i => checklistBase[i]);
 
 document.getElementById(
     "organizationChecklistBase"
-).value = checklistBase
+).value = checklistBaseOrdenado
     .map(environment => {
 
         const title =
@@ -11064,9 +11145,7 @@ async function obtenerChecklistBaseOrganizacion() {
         organizationIdError ||
         !organizationId
     ) {
-        return JSON.parse(
-            JSON.stringify(ambientes)
-        );
+        return agregarLavaderoSiFalta(ambientes);
     }
 
     const {
@@ -11084,9 +11163,7 @@ async function obtenerChecklistBaseOrganizacion() {
             error
         );
 
-        return JSON.parse(
-            JSON.stringify(ambientes)
-        );
+        return agregarLavaderoSiFalta(ambientes);
     }
 
     const checklistBase =
@@ -11097,14 +11174,10 @@ async function obtenerChecklistBaseOrganizacion() {
         !Array.isArray(checklistBase) ||
         !checklistBase.length
     ) {
-        return JSON.parse(
-            JSON.stringify(ambientes)
-        );
+        return agregarLavaderoSiFalta(ambientes);
     }
 
-    return JSON.parse(
-        JSON.stringify(checklistBase)
-    );
+    return agregarLavaderoSiFalta(checklistBase);
 }
 
 async function obtenerInventarioBaseOrganizacion() {
