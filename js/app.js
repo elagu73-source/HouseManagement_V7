@@ -2573,6 +2573,72 @@ async function abrirDetalleReserva(reserva) {
         inquilino.appendChild(datos);
     }
 
+    // ============================================
+// DATOS ECONÓMICOS DE LA RESERVA
+// ============================================
+
+if (inquilino) {
+    const tituloEconomico =
+        document.createElement("h3");
+
+    tituloEconomico.textContent =
+        "Datos económicos de la reserva";
+
+    tituloEconomico.style.marginTop = "25px";
+    tituloEconomico.style.marginBottom = "12px";
+    tituloEconomico.style.color = "#0D2B45";
+
+    const datosEconomicos =
+        document.createElement("div");
+
+    datosEconomicos.style.display = "grid";
+    datosEconomicos.style.gap = "8px";
+
+    const formatoDinero = valor =>
+        "$ " + Number(valor || 0)
+            .toLocaleString("es-AR");
+
+    const lineasEconomicas = [
+        "Importe del alquiler: " +
+            formatoDinero(detalle?.rental_amount),
+
+        "Descuento larga estadía: " +
+            Number(detalle?.long_stay_discount || 0) +
+            "%",
+
+        "Alquiler neto: " +
+            formatoDinero(detalle?.rental_net),
+
+        "Comisión alquiler: " +
+            Number(detalle?.rental_commission_pct || 0) +
+            "%",
+
+        "Ganancia Experiencia Costa por alquiler: " +
+            formatoDinero(detalle?.rental_profit),
+
+        "Importe de limpieza: " +
+            formatoDinero(detalle?.cleaning_amount),
+
+        "Comisión limpieza: " +
+            Number(detalle?.cleaning_commission_pct || 0) +
+            "%",
+
+        "Ganancia Experiencia Costa por limpieza: " +
+            formatoDinero(detalle?.cleaning_profit)
+    ];
+
+    lineasEconomicas.forEach(texto => {
+        const linea =
+            document.createElement("div");
+
+        linea.textContent = texto;
+        datosEconomicos.appendChild(linea);
+    });
+
+    inquilino.appendChild(tituloEconomico);
+    inquilino.appendChild(datosEconomicos);
+}
+
     const botonPreparacion =
         document.getElementById(
             "btnReservaPreparacion"
