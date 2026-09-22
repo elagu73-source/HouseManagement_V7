@@ -7,7 +7,7 @@ const ARCHIVOS = [
     "./terminos-condiciones.html",
     "./manifest.json",
 
-    "./css/style.css?v=18",
+    "./css/style.css?v=19",
 
     "./js/supabase.js?v=113",
     "./js/storage.js?v=3",

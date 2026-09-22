@@ -3369,3 +3369,31 @@ ACTIVIDAD RECIENTE - MOBILE
         margin: 10px 0 0 !important;
     }
 }
+.superadmin-house-visibility {
+    margin: 16px 0;
+    padding: 14px;
+    border: 1px solid #ded8ca;
+    border-radius: 14px;
+    background: #f8f6f0;
+}
+
+.superadmin-house-visibility h4 {
+    margin: 0 0 10px;
+    color: #0d2b45;
+}
+
+.superadmin-house-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-top: 1px solid #e5dfd2;
+}
+
+.superadmin-house-row .btn {
+    width: auto;
+    min-width: 92px;
+    margin: 0;
+    padding: 8px 12px;
+}
