@@ -2249,6 +2249,11 @@ let calendarioInquilinoNombre = "";
 let calendarioInquilinoEmail = "";
 let calendarioInquilinoTelefono = "";
 let calendarioCantidadHuespedes = "";
+let calendarioImporteAlquiler = "";
+let calendarioDescuentoEstadia = "";
+let calendarioComisionAlquiler = "15";
+let calendarioImporteLimpieza = "";
+let calendarioComisionLimpieza = "";
 let detalleReservaActual = null;
 let preparacionReservaActual = null;
 let preparacionChecklistActual = null;
@@ -2306,13 +2311,21 @@ async function cargarReservasCasa(houseId) {
     } =
         await supabaseClient
             .from("reservation_details")
-            .select(`
-                reservation_id,
-                tenant_name,
-                tenant_email,
-                tenant_phone,
-                guest_count
-            `)
+          .select(`
+    reservation_id,
+    tenant_name,
+    tenant_email,
+    tenant_phone,
+    guest_count,
+    rental_amount,
+    long_stay_discount,
+    rental_net,
+    rental_commission_pct,
+    rental_profit,
+    cleaning_amount,
+    cleaning_commission_pct,
+    cleaning_profit
+`)
             .in(
                 "reservation_id",
                 idsReservas
@@ -2371,6 +2384,11 @@ async function abrirCalendarioCasa(h) {
 calendarioInquilinoEmail = "";
 calendarioInquilinoTelefono = "";
 calendarioCantidadHuespedes = "";
+calendarioImporteAlquiler = "";
+calendarioDescuentoEstadia = "";
+calendarioComisionAlquiler = "15";
+calendarioImporteLimpieza = "";
+calendarioComisionLimpieza = "";
     calendarioFechaActual = new Date();
 
     const nombreCasa =
@@ -4909,6 +4927,96 @@ datosInquilino.innerHTML = `
         min="1"
         placeholder="Cantidad"
     >
+
+
+   <h3 style="
+       margin-top:25px;
+       margin-bottom:15px;
+       color:#0D2B45;
+   ">
+       Datos económicos de la reserva
+   </h3>
+
+   <label for="calRentalAmount">
+       Importe del alquiler
+   </label>
+   <input
+       id="calRentalAmount"
+       type="number"
+       min="0"
+       placeholder="$ Importe del alquiler"
+   >
+
+   <label for="calLongStayDiscount">
+       Descuento por larga estadía (%)
+   </label>
+   <input
+       id="calLongStayDiscount"
+       type="number"
+       min="0"
+       max="100"
+       step="0.1"
+       placeholder="Ej: 3"
+   >
+
+   <label for="calRentalCommission">
+       Comisión sobre alquiler
+   </label>
+   <select id="calRentalCommission">
+       <option value="15">15%</option>
+       <option value="17">17%</option>
+       <option value="20">20%</option>
+       <option value="25">25%</option>
+   </select>
+
+   <div style="
+    margin:10px 0 18px;
+    padding:12px;
+    background:#F2F6F9;
+    border-radius:10px;
+">
+    <div>
+        Alquiler neto:
+        <strong id="calRentalNet">$ 0</strong>
+    </div>
+    <div style="margin-top:5px;">
+        Ganancia Experiencia Costa por alquiler:
+        <strong id="calRentalProfit">$ 0</strong>
+    </div>
+</div>
+
+   <label for="calCleaningAmount">
+       Importe de limpieza
+   </label>
+   <input
+       id="calCleaningAmount"
+       type="number"
+       min="0"
+       placeholder="$ Importe de limpieza"
+   >
+
+   <label for="calCleaningCommission">
+       Comisión sobre limpieza (%)
+   </label>
+   <input
+       id="calCleaningCommission"
+       type="number"
+       min="0"
+       max="100"
+       step="0.1"
+       placeholder="Ej: 20"
+   >
+
+   <div style="
+    margin:10px 0 5px;
+    padding:12px;
+    background:#F2F6F9;
+    border-radius:10px;
+">
+    Ganancia Experiencia Costa por limpieza:
+    <strong id="calCleaningProfit">$ 0</strong>
+</div>
+
 `;
 
 contenedor.appendChild(datosInquilino);
@@ -4925,6 +5033,64 @@ const campoTelefono =
 const campoHuespedes =
     document.getElementById("calGuestCount");
 
+    const campoImporteAlquiler =
+    document.getElementById("calRentalAmount");
+
+const campoDescuentoEstadia =
+    document.getElementById("calLongStayDiscount");
+
+const campoComisionAlquiler =
+    document.getElementById("calRentalCommission");
+
+const campoImporteLimpieza =
+    document.getElementById("calCleaningAmount");
+
+const campoComisionLimpieza =
+    document.getElementById("calCleaningCommission");
+
+    const resultadoAlquilerNeto =
+    document.getElementById("calRentalNet");
+
+const resultadoGananciaAlquiler =
+    document.getElementById("calRentalProfit");
+
+const resultadoGananciaLimpieza =
+    document.getElementById("calCleaningProfit");
+
+function actualizarCalculosEconomicos() {
+    const alquiler = Number(campoImporteAlquiler.value) || 0;
+    const descuento = Number(campoDescuentoEstadia.value) || 0;
+    const comisionAlquiler = Number(campoComisionAlquiler.value) || 0;
+    const limpieza = Number(campoImporteLimpieza.value) || 0;
+    const comisionLimpieza = Number(campoComisionLimpieza.value) || 0;
+
+    const alquilerNeto =
+        alquiler - (alquiler * descuento / 100);
+
+    const gananciaAlquiler =
+        alquilerNeto * comisionAlquiler / 100;
+
+    const gananciaLimpieza =
+        limpieza * comisionLimpieza / 100;
+
+    resultadoAlquilerNeto.textContent =
+        "$ " + alquilerNeto.toLocaleString("es-AR");
+
+    resultadoGananciaAlquiler.textContent =
+        "$ " + gananciaAlquiler.toLocaleString("es-AR");
+
+    resultadoGananciaLimpieza.textContent =
+        "$ " + gananciaLimpieza.toLocaleString("es-AR");
+}
+
+campoImporteAlquiler.addEventListener("input", actualizarCalculosEconomicos);
+campoDescuentoEstadia.addEventListener("input", actualizarCalculosEconomicos);
+campoComisionAlquiler.addEventListener("change", actualizarCalculosEconomicos);
+campoImporteLimpieza.addEventListener("input", actualizarCalculosEconomicos);
+campoComisionLimpieza.addEventListener("input", actualizarCalculosEconomicos);
+
+actualizarCalculosEconomicos();
+
 campoNombre.value =
     calendarioInquilinoNombre;
 
@@ -4936,6 +5102,23 @@ campoTelefono.value =
 
 campoHuespedes.value =
     calendarioCantidadHuespedes;
+
+    campoImporteAlquiler.value =
+    calendarioImporteAlquiler;
+
+campoDescuentoEstadia.value =
+    calendarioDescuentoEstadia;
+
+campoComisionAlquiler.value =
+    calendarioComisionAlquiler;
+
+campoImporteLimpieza.value =
+    calendarioImporteLimpieza;
+
+campoComisionLimpieza.value =
+    calendarioComisionLimpieza;
+
+actualizarCalculosEconomicos();
 
 campoNombre.oninput = () => {
     calendarioInquilinoNombre =
@@ -4955,6 +5138,41 @@ campoTelefono.oninput = () => {
 campoHuespedes.oninput = () => {
     calendarioCantidadHuespedes =
         campoHuespedes.value;
+};
+
+campoImporteAlquiler.oninput = () => {
+    calendarioImporteAlquiler =
+        campoImporteAlquiler.value;
+
+    actualizarCalculosEconomicos();
+};
+
+campoDescuentoEstadia.oninput = () => {
+    calendarioDescuentoEstadia =
+        campoDescuentoEstadia.value;
+
+    actualizarCalculosEconomicos();
+};
+
+campoComisionAlquiler.onchange = () => {
+    calendarioComisionAlquiler =
+        campoComisionAlquiler.value;
+
+    actualizarCalculosEconomicos();
+};
+
+campoImporteLimpieza.oninput = () => {
+    calendarioImporteLimpieza =
+        campoImporteLimpieza.value;
+
+    actualizarCalculosEconomicos();
+};
+
+campoComisionLimpieza.oninput = () => {
+    calendarioComisionLimpieza =
+        campoComisionLimpieza.value;
+
+    actualizarCalculosEconomicos();
 };
 
 // ============================================
@@ -5082,6 +5300,21 @@ editarReserva.onclick = function() {
     calendarioCantidadHuespedes =
         detalle?.guest_count || "";
 
+        calendarioImporteAlquiler =
+    detalle?.rental_amount ?? "";
+
+calendarioDescuentoEstadia =
+    detalle?.long_stay_discount ?? "";
+
+calendarioComisionAlquiler =
+    detalle?.rental_commission_pct ?? "15";
+
+calendarioImporteLimpieza =
+    detalle?.cleaning_amount ?? "";
+
+calendarioComisionLimpieza =
+    detalle?.cleaning_commission_pct ?? "";
+
     renderCalendarioCasa();
 
     document
@@ -5156,6 +5389,11 @@ calendarioInquilinoNombre = "";
 calendarioInquilinoEmail = "";
 calendarioInquilinoTelefono = "";
 calendarioCantidadHuespedes = "";
+calendarioImporteAlquiler = "";
+calendarioDescuentoEstadia = "";
+calendarioComisionAlquiler = "15";
+calendarioImporteLimpieza = "";
+calendarioComisionLimpieza = "";
 
 renderCalendarioCasa();
 
@@ -5231,6 +5469,11 @@ fila.appendChild(
         calendarioInquilinoEmail = "";
         calendarioInquilinoTelefono = "";
         calendarioCantidadHuespedes = "";
+        calendarioImporteAlquiler = "";
+calendarioDescuentoEstadia = "";
+calendarioComisionAlquiler = "15";
+calendarioImporteLimpieza = "";
+calendarioComisionLimpieza = "";
 
         renderCalendarioCasa();
         window.scrollTo(0, 0);
@@ -5510,7 +5753,35 @@ const {
                 tenant_phone:
                     calendarioInquilinoTelefono.trim() || null,
                 guest_count:
-                    Number(calendarioCantidadHuespedes) || null
+Number(calendarioCantidadHuespedes) || null,
+
+rental_amount:
+Number(campoImporteAlquiler.value) || null,
+
+long_stay_discount:
+Number(campoDescuentoEstadia.value) || 0,
+
+rental_net:
+(Number(campoImporteAlquiler.value) || 0) *
+(1 - (Number(campoDescuentoEstadia.value) || 0) / 100),
+
+rental_commission_pct:
+Number(campoComisionAlquiler.value) || 0,
+
+rental_profit:
+((Number(campoImporteAlquiler.value) || 0) *
+(1 - (Number(campoDescuentoEstadia.value) || 0) / 100)) *
+((Number(campoComisionAlquiler.value) || 0) / 100),
+
+cleaning_amount:
+Number(campoImporteLimpieza.value) || null,
+
+cleaning_commission_pct:
+Number(campoComisionLimpieza.value) || 0,
+
+cleaning_profit:
+(Number(campoImporteLimpieza.value) || 0) *
+((Number(campoComisionLimpieza.value) || 0) / 100)
             },
             {
                 onConflict: "reservation_id"
