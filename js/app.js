@@ -11577,6 +11577,33 @@ async function abrirIncidenciaDesdeMantenimiento(control, plan) {
     document.getElementById("incResponsable").value =
         control.responsible || "";
 
+        const campoCostoIncidencia =
+    document.getElementById("incCosto");
+
+const campoComisionIncidencia =
+    document.getElementById("incComision");
+
+if (campoCostoIncidencia) {
+    campoCostoIncidencia.value = "0";
+}
+
+if (campoComisionIncidencia) {
+    campoComisionIncidencia.value = "0";
+}
+
+const costoVista =
+    document.getElementById("incCostoVista");
+
+const comisionVista =
+    document.getElementById("incComisionVista");
+
+const totalVista =
+    document.getElementById("incTotalVista");
+
+if (costoVista) costoVista.textContent = "$ 0,00";
+if (comisionVista) comisionVista.textContent = "$ 0,00";
+if (totalVista) totalVista.textContent = "$ 0,00";
+
     document.getElementById("formIncidencia").scrollIntoView({
         behavior: "smooth",
         block: "start"
@@ -11831,6 +11858,85 @@ if (controlesDelPlan.length) {
     fila.appendChild(economico);
 }
 
+if (puedeEditarMantenimiento) {
+    const accionesControl = document.createElement("div");
+    accionesControl.style.display = "flex";
+    accionesControl.style.gap = "8px";
+    accionesControl.style.marginTop = "10px";
+
+    const botonEditar = document.createElement("button");
+    botonEditar.type = "button";
+    botonEditar.className = "btn";
+    botonEditar.textContent = "Editar";
+    botonEditar.style.width = "auto";
+
+    botonEditar.onclick = () => {
+        editarControlMantenimiento(control, plan);
+    };
+
+    const botonEliminar = document.createElement("button");
+    botonEliminar.type = "button";
+    botonEliminar.className = "btn";
+    botonEliminar.textContent = "Eliminar";
+    botonEliminar.style.width = "auto";
+    botonEliminar.style.background = "#8B4B4B";
+
+    botonEliminar.onclick = async () => {
+        const confirmado = await confirmarAccionHM(
+            "Se eliminará este control de mantenimiento y sus importes dejarán de formar parte del estado de cuenta.",
+            "Eliminar control",
+            "ELIMINAR",
+            "#8B4B4B"
+        );
+
+        if (!confirmado) return;
+
+        mostrarLoader("Eliminando control...");
+
+        try {
+            const { error } = await supabaseClient
+                .from("house_maintenance_tasks")
+                .delete()
+                .eq("id", control.id);
+
+            if (error) {
+                console.error(
+                    "Error eliminando control:",
+                    error
+                );
+
+                mostrarAvisoHM(
+                    "No se pudo eliminar el control."
+                );
+                return;
+            }
+
+            mostrarAvisoHM(
+                "Control eliminado correctamente."
+            );
+
+            await abrirMantenimientoCasa();
+
+        } catch (error) {
+            console.error(
+                "Error eliminando control:",
+                error
+            );
+
+            mostrarAvisoHM(
+                "No se pudo eliminar el control."
+            );
+        } finally {
+            ocultarLoader();
+        }
+    };
+
+    accionesControl.appendChild(botonEditar);
+    accionesControl.appendChild(botonEliminar);
+
+    fila.appendChild(accionesControl);
+}
+
         if (
             puedeEditarMantenimiento &&
             control.status === "problema" &&
@@ -12074,6 +12180,7 @@ async function crearPlantillaMantenimientoCasa() {
 }
 
 let mantenimientoPlanEnRegistro = null;
+let mantenimientoControlEnEdicion = null;
 
 function abrirRegistroMantenimiento(plan) {
     if (!plan?.id || !plan.next_due_date) {
@@ -12089,6 +12196,15 @@ function abrirRegistroMantenimiento(plan) {
     if (!modal) return;
 
     mantenimientoPlanEnRegistro = plan;
+
+    mantenimientoControlEnEdicion = null;
+
+const botonGuardar =
+    document.getElementById("btnGuardarRegistroMantenimiento");
+
+if (botonGuardar) {
+    botonGuardar.textContent = "Guardar control";
+}
 
     document.getElementById("registroMantenimientoTitulo")
         .textContent = plan.title;
@@ -12148,6 +12264,82 @@ actualizarCalculoMantenimiento();
     modal.style.display = "flex";
 }
 
+function editarControlMantenimiento(control, plan) {
+    if (!control?.id || !plan?.id) {
+        mostrarAvisoHM("No se pudo identificar el control.");
+        return;
+    }
+
+    const modal =
+        document.getElementById("modalRegistroMantenimiento");
+
+    if (!modal) return;
+
+    mantenimientoPlanEnRegistro = plan;
+    mantenimientoControlEnEdicion = control;
+
+    document.getElementById("registroMantenimientoTitulo")
+        .textContent = "Editar · " + plan.title;
+
+    document.getElementById("registroMantenimientoEstado")
+        .value = control.status || "realizado";
+
+    document.getElementById("registroMantenimientoResponsable")
+        .value = control.responsible || "";
+
+    document.getElementById("registroMantenimientoObservaciones")
+        .value = control.observations || "";
+
+    const campoCosto =
+        document.getElementById("registroMantenimientoCosto");
+
+    const campoComision =
+        document.getElementById("registroMantenimientoComision");
+
+    const resultadoComision =
+        document.getElementById("registroMantenimientoComisionImporte");
+
+    const resultadoTotal =
+        document.getElementById("registroMantenimientoTotal");
+
+    campoCosto.value =
+        control.work_amount ?? "";
+
+    campoComision.value =
+        control.commission_pct ?? "";
+
+    function actualizarCalculo() {
+        const costo =
+            Number(campoCosto.value) || 0;
+
+        const porcentaje =
+            Number(campoComision.value) || 0;
+
+        const comision =
+            costo * porcentaje / 100;
+
+        const total =
+            costo + comision;
+
+        resultadoComision.textContent =
+            "$ " + comision.toLocaleString("es-AR");
+
+        resultadoTotal.textContent =
+            "$ " + total.toLocaleString("es-AR");
+    }
+
+    campoCosto.oninput = actualizarCalculo;
+    campoComision.oninput = actualizarCalculo;
+
+    actualizarCalculo();
+
+    document.getElementById(
+        "btnGuardarRegistroMantenimiento"
+    ).textContent = "Guardar cambios";
+
+    modal.style.display = "flex";
+}
+
 function cerrarRegistroMantenimiento() {
     const modal =
         document.getElementById("modalRegistroMantenimiento");
@@ -12155,6 +12347,15 @@ function cerrarRegistroMantenimiento() {
     if (modal) modal.style.display = "none";
 
     mantenimientoPlanEnRegistro = null;
+
+    mantenimientoControlEnEdicion = null;
+
+const boton =
+    document.getElementById("btnGuardarRegistroMantenimiento");
+
+if (boton) {
+    boton.textContent = "Guardar control";
+}
 }
 
 async function guardarRegistroMantenimiento() {
@@ -12205,16 +12406,67 @@ const totalMantenimiento =
     mostrarLoader("Registrando control...");
 
     try {
-        const { data: taskId, error } =
-    await supabaseClient.rpc(
-        "registrar_mantenimiento",
-        {
-            p_plan_id: plan.id,
-            p_status: estado,
-            p_responsible: responsable,
-            p_observations: observaciones || null
-        }
-    );
+    let error = null;
+
+    const costo =
+        Number(
+            document.getElementById(
+                "registroMantenimientoCosto"
+            ).value
+        ) || 0;
+
+    const porcentaje =
+        Number(
+            document.getElementById(
+                "registroMantenimientoComision"
+            ).value
+        ) || 0;
+
+    const comision =
+        costo * porcentaje / 100;
+
+    const total =
+        costo + comision;
+
+    if (mantenimientoControlEnEdicion) {
+
+        const resultado =
+            await supabaseClient
+                .from("house_maintenance_tasks")
+                .update({
+                    status: estado,
+                    responsible: responsable,
+                    observations: observaciones || null,
+                    work_amount: costo,
+                    commission_pct: porcentaje,
+                    commission_amount: comision,
+                    total_amount: total
+                })
+                .eq(
+                    "id",
+                    mantenimientoControlEnEdicion.id
+                );
+
+        error = resultado.error;
+
+    } else {
+
+        const resultado =
+            await supabaseClient.rpc(
+                "registrar_mantenimiento",
+                {
+                    p_plan_id: plan.id,
+                    p_status: estado,
+                    p_responsible: responsable,
+                    p_observations:
+                        observaciones || null,
+                    p_work_amount: costo,
+                    p_commission_pct: porcentaje
+                }
+            );
+
+        error = resultado.error;
+    }
 
 if (error) {
     console.error(
