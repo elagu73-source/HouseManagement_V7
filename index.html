@@ -502,6 +502,39 @@
             style="width:100%;box-sizing:border-box;"
             placeholder="Agregá detalles del control"></textarea>
 
+            <label for="registroMantenimientoCosto"
+       style="display:block;margin-top:16px;">
+    Costo del mantenimiento
+</label>
+<input
+    id="registroMantenimientoCosto"
+    type="number"
+    min="0"
+    placeholder="$ Importe del trabajo">
+
+<label for="registroMantenimientoComision"
+       style="display:block;margin-top:16px;">
+    Comisión Experiencia Costa (%)
+</label>
+<input
+    id="registroMantenimientoComision"
+    type="number"
+    min="0"
+    max="100"
+    step="0.1"
+    placeholder="Ej: 20">
+
+<div style="
+    margin-top:14px;
+    padding:12px;
+    background:#F2F6F9;
+    border-radius:10px;
+">
+    <div>
+        Comisión Experiencia Costa:
+        <strong id="registroMantenimientoComisionImporte">$ 0</strong>
+    </div>
+
         <div class="hm-modal-actions">
             <button
                 type="button"
@@ -2133,39 +2166,6 @@ document.addEventListener("DOMContentLoaded", () => {
             placeholder="Email"
             autocomplete="email"
         >
-
-        <label for="registroMantenimientoCosto"
-       style="display:block;margin-top:16px;">
-    Costo del mantenimiento
-</label>
-<input
-    id="registroMantenimientoCosto"
-    type="number"
-    min="0"
-    placeholder="$ Importe del trabajo">
-
-<label for="registroMantenimientoComision"
-       style="display:block;margin-top:16px;">
-    Comisión Experiencia Costa (%)
-</label>
-<input
-    id="registroMantenimientoComision"
-    type="number"
-    min="0"
-    max="100"
-    step="0.1"
-    placeholder="Ej: 20">
-
-<div style="
-    margin-top:14px;
-    padding:12px;
-    background:#F2F6F9;
-    border-radius:10px;
-">
-    <div>
-        Comisión Experiencia Costa:
-        <strong id="registroMantenimientoComisionImporte">$ 0</strong>
-    </div>
 
     <div style="margin-top:6px;">
         Total a descontar al propietario:
