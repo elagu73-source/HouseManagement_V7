@@ -11647,8 +11647,8 @@ const { data: historialMantenimiento, error: errorHistorial } =
     await supabaseClient
         .from("house_maintenance_tasks")
         .select(
-            "id, plan_id, scheduled_date, responsible, status, observations, verified_at, incident_id, photo_path"
-        )
+    "id, plan_id, scheduled_date, responsible, status, observations, verified_at, incident_id, photo_path, work_amount, commission_pct, commission_amount, total_amount"
+)
         .in("plan_id", planes.map(plan => plan.id))
         .order("scheduled_date", { ascending: false });
 
@@ -11806,6 +11806,30 @@ if (controlesDelPlan.length) {
             nota.textContent = control.observations;
             fila.appendChild(nota);
         }
+
+        if (
+    control.work_amount !== null &&
+    control.work_amount !== undefined
+) {
+    const economico = document.createElement("div");
+    economico.className = "sub";
+    economico.style.marginTop = "6px";
+
+    economico.innerHTML =
+        "Costo: <strong>$ " +
+        Number(control.work_amount).toLocaleString("es-AR") +
+        "</strong>" +
+        " · Comisión EC (" +
+        Number(control.commission_pct || 0) +
+        "%): <strong>$ " +
+        Number(control.commission_amount || 0).toLocaleString("es-AR") +
+        "</strong>" +
+        " · Total: <strong>$ " +
+        Number(control.total_amount || 0).toLocaleString("es-AR") +
+        "</strong>";
+
+    fila.appendChild(economico);
+}
 
         if (
             puedeEditarMantenimiento &&
@@ -12078,6 +12102,49 @@ function abrirRegistroMantenimiento(plan) {
     document.getElementById("registroMantenimientoObservaciones")
         .value = "";
 
+        const campoCosto =
+    document.getElementById("registroMantenimientoCosto");
+
+const campoComision =
+    document.getElementById("registroMantenimientoComision");
+
+const resultadoComision =
+    document.getElementById("registroMantenimientoComisionImporte");
+
+const resultadoTotal =
+    document.getElementById("registroMantenimientoTotal");
+
+campoCosto.value = "";
+campoComision.value = "";
+
+function actualizarCalculoMantenimiento() {
+    const costo =
+        Number(campoCosto.value) || 0;
+
+    const porcentaje =
+        Number(campoComision.value) || 0;
+
+    const comision =
+        costo * porcentaje / 100;
+
+    const total =
+        costo + comision;
+
+    resultadoComision.textContent =
+        "$ " + comision.toLocaleString("es-AR");
+
+    resultadoTotal.textContent =
+        "$ " + total.toLocaleString("es-AR");
+}
+
+campoCosto.oninput =
+    actualizarCalculoMantenimiento;
+
+campoComision.oninput =
+    actualizarCalculoMantenimiento;
+
+actualizarCalculoMantenimiento();
+
     modal.style.display = "flex";
 }
 
@@ -12108,6 +12175,22 @@ async function guardarRegistroMantenimiento() {
         document.getElementById("registroMantenimientoObservaciones")
             .value.trim();
 
+            const costo =
+    Number(
+        document.getElementById("registroMantenimientoCosto").value
+    ) || 0;
+
+const porcentajeComision =
+    Number(
+        document.getElementById("registroMantenimientoComision").value
+    ) || 0;
+
+const importeComision =
+    costo * porcentajeComision / 100;
+
+const totalMantenimiento =
+    costo + importeComision;
+
     if (!responsable) {
         mostrarAvisoHM("Ingresá el responsable del control.");
         return;
@@ -12122,23 +12205,65 @@ async function guardarRegistroMantenimiento() {
     mostrarLoader("Registrando control...");
 
     try {
-        const { error } = await supabaseClient.rpc(
-            "registrar_mantenimiento",
-            {
-                p_plan_id: plan.id,
-                p_status: estado,
-                p_responsible: responsable,
-                p_observations: observaciones || null
-            }
-        );
-
-        if (error) {
-            console.error("Error registrando mantenimiento:", error);
-            mostrarAvisoHM(
-                "No se pudo registrar el control. Revisá la fecha y volvé a intentarlo."
-            );
-            return;
+        const { data: taskId, error } =
+    await supabaseClient.rpc(
+        "registrar_mantenimiento",
+        {
+            p_plan_id: plan.id,
+            p_status: estado,
+            p_responsible: responsable,
+            p_observations: observaciones || null
         }
+    );
+
+if (error) {
+    console.error(
+        "Error registrando mantenimiento:",
+        error
+    );
+
+    mostrarAvisoHM(
+        "No se pudo registrar el control. Revisá la fecha y volvé a intentarlo."
+    );
+
+    return;
+}
+
+if (!taskId) {
+    console.error(
+        "No se recibió el ID del mantenimiento registrado."
+    );
+
+    mostrarAvisoHM(
+        "El control se registró, pero no pudimos guardar sus datos económicos."
+    );
+
+    return;
+}
+
+const { error: errorEconomico } =
+    await supabaseClient
+        .from("house_maintenance_tasks")
+        .update({
+            work_amount: costo,
+            commission_pct: porcentajeComision,
+            commission_amount: importeComision,
+            total_amount: totalMantenimiento
+        })
+        .eq("id", taskId);
+
+if (errorEconomico) {
+    console.error(
+        "Error guardando datos económicos del mantenimiento:",
+        errorEconomico
+    );
+
+    mostrarAvisoHM(
+        "El control se registró, pero no pudimos guardar el costo y la comisión."
+    );
+
+    return;
+}
 
         cerrarRegistroMantenimiento();
 
