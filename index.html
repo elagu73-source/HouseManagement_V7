@@ -1893,7 +1893,15 @@ onclick="cerrarVisorFoto()">
 
 </section>
 <section id="editChecklist" class="screen">
-<div class="back" onclick="go('property')">← Casa</div>
+<div class="back" onclick="go('property')"
+    style="display:flex;align-items:center;gap:8px;width:fit-content;background:#0D2B45;color:#FFFFFF;padding:8px 14px;border-radius:8px;font-size:15px;font-weight:600;margin-bottom:12px;cursor:pointer;">
+    <span class="cb-icon white">
+        <svg viewBox="0 0 24 24">
+            <path d="M15 5 8 12l7 7"></path>
+        </svg>
+    </span>
+    <span>Casa</span>
+</div>
 <h3>Editar Checklist</h3>
 <select id="ambienteSel" onchange="loadChecklistEditor()"></select>
 <div id="items"></div>
