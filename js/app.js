@@ -11573,36 +11573,40 @@ async function abrirIncidenciaDesdeMantenimiento(control, plan) {
             ? "\nObservación: " + control.observations
             : "");
 
-    document.getElementById("incDescripcion").value = descripcion;
+    document.getElementById("incDescripcion").value =
+        descripcion;
+
     document.getElementById("incResponsable").value =
         control.responsible || "";
 
-        const campoCostoIncidencia =
-    document.getElementById("incCosto");
+    const campoCostoIncidencia =
+        document.getElementById("incCosto");
 
-const campoComisionIncidencia =
-    document.getElementById("incComision");
+    const campoComisionIncidencia =
+        document.getElementById("incComision");
 
-if (campoCostoIncidencia) {
-    campoCostoIncidencia.value = "0";
-}
+    if (campoCostoIncidencia) {
+        campoCostoIncidencia.value =
+            Number(control.work_amount || 0);
+    }
 
-if (campoComisionIncidencia) {
-    campoComisionIncidencia.value = "0";
-}
+    if (campoComisionIncidencia) {
+        campoComisionIncidencia.value =
+            Number(control.commission_pct || 0);
+    }
 
-const costoVista =
-    document.getElementById("incCostoVista");
+    // Actualiza automáticamente costo, comisión y total
+    if (campoCostoIncidencia) {
+        campoCostoIncidencia.dispatchEvent(
+            new Event("input", { bubbles: true })
+        );
+    }
 
-const comisionVista =
-    document.getElementById("incComisionVista");
-
-const totalVista =
-    document.getElementById("incTotalVista");
-
-if (costoVista) costoVista.textContent = "$ 0,00";
-if (comisionVista) comisionVista.textContent = "$ 0,00";
-if (totalVista) totalVista.textContent = "$ 0,00";
+    if (campoComisionIncidencia) {
+        campoComisionIncidencia.dispatchEvent(
+            new Event("input", { bubbles: true })
+        );
+    }
 
     document.getElementById("formIncidencia").scrollIntoView({
         behavior: "smooth",
