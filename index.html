@@ -1149,6 +1149,16 @@ Guardar incidencia
 
     <h2>Estado de cuenta</h2>
 
+<div
+    id="estadoCuentaCasaNombre"
+    style="
+        font-size:20px;
+        font-weight:700;
+        color:#0D2B45;
+        margin-bottom:16px;
+    "
+></div>
+
     <div class="card">
         <label for="estadoCuentaMes">
             Mes
@@ -1164,6 +1174,12 @@ Guardar incidencia
         id="estadoCuentaResumen"
         style="margin-top:16px;"
     ></div>
+
+    <h3 style="margin-top:24px;">
+    Detalle de reservas
+</h3>
+
+<div id="estadoCuentaReservas"></div>
 
     <h3 style="margin-top:24px;">
         Detalle de incidencias
@@ -1783,7 +1799,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=113"></script>
 <script src="js/storage.js?v=4"></script>
 <script src="js/photos.js?v=2"></script>
-<script src="js/app.js?v=174"></script>
+<script src="js/app.js?v=175"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();

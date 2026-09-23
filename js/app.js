@@ -7732,6 +7732,227 @@ async function cargarDetalleEstadoCuenta(
     const fechaFin =
         `${siguienteAnio}-${String(siguienteMes).padStart(2, "0")}-01`;
 
+        const contenedorReservas =
+    document.getElementById("estadoCuentaReservas");
+
+if (contenedorReservas) {
+
+    const { data: reservas, error: errorReservas } =
+        await supabaseClient
+            .from("house_reservations")
+            .select(`
+                id,
+                check_in,
+                check_out
+            `)
+            .eq("house_id", houseId)
+            .gte("check_in", fechaInicio)
+            .lt("check_in", fechaFin)
+            .order("check_in", {
+                ascending: false
+            });
+
+    if (errorReservas) {
+
+        console.error(
+            "Error cargando reservas del estado de cuenta:",
+            errorReservas
+        );
+
+        contenedorReservas.innerHTML = `
+            <div class="card">
+                No se pudo cargar el detalle de reservas.
+            </div>
+        `;
+
+    } else if (!reservas?.length) {
+
+        contenedorReservas.innerHTML = `
+            <div class="card">
+                No hay reservas registradas durante este mes.
+            </div>
+        `;
+
+    } else {
+
+        const idsReservas =
+            reservas.map(reserva => reserva.id);
+
+        const {
+            data: detallesReservas,
+            error: errorDetallesReservas
+        } =
+            await supabaseClient
+                .from("reservation_details")
+                .select(`
+                    reservation_id,
+                    tenant_name,
+                    rental_amount,
+                    long_stay_discount,
+                    rental_net,
+                    rental_commission_pct,
+                    rental_profit,
+                    cleaning_amount,
+                    cleaning_commission_pct,
+                    cleaning_profit
+                `)
+                .in("reservation_id", idsReservas);
+
+        if (errorDetallesReservas) {
+
+            console.error(
+                "Error cargando importes de reservas:",
+                errorDetallesReservas
+            );
+
+            contenedorReservas.innerHTML = `
+                <div class="card">
+                    No se pudieron cargar los importes de las reservas.
+                </div>
+            `;
+
+        } else {
+
+            const detallesPorReserva =
+                new Map(
+                    (detallesReservas || []).map(
+                        detalle => [
+                            detalle.reservation_id,
+                            detalle
+                        ]
+                    )
+                );
+
+            const formatoDineroReservas =
+                new Intl.NumberFormat(
+                    "es-AR",
+                    {
+                        style: "currency",
+                        currency: moneda || "ARS"
+                    }
+                );
+
+            contenedorReservas.innerHTML =
+                reservas.map(reserva => {
+
+                    const detalle =
+                        detallesPorReserva.get(reserva.id) || {};
+
+                    const alquilerBruto =
+                        Number(detalle.rental_amount) || 0;
+
+                    const descuentoPct =
+                        Number(detalle.long_stay_discount) || 0;
+
+                    const alquilerNeto =
+                        Number(detalle.rental_net) || 0;
+
+                    const comisionAlquiler =
+                        Number(detalle.rental_profit) || 0;
+
+                    const limpieza =
+                        Number(detalle.cleaning_amount) || 0;
+
+                    const comisionLimpieza =
+                        Number(detalle.cleaning_profit) || 0;
+
+                    const totalHuesped =
+                        alquilerNeto + limpieza;
+
+                    const ingresoEC =
+                        comisionAlquiler + comisionLimpieza;
+
+                    const netoPropietario =
+                        alquilerNeto
+                        - comisionAlquiler
+                        - limpieza
+                        - comisionLimpieza;
+
+                    const checkIn =
+                        reserva.check_in
+                            ? new Date(
+                                `${reserva.check_in}T12:00:00`
+                            ).toLocaleDateString("es-AR")
+                            : "-";
+
+                    const checkOut =
+                        reserva.check_out
+                            ? new Date(
+                                `${reserva.check_out}T12:00:00`
+                            ).toLocaleDateString("es-AR")
+                            : "-";
+
+                    return `
+                        <div class="card">
+
+                            <div class="title">
+                                ${detalle.tenant_name || "Reserva"}
+                            </div>
+
+                            <div class="sub">
+                                Estadía: ${checkIn} al ${checkOut}
+                            </div>
+
+                            <div class="sub" style="margin-top:8px;">
+                                Alquiler bruto:
+                                ${formatoDineroReservas.format(alquilerBruto)}
+                            </div>
+
+                            <div class="sub">
+                                Descuento larga estadía
+                                (${descuentoPct}%)
+                            </div>
+
+                            <div class="sub">
+                                Alquiler neto:
+                                ${formatoDineroReservas.format(alquilerNeto)}
+                            </div>
+
+                            <div class="sub">
+                                Comisión alquiler EC
+                                (${Number(detalle.rental_commission_pct) || 0}%):
+                                ${formatoDineroReservas.format(comisionAlquiler)}
+                            </div>
+
+                            <div class="sub">
+                                Limpieza:
+                                ${formatoDineroReservas.format(limpieza)}
+                            </div>
+
+                            <div class="sub">
+                                Comisión limpieza EC
+                                (${Number(detalle.cleaning_commission_pct) || 0}%):
+                                ${formatoDineroReservas.format(comisionLimpieza)}
+                            </div>
+
+                            <div style="margin-top:10px;">
+                                Total cobrado al huésped:
+                                <strong>
+                                    ${formatoDineroReservas.format(totalHuesped)}
+                                </strong>
+                            </div>
+
+                            <div style="margin-top:6px;">
+                                Neto propietario de esta reserva:
+                                <strong>
+                                    ${formatoDineroReservas.format(netoPropietario)}
+                                </strong>
+                            </div>
+
+                            <div style="margin-top:6px;">
+                                Ingreso EC de esta reserva:
+                                <strong>
+                                    ${formatoDineroReservas.format(ingresoEC)}
+                                </strong>
+                            </div>
+
+                        </div>
+                    `;
+                }).join("");
+        }
+    }
+}
+
     const { data: incidencias, error } =
         await supabaseClient
             .from("house_incidencias")
@@ -7897,6 +8118,17 @@ if (formularioIncidencia) {
 incidenciaEditandoId = null;
 
     const house = houses[current];
+
+    const nombreCasaEstadoCuenta =
+    document.getElementById("estadoCuentaCasaNombre");
+
+if (nombreCasaEstadoCuenta) {
+    nombreCasaEstadoCuenta.textContent =
+        house?.nombre ||
+        house?.name ||
+        house?.nombreCasa ||
+        "Casa";
+}
 
     if (!house || !house.id) {
         console.error("❌ La casa no tiene UUID de Supabase");
