@@ -7498,6 +7498,54 @@ async function openDashboardMensual() {
     await cargarDashboardMensual();
 }
 
+function cambiarTabEstadoCuenta(tab) {
+
+    const botonPropietario =
+        document.getElementById("tabEstadoPropietario");
+
+    const botonEC =
+        document.getElementById("tabEstadoEC");
+
+        const contenidoPropietario =
+    document.getElementById("contenidoEstadoPropietario");
+
+const contenidoEC =
+    document.getElementById("contenidoEstadoEC");
+
+    if (!botonPropietario || !botonEC) return;
+
+    const propietarioActivo =
+        tab === "propietario";
+
+        if (contenidoPropietario) {
+    contenidoPropietario.style.display =
+        propietarioActivo ? "block" : "none";
+}
+
+if (contenidoEC) {
+    contenidoEC.style.display =
+        propietarioActivo ? "none" : "block";
+}
+
+    botonPropietario.style.background =
+        propietarioActivo ? "#0D2B45" : "#FFFFFF";
+
+    botonPropietario.style.color =
+        propietarioActivo ? "#FFFFFF" : "#0D2B45";
+
+    botonPropietario.style.border =
+        "1px solid #0D2B45";
+
+    botonEC.style.background =
+        propietarioActivo ? "#FFFFFF" : "#0D2B45";
+
+    botonEC.style.color =
+        propietarioActivo ? "#0D2B45" : "#FFFFFF";
+
+    botonEC.style.border =
+        "1px solid #0D2B45";
+}
+
 async function cargarDashboardMensual() {
 
     const house = houses[current];
@@ -7690,6 +7738,79 @@ async function cargarDashboardMensual() {
         </div>
     </div>
 `;
+
+const resumenPropietario =
+    document.getElementById(
+        "estadoCuentaPropietarioResumen"
+    );
+
+if (resumenPropietario) {
+
+    const ingresoAlquilerPropietario =
+        (Number(datos.rental_net) || 0)
+        - (Number(datos.rental_commission) || 0);
+
+    const egresosAdministracion =
+        (Number(datos.work_subtotal) || 0)
+        + (Number(datos.commission_subtotal) || 0);
+
+    const saldoMesPropietario =
+        ingresoAlquilerPropietario
+        - egresosAdministracion;
+
+    resumenPropietario.innerHTML = `
+        <div
+            style="
+                display:grid;
+                grid-template-columns:
+                    repeat(auto-fit, minmax(150px, 1fr));
+                gap:12px;
+            "
+        >
+            <div class="card">
+                <div class="sub">
+                    INGRESOS DEL MES
+                </div>
+                <strong style="font-size:22px;">
+                    ${formatoDinero.format(
+                        ingresoAlquilerPropietario
+                    )}
+                </strong>
+            </div>
+
+            <div class="card">
+                <div class="sub">
+                    EGRESOS DEL MES
+                </div>
+                <strong style="font-size:22px;">
+                    ${formatoDinero.format(
+                        egresosAdministracion
+                    )}
+                </strong>
+            </div>
+
+            <div class="card">
+                <div class="sub">
+                    SALDO DEL MES
+                </div>
+                <strong style="font-size:22px;">
+                    ${formatoDinero.format(
+                        saldoMesPropietario
+                    )}
+                </strong>
+            </div>
+
+            <div class="card">
+                <div class="sub">
+                    SALDO ACUMULADO
+                </div>
+                <strong style="font-size:22px;">
+                    —
+                </strong>
+            </div>
+        </div>
+    `;
+}
 
     await cargarDetalleEstadoCuenta(
         house.id,

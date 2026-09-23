@@ -1175,17 +1175,89 @@ Guardar incidencia
         style="margin-top:16px;"
     ></div>
 
-    <h3 style="margin-top:24px;">
-    Detalle de reservas
-</h3>
+    <div
+    id="estadoCuentaTabs"
+    style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+        margin-top:20px;
+        margin-bottom:20px;
+    "
+>
+    <button
+        id="tabEstadoPropietario"
+        type="button"
+        onclick="cambiarTabEstadoCuenta('propietario')"
+        style="
+            padding:14px 10px;
+            border:none;
+            border-radius:10px;
+            background:#0D2B45;
+            color:white;
+            font-size:16px;
+            font-weight:700;
+            cursor:pointer;
+        "
+    >
+        PROPIETARIO
+    </button>
 
-<div id="estadoCuentaReservas"></div>
+    <button
+        id="tabEstadoEC"
+        type="button"
+        onclick="cambiarTabEstadoCuenta('ec')"
+        style="
+            padding:14px 10px;
+            border:1px solid #0D2B45;
+            border-radius:10px;
+            background:white;
+            color:#0D2B45;
+            font-size:16px;
+            font-weight:700;
+            cursor:pointer;
+        "
+    >
+        EXPERIENCIA COSTA
+    </button>
+</div>
+
+    <!-- SOLAPA PROPIETARIO -->
+<div id="contenidoEstadoPropietario">
+
+    <div
+        id="estadoCuentaPropietarioResumen"
+        style="margin-top:16px;"
+    ></div>
+
+    <h3 style="margin-top:24px;">
+        Movimientos del propietario
+    </h3>
+
+    <div id="estadoCuentaPropietarioMovimientos"></div>
+
+</div>
+
+
+<!-- SOLAPA EXPERIENCIA COSTA -->
+<div
+    id="contenidoEstadoEC"
+    style="display:none;"
+>
+
+    <h3 style="margin-top:24px;">
+        Detalle de reservas
+    </h3>
+
+    <div id="estadoCuentaReservas"></div>
 
     <h3 style="margin-top:24px;">
         Detalle de incidencias
     </h3>
 
     <div id="estadoCuentaDetalle"></div>
+
+</div>
 
 </section>
 
@@ -1799,7 +1871,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=113"></script>
 <script src="js/storage.js?v=4"></script>
 <script src="js/photos.js?v=2"></script>
-<script src="js/app.js?v=175"></script>
+<script src="js/app.js?v=176"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
