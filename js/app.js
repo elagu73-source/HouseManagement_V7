@@ -7830,6 +7830,11 @@ async function cargarDetalleEstadoCuenta(
             "estadoCuentaDetalle"
         );
 
+        const contenedorMovimientosPropietario =
+    document.getElementById(
+        "estadoCuentaPropietarioMovimientos"
+    );
+
     if (!contenedor) return;
 
     const [anio, mes] =
@@ -7952,6 +7957,69 @@ if (contenedorReservas) {
                         currency: moneda || "ARS"
                     }
                 );
+
+if (contenedorMovimientosPropietario) {
+
+    contenedorMovimientosPropietario.innerHTML =
+        reservas.map(reserva => {
+
+            const detalle =
+                detallesPorReserva.get(reserva.id) || {};
+
+            const alquilerNeto =
+                Number(detalle.rental_net) || 0;
+
+            const comisionAlquiler =
+                Number(detalle.rental_profit) || 0;
+
+            const ingresoPropietario =
+                alquilerNeto - comisionAlquiler;
+
+            const fecha =
+                reserva.check_in
+                    ? new Date(
+                        `${reserva.check_in}T12:00:00`
+                    ).toLocaleDateString("es-AR")
+                    : "-";
+
+            return `
+                <div class="card">
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:space-between;
+                            gap:12px;
+                            align-items:center;
+                        "
+                    >
+                        <div>
+                            <div class="title">
+                                Alquiler
+                            </div>
+
+                            <div class="sub">
+                                ${detalle.tenant_name || "Huésped"}
+                                · ${fecha}
+                            </div>
+                        </div>
+
+                        <div style="text-align:right;">
+                            <div class="sub">
+                                INGRESO
+                            </div>
+
+                            <strong style="font-size:20px;">
+                                ${formatoDineroReservas.format(
+                                    ingresoPropietario
+                                )}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
+}
 
             contenedorReservas.innerHTML =
                 reservas.map(reserva => {
@@ -8140,6 +8208,65 @@ if (contenedorReservas) {
         rechazado: "Rechazado",
         pagado: "Pagado"
     };
+
+if (contenedorMovimientosPropietario) {
+
+    const movimientosEgresos =
+        incidencias.map(incidencia => {
+
+            const total =
+                Number(incidencia.total_cost) || 0;
+
+            const fecha =
+                incidencia.fecha
+                    ? new Date(
+                        `${incidencia.fecha}T12:00:00`
+                    ).toLocaleDateString("es-AR")
+                    : "Sin fecha";
+
+            return `
+                <div class="card">
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:space-between;
+                            gap:12px;
+                            align-items:center;
+                        "
+                    >
+                        <div>
+                            <div class="title">
+                                ${incidencia.ambiente ||
+                                  "Mantenimiento"}
+                            </div>
+
+                            <div class="sub">
+                                ${incidencia.descripcion || ""}
+                            </div>
+
+                            <div class="sub">
+                                ${fecha}
+                            </div>
+                        </div>
+
+                        <div style="text-align:right;">
+                            <div class="sub">
+                                EGRESO
+                            </div>
+
+                            <strong style="font-size:20px;">
+                                ${formatoDinero.format(total)}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
+
+    contenedorMovimientosPropietario.innerHTML +=
+        movimientosEgresos;
+}
 
     contenedor.innerHTML =
         incidencias
