@@ -7929,6 +7929,102 @@ if (resumenPropietario) {
     `;
 }
 
+const resumenEC =
+    document.getElementById(
+        "estadoCuentaECResumen"
+    );
+
+if (resumenEC) {
+
+    const ingresoECMes =
+        (Number(datos.rental_commission) || 0)
+        + (Number(datos.cleaning_commission) || 0)
+        + (Number(datos.commission_subtotal) || 0)
+        + totalHonorariosMes;
+
+    const egresosECMes = 0;
+
+    const saldoECMes =
+        ingresoECMes - egresosECMes;
+
+    let saldoAcumuladoEC = 0;
+
+    if (!errorAcumulado && mesesAcumulados) {
+
+        saldoAcumuladoEC =
+            mesesAcumulados.reduce(
+                (acumulado, mes) => {
+
+                    const ingresoMesEC =
+                        (Number(mes.rental_commission) || 0)
+                        + (Number(mes.cleaning_commission) || 0)
+                        + (Number(mes.commission_subtotal) || 0);
+
+                    return acumulado + ingresoMesEC;
+                },
+                0
+            );
+    }
+
+    saldoAcumuladoEC +=
+        totalHonorariosAcumulados;
+
+    resumenEC.innerHTML = `
+        <div
+            style="
+                display:grid;
+                grid-template-columns:
+                    repeat(auto-fit, minmax(150px, 1fr));
+                gap:12px;
+            "
+        >
+            <div class="card">
+                <div class="sub">
+                    INGRESOS DEL MES
+                </div>
+                <strong style="font-size:22px;">
+                    ${formatoDinero.format(
+                        ingresoECMes
+                    )}
+                </strong>
+            </div>
+
+            <div class="card">
+                <div class="sub">
+                    EGRESOS DEL MES
+                </div>
+                <strong style="font-size:22px;">
+                    ${formatoDinero.format(
+                        egresosECMes
+                    )}
+                </strong>
+            </div>
+
+            <div class="card">
+                <div class="sub">
+                    SALDO DEL MES
+                </div>
+                <strong style="font-size:22px;">
+                    ${formatoDinero.format(
+                        saldoECMes
+                    )}
+                </strong>
+            </div>
+
+            <div class="card">
+                <div class="sub">
+                    SALDO ACUMULADO
+                </div>
+                <strong style="font-size:22px;">
+                    ${formatoDinero.format(
+                        saldoAcumuladoEC
+                    )}
+                </strong>
+            </div>
+        </div>
+    `;
+}
+
     await cargarDetalleEstadoCuenta(
         house.id,
         selectorMes.value,
