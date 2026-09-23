@@ -6708,6 +6708,9 @@ async function openInfoGeneral(){
     document.getElementById('infoHabitaciones').value =
         h.habitaciones ?? '';
 
+        document.getElementById('infoHabitacionesDetalle').value =
+    h.habitaciones_detalle ?? '';
+
     document.getElementById('infoBanios').value =
         h.banios ?? '';
 
@@ -6742,6 +6745,7 @@ const puedeEditarInfoGeneral =
     "infoTelefono",
     "infoCapacidad",
     "infoHabitaciones",
+    "infoHabitacionesDetalle",
     "infoBanios",
     "infoWifi",
     "infoAlarma",
@@ -6798,6 +6802,9 @@ async function guardarInfoGeneral() {
 
     h.habitaciones =
         document.getElementById("infoHabitaciones").value;
+
+        h.habitaciones_detalle =
+    document.getElementById("infoHabitacionesDetalle").value.trim();
 
     h.banios =
         document.getElementById("infoBanios").value;
