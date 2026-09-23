@@ -8307,72 +8307,132 @@ if (contenedorMovimientosPropietario) {
                             ).toLocaleDateString("es-AR")
                             : "-";
 
-                    return `
-                        <div class="card">
+                   return `
+    <div class="card" style="padding:0; overflow:hidden;">
 
-                            <div class="title">
-                                ${detalle.tenant_name || "Reserva"}
-                            </div>
+        <div
+            onclick="
+                const detalle = this.nextElementSibling;
+                const flecha = this.querySelector('.flecha-ec');
 
-                            <div class="sub">
-                                Estadía: ${checkIn} al ${checkOut}
-                            </div>
+                if (detalle.style.display === 'none') {
+                    detalle.style.display = 'block';
+                    flecha.textContent = '⌃';
+                } else {
+                    detalle.style.display = 'none';
+                    flecha.textContent = '⌄';
+                }
+            "
+            style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:16px;
+                padding:14px;
+                cursor:pointer;
+            "
+        >
+            <div>
+                <div class="title">
+                    Reserva · ${detalle.tenant_name || "Reserva"}
+                </div>
 
-                            <div class="sub" style="margin-top:8px;">
-                                Alquiler bruto:
-                                ${formatoDineroReservas.format(alquilerBruto)}
-                            </div>
+                <div class="sub">
+                    ${checkIn} al ${checkOut}
+                </div>
+            </div>
 
-                            <div class="sub">
-                                Descuento larga estadía
-                                (${descuentoPct}%)
-                            </div>
+            <div
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:14px;
+                    flex-shrink:0;
+                "
+            >
+                <div style="text-align:right;">
+                    <div class="sub">
+                        INGRESO
+                    </div>
 
-                            <div class="sub">
-                                Alquiler neto:
-                                ${formatoDineroReservas.format(alquilerNeto)}
-                            </div>
+                    <strong style="font-size:20px;">
+                        +${formatoDineroReservas.format(ingresoEC)}
+                    </strong>
+                </div>
 
-                            <div class="sub">
-                                Comisión alquiler EC
-                                (${Number(detalle.rental_commission_pct) || 0}%):
-                                ${formatoDineroReservas.format(comisionAlquiler)}
-                            </div>
+                <span
+                    class="flecha-ec"
+                    style="
+                        font-size:24px;
+                        font-weight:700;
+                        color:#0D2B45;
+                    "
+                >⌄</span>
+            </div>
+        </div>
 
-                            <div class="sub">
-                                Limpieza:
-                                ${formatoDineroReservas.format(limpieza)}
-                            </div>
+        <div
+            style="
+                display:none;
+                padding:0 14px 14px 14px;
+                border-top:1px solid #E6E7E5;
+            "
+        >
+            <div class="sub" style="margin-top:12px;">
+                Alquiler bruto:
+                ${formatoDineroReservas.format(alquilerBruto)}
+            </div>
 
-                            <div class="sub">
-                                Comisión limpieza EC
-                                (${Number(detalle.cleaning_commission_pct) || 0}%):
-                                ${formatoDineroReservas.format(comisionLimpieza)}
-                            </div>
+            <div class="sub">
+                Descuento larga estadía (${descuentoPct}%)
+            </div>
 
-                            <div style="margin-top:10px;">
-                                Total cobrado al huésped:
-                                <strong>
-                                    ${formatoDineroReservas.format(totalHuesped)}
-                                </strong>
-                            </div>
+            <div class="sub">
+                Alquiler neto:
+                ${formatoDineroReservas.format(alquilerNeto)}
+            </div>
 
-                            <div style="margin-top:6px;">
-                                Neto propietario de esta reserva:
-                                <strong>
-                                    ${formatoDineroReservas.format(netoPropietario)}
-                                </strong>
-                            </div>
+            <div class="sub">
+                Comisión alquiler EC
+                (${Number(detalle.rental_commission_pct) || 0}%):
+                ${formatoDineroReservas.format(comisionAlquiler)}
+            </div>
 
-                            <div style="margin-top:6px;">
-                                Ingreso EC de esta reserva:
-                                <strong>
-                                    ${formatoDineroReservas.format(ingresoEC)}
-                                </strong>
-                            </div>
+            <div class="sub">
+                Limpieza:
+                ${formatoDineroReservas.format(limpieza)}
+            </div>
 
-                        </div>
-                    `;
+            <div class="sub">
+                Comisión limpieza EC
+                (${Number(detalle.cleaning_commission_pct) || 0}%):
+                ${formatoDineroReservas.format(comisionLimpieza)}
+            </div>
+
+            <div style="margin-top:10px;">
+                Total cobrado al huésped:
+                <strong>
+                    ${formatoDineroReservas.format(totalHuesped)}
+                </strong>
+            </div>
+
+            <div style="margin-top:6px;">
+                Neto propietario de esta reserva:
+                <strong>
+                    ${formatoDineroReservas.format(netoPropietario)}
+                </strong>
+            </div>
+
+            <div style="margin-top:6px;">
+                Ingreso EC de esta reserva:
+                <strong>
+                    ${formatoDineroReservas.format(ingresoEC)}
+                </strong>
+            </div>
+        </div>
+
+    </div>
+`;
                 }).join("");
         }
     }
