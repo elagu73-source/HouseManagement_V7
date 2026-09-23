@@ -12481,42 +12481,6 @@ if (error) {
     return;
 }
 
-if (!taskId) {
-    console.error(
-        "No se recibió el ID del mantenimiento registrado."
-    );
-
-    mostrarAvisoHM(
-        "El control se registró, pero no pudimos guardar sus datos económicos."
-    );
-
-    return;
-}
-
-const { error: errorEconomico } =
-    await supabaseClient
-        .from("house_maintenance_tasks")
-        .update({
-            work_amount: costo,
-            commission_pct: porcentajeComision,
-            commission_amount: importeComision,
-            total_amount: totalMantenimiento
-        })
-        .eq("id", taskId);
-
-if (errorEconomico) {
-    console.error(
-        "Error guardando datos económicos del mantenimiento:",
-        errorEconomico
-    );
-
-    mostrarAvisoHM(
-        "El control se registró, pero no pudimos guardar el costo y la comisión."
-    );
-
-    return;
-}
-
         cerrarRegistroMantenimiento();
 
         mostrarAvisoHM(
