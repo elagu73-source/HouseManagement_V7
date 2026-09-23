@@ -9623,6 +9623,73 @@ mantenimientoOrigenTaskId = null;
 await openIncidencias();
 }
 
+async function guardarHonorarioEC() {
+
+    const house = houses[current];
+
+    if (!house || !house.id) {
+        mostrarAvisoHM("No se pudo identificar la casa.");
+        return;
+    }
+
+    const fecha =
+        document.getElementById("honorarioFecha")?.value;
+
+    const concepto =
+        document.getElementById("honorarioConcepto")?.value.trim();
+
+    const importe =
+        Number(
+            document.getElementById("honorarioImporte")?.value
+        ) || 0;
+
+    if (!fecha) {
+        mostrarAvisoHM("Ingresá la fecha del honorario.");
+        return;
+    }
+
+    if (!concepto) {
+        mostrarAvisoHM("Ingresá el concepto del honorario.");
+        return;
+    }
+
+    if (importe <= 0) {
+        mostrarAvisoHM("Ingresá un importe mayor a cero.");
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("house_honorarios")
+            .insert({
+                house_id: house.id,
+                fecha: fecha,
+                concepto: concepto,
+                importe: importe
+            });
+
+    if (error) {
+        console.error(
+            "❌ Error guardando honorario EC:",
+            error
+        );
+
+        mostrarAvisoHM(
+            "No se pudo guardar el honorario."
+        );
+
+        return;
+    }
+
+    document.getElementById("honorarioFecha").value = "";
+    document.getElementById("honorarioConcepto").value = "";
+    document.getElementById("honorarioImporte").value = "";
+
+    mostrarAvisoHM(
+        "Honorario guardado correctamente"
+    );
+}
+
 async function eliminarIncidencia(id){
 
     const confirmarEliminacion =

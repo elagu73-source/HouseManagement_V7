@@ -1117,6 +1117,46 @@ Guardar incidencia
 
 </div>
 
+<div
+    id="bloqueHonorariosEC"
+    class="card"
+    style="margin-top:20px;"
+>
+    <h3 style="margin-top:0;">
+        Honorarios EC
+    </h3>
+
+    <label>Fecha</label>
+    <input
+        id="honorarioFecha"
+        type="date"
+    >
+
+    <label>Concepto</label>
+    <input
+        id="honorarioConcepto"
+        type="text"
+        placeholder="Ej: Gestión extraordinaria"
+    >
+
+    <label>Importe</label>
+    <input
+        id="honorarioImporte"
+        type="number"
+        min="0"
+        step="0.01"
+        placeholder="0"
+    >
+
+    <div
+        class="btn"
+        onclick="guardarHonorarioEC()"
+        style="margin-top:16px;"
+    >
+        Guardar honorario
+    </div>
+</div>
+
 </section>
 
 <section id="estadoCuenta" class="screen">
@@ -1871,7 +1911,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=113"></script>
 <script src="js/storage.js?v=4"></script>
 <script src="js/photos.js?v=2"></script>
-<script src="js/app.js?v=178"></script>
+<script src="js/app.js?v=179"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
