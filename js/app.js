@@ -8627,43 +8627,108 @@ if (contenedorMovimientosPropietario) {
 }
 
     contenedor.innerHTML =
-        incidencias
-            .map(incidencia => {
+    incidencias
+        .map(incidencia => {
 
-                const costo =
-                    Number(
-                        incidencia.work_cost
-                    ) || 0;
+            const costo =
+                Number(
+                    incidencia.work_cost
+                ) || 0;
 
-                const comision =
-                    Number(
-                        incidencia.commission_amount
-                    ) || 0;
+            const comision =
+                Number(
+                    incidencia.commission_amount
+                ) || 0;
 
-                const total =
-                    Number(
-                        incidencia.total_cost
-                    ) || 0;
+            const total =
+                Number(
+                    incidencia.total_cost
+                ) || 0;
 
-                const estado =
-                    nombresEstado[
-                        incidencia.economic_status
-                    ] || "Pendiente";
+            const estado =
+                nombresEstado[
+                    incidencia.economic_status
+                ] || "Pendiente";
 
-                const fecha =
-                    incidencia.fecha
-                        ? new Date(
-                            `${incidencia.fecha}T12:00:00`
-                        ).toLocaleDateString("es-AR")
-                        : "Sin fecha";
+            const fecha =
+                incidencia.fecha
+                    ? new Date(
+                        `${incidencia.fecha}T12:00:00`
+                    ).toLocaleDateString("es-AR")
+                    : "Sin fecha";
 
-                return `
-                    <div class="card">
-                        <div class="title">
-                            ${incidencia.ambiente || "Incidencia"}
+            return `
+                <div class="card" style="padding:0; overflow:hidden;">
+
+                    <div
+                        onclick="
+                            const detalle = this.nextElementSibling;
+                            const flecha = this.querySelector('.flecha-ec');
+
+                            if (detalle.style.display === 'none') {
+                                detalle.style.display = 'block';
+                                flecha.textContent = '⌃';
+                            } else {
+                                detalle.style.display = 'none';
+                                flecha.textContent = '⌄';
+                            }
+                        "
+                        style="
+                            display:flex;
+                            justify-content:space-between;
+                            align-items:center;
+                            gap:16px;
+                            padding:14px;
+                            cursor:pointer;
+                        "
+                    >
+                        <div>
+                            <div class="title">
+                                Incidencia · ${incidencia.ambiente || "Mantenimiento"}
+                            </div>
+
+                            <div class="sub">
+                                ${fecha}
+                            </div>
                         </div>
 
-                        <div class="sub">
+                        <div
+                            style="
+                                display:flex;
+                                align-items:center;
+                                gap:14px;
+                                flex-shrink:0;
+                            "
+                        >
+                            <div style="text-align:right;">
+                                <div class="sub">
+                                    INGRESO
+                                </div>
+
+                                <strong style="font-size:20px;">
+                                    +${formatoDinero.format(comision)}
+                                </strong>
+                            </div>
+
+                            <span
+                                class="flecha-ec"
+                                style="
+                                    font-size:24px;
+                                    font-weight:700;
+                                    color:#0D2B45;
+                                "
+                            >⌄</span>
+                        </div>
+                    </div>
+
+                    <div
+                        style="
+                            display:none;
+                            padding:0 14px 14px 14px;
+                            border-top:1px solid #E6E7E5;
+                        "
+                    >
+                        <div class="sub" style="margin-top:12px;">
                             ${incidencia.descripcion || ""}
                         </div>
 
@@ -8673,8 +8738,7 @@ if (contenedorMovimientosPropietario) {
 
                         <div class="sub">
                             Proveedor:
-                            ${incidencia.provider_name ||
-                              "Sin proveedor"}
+                            ${incidencia.provider_name || "Sin proveedor"}
                         </div>
 
                         <div class="sub">
@@ -8702,9 +8766,11 @@ if (contenedorMovimientosPropietario) {
                             <strong>${estado}</strong>
                         </div>
                     </div>
-                `;
-            })
-            .join("");
+
+                </div>
+            `;
+        })
+        .join("");
 }
 
 async function openIncidencias(){
