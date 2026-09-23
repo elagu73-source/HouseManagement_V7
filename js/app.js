@@ -8094,6 +8094,137 @@ if (errorHonorariosMes) {
     );
 }
 
+const contenedorHonorarios =
+    document.getElementById(
+        "estadoCuentaHonorarios"
+    );
+
+if (contenedorHonorarios) {
+
+    if (errorHonorariosMes || !honorariosMes?.length) {
+
+        contenedorHonorarios.innerHTML = "";
+
+    } else {
+
+        const formatoDineroHonorarios =
+            new Intl.NumberFormat(
+                "es-AR",
+                {
+                    style: "currency",
+                    currency: moneda || "ARS"
+                }
+            );
+
+        contenedorHonorarios.innerHTML =
+            honorariosMes
+                .map(honorario => {
+
+                    const importe =
+                        Number(honorario.importe) || 0;
+
+                    const fecha =
+                        honorario.fecha
+                            ? new Date(
+                                `${honorario.fecha}T12:00:00`
+                            ).toLocaleDateString("es-AR")
+                            : "Sin fecha";
+
+                    return `
+                        <div class="card" style="padding:0; overflow:hidden;">
+
+                            <div
+                                onclick="
+                                    const detalle = this.nextElementSibling;
+                                    const flecha = this.querySelector('.flecha-ec');
+
+                                    if (detalle.style.display === 'none') {
+                                        detalle.style.display = 'block';
+                                        flecha.textContent = '⌃';
+                                    } else {
+                                        detalle.style.display = 'none';
+                                        flecha.textContent = '⌄';
+                                    }
+                                "
+                                style="
+                                    display:flex;
+                                    justify-content:space-between;
+                                    align-items:center;
+                                    gap:16px;
+                                    padding:14px;
+                                    cursor:pointer;
+                                "
+                            >
+                                <div>
+                                    <div class="title">
+                                        Honorarios EC · ${honorario.concepto || "Honorario"}
+                                    </div>
+
+                                    <div class="sub">
+                                        ${fecha}
+                                    </div>
+                                </div>
+
+                                <div
+                                    style="
+                                        display:flex;
+                                        align-items:center;
+                                        gap:14px;
+                                        flex-shrink:0;
+                                    "
+                                >
+                                    <div style="text-align:right;">
+                                        <div class="sub">
+                                            INGRESO
+                                        </div>
+
+                                        <strong style="font-size:20px;">
+                                            +${formatoDineroHonorarios.format(importe)}
+                                        </strong>
+                                    </div>
+
+                                    <span
+                                        class="flecha-ec"
+                                        style="
+                                            font-size:24px;
+                                            font-weight:700;
+                                            color:#0D2B45;
+                                        "
+                                    >⌄</span>
+                                </div>
+                            </div>
+
+                            <div
+                                style="
+                                    display:none;
+                                    padding:0 14px 14px 14px;
+                                    border-top:1px solid #E6E7E5;
+                                "
+                            >
+                                <div class="sub" style="margin-top:12px;">
+                                    Concepto:
+                                    ${honorario.concepto || "Honorario"}
+                                </div>
+
+                                <div class="sub">
+                                    Fecha: ${fecha}
+                                </div>
+
+                                <div style="margin-top:6px;">
+                                    Importe:
+                                    <strong>
+                                        ${formatoDineroHonorarios.format(importe)}
+                                    </strong>
+                                </div>
+                            </div>
+
+                        </div>
+                    `;
+                })
+                .join("");
+    }
+}
+
         const contenedorReservas =
     document.getElementById("estadoCuentaReservas");
 
