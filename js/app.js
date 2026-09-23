@@ -7632,6 +7632,69 @@ if (errorAcumulado) {
     );
 }
 
+const fechaFinMesSeleccionado = (() => {
+
+    const [anio, mes] =
+        selectorMes.value
+            .split("-")
+            .map(Number);
+
+    const siguienteAnio =
+        mes === 12 ? anio + 1 : anio;
+
+    const siguienteMes =
+        mes === 12 ? 1 : mes + 1;
+
+    return `${siguienteAnio}-${String(
+        siguienteMes
+    ).padStart(2, "0")}-01`;
+
+})();
+
+
+const {
+    data: honorariosAcumulados,
+    error: errorHonorariosAcumulados
+} =
+    await supabaseClient
+        .from("house_honorarios")
+        .select("fecha, importe")
+        .eq("house_id", house.id)
+        .gte("fecha", fechaInicioAnio)
+        .lt("fecha", fechaFinMesSeleccionado);
+
+if (errorHonorariosAcumulados) {
+    console.error(
+        "Error cargando honorarios acumulados:",
+        errorHonorariosAcumulados
+    );
+}
+
+
+const totalHonorariosAcumulados =
+    (honorariosAcumulados || [])
+        .reduce(
+            (total, honorario) =>
+                total +
+                (Number(honorario.importe) || 0),
+            0
+        );
+
+
+const totalHonorariosMes =
+    (honorariosAcumulados || [])
+        .filter(
+            honorario =>
+                honorario.fecha >= fechaMes &&
+                honorario.fecha < fechaFinMesSeleccionado
+        )
+        .reduce(
+            (total, honorario) =>
+                total +
+                (Number(honorario.importe) || 0),
+            0
+        );
+
     const datos = data || {};
 
     const moneda =
@@ -7787,6 +7850,9 @@ if (!errorAcumulado && mesesAcumulados) {
         );
 }
 
+saldoAcumuladoPropietario -=
+    totalHonorariosAcumulados;
+
 const resumenPropietario =
     document.getElementById(
         "estadoCuentaPropietarioResumen"
@@ -7799,8 +7865,9 @@ if (resumenPropietario) {
         - (Number(datos.rental_commission) || 0);
 
     const egresosAdministracion =
-        (Number(datos.work_subtotal) || 0)
-        + (Number(datos.commission_subtotal) || 0);
+    (Number(datos.work_subtotal) || 0)
+    + (Number(datos.commission_subtotal) || 0)
+    + totalHonorariosMes;
 
     const saldoMesPropietario =
         ingresoAlquilerPropietario
@@ -7907,6 +7974,29 @@ async function cargarDetalleEstadoCuenta(
 
     const fechaFin =
         `${siguienteAnio}-${String(siguienteMes).padStart(2, "0")}-01`;
+
+        const { data: honorariosMes, error: errorHonorariosMes } =
+    await supabaseClient
+        .from("house_honorarios")
+        .select(`
+            id,
+            fecha,
+            concepto,
+            importe
+        `)
+        .eq("house_id", houseId)
+        .gte("fecha", fechaInicio)
+        .lt("fecha", fechaFin)
+        .order("fecha", {
+            ascending: false
+        });
+
+if (errorHonorariosMes) {
+    console.error(
+        "Error cargando honorarios EC:",
+        errorHonorariosMes
+    );
+}
 
         const contenedorReservas =
     document.getElementById("estadoCuentaReservas");
@@ -8258,6 +8348,68 @@ if (contenedorMovimientosPropietario) {
         rechazado: "Rechazado",
         pagado: "Pagado"
     };
+
+if (
+    contenedorMovimientosPropietario &&
+    !errorHonorariosMes &&
+    honorariosMes?.length
+) {
+
+    const movimientosHonorarios =
+        honorariosMes.map(honorario => {
+
+            const importe =
+                Number(honorario.importe) || 0;
+
+            const fecha =
+                honorario.fecha
+                    ? new Date(
+                        `${honorario.fecha}T12:00:00`
+                    ).toLocaleDateString("es-AR")
+                    : "Sin fecha";
+
+            return `
+                <div class="card">
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:space-between;
+                            gap:12px;
+                            align-items:center;
+                        "
+                    >
+                        <div>
+                            <div class="title">
+                                Honorarios EC
+                            </div>
+
+                            <div class="sub">
+                                ${honorario.concepto || ""}
+                            </div>
+
+                            <div class="sub">
+                                ${fecha}
+                            </div>
+                        </div>
+
+                        <div style="text-align:right;">
+                            <div class="sub">
+                                EGRESO
+                            </div>
+
+                            <strong style="font-size:20px;">
+                                -${formatoDinero.format(importe)}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
+
+    contenedorMovimientosPropietario.innerHTML +=
+        movimientosHonorarios;
+}
 
 if (contenedorMovimientosPropietario) {
 
