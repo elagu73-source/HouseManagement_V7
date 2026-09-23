@@ -38,6 +38,7 @@ async function saveHouseToSupabase(house) {
                         propietario: house.propietario || '',
                         telefono: house.telefono || '',
                         habitaciones: parseInt(house.habitaciones) || 0,
+                        habitaciones_detalle: house.habitaciones_detalle || '',
                         banios: parseInt(house.banios) || 0,
 
                         wifi: house.wifi || '',
@@ -94,6 +95,7 @@ valoracion_url:
                         propietario: house.propietario || '',
                         telefono: house.telefono || '',
                         habitaciones: parseInt(house.habitaciones) || 0,
+                        habitaciones_detalle: house.habitaciones_detalle || '',
                         banios: parseInt(house.banios) || 0,
 
                         wifi: house.wifi || '',
