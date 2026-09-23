@@ -10329,13 +10329,13 @@ const ambientes=[
 
 function ordenAmbientesChecklist(lista) {
     const indices = lista.map((_, i) => i);
-    return indices.filter(i => (lista[i].originalTitle ?? lista[i].title) !== "Control Final")
-        .concat(indices.filter(i => (lista[i].originalTitle ?? lista[i].title) === "Control Final"));
+    return indices.filter(i => lista[i].title !== "Control Final")
+        .concat(indices.filter(i => lista[i].title === "Control Final"));
 }
 
 function agregarLavaderoSiFalta(lista) {
     const copia = JSON.parse(JSON.stringify(lista));
-    if (!copia.some(a => String(a.originalTitle ?? a.title ?? "").trim().toLowerCase() === "lavadero")) {
+    if (!copia.some(a => String(a.title || "").trim().toLowerCase() === "lavadero")) {
         copia.push({title:"Lavadero",items:["Lavarropas","Secarropas","Detergente","Piso"]});
     }
     return copia;
@@ -10483,7 +10483,7 @@ if(!checks[key]){
     checks[key] = new Array(env.items.length).fill(false);
 }
 
-prepTitle.textContent = env.title;
+prepTitle.innerHTML = env.title;
 
 checklist.innerHTML = "";
 
@@ -10830,64 +10830,24 @@ async function openChecklistEditor(){
     // Primero cargamos la configuración real desde Supabase
     await cargarConfiguracionChecklistCasa();
 
-    actualizarSelectorAmbientesChecklist();
+    const sel =
+        document.getElementById("ambienteSel");
+
+    sel.innerHTML = "";
+
+    const lista = ensureChecklist();
+    ordenAmbientesChecklist(lista).forEach(i => {
+        const a = lista[i];
+
+        sel.innerHTML +=
+            `<option value="${i}">
+                ${a.title}
+            </option>`;
+    });
 
     loadChecklistEditor();
 
     go("editChecklist");
-}
-
-function actualizarSelectorAmbientesChecklist(selectedIndex) {
-    const sel = document.getElementById("ambienteSel");
-    const lista = ensureChecklist();
-    sel.replaceChildren();
-    ordenAmbientesChecklist(lista).forEach(i => {
-        const option = document.createElement("option");
-        option.value = String(i);
-        option.textContent = lista[i].title;
-        sel.appendChild(option);
-    });
-    if (selectedIndex !== undefined) sel.value = String(selectedIndex);
-}
-
-async function editarNombreAmbienteChecklist(index, input) {
-    const houseIndex = current;
-    const env = ensureChecklist()[index];
-    const nombre = input.value.trim();
-    if (!nombre) {
-        input.value = env.title;
-        alert("El nombre del ambiente no puede quedar vacío.");
-        return;
-    }
-    if (nombre === env.title) { input.value = nombre; return; }
-    const anterior = env.title;
-    const identidadAnterior = env.originalTitle;
-    // Conservar la identidad y los índices usados por marcas y observaciones.
-    env.originalTitle = env.originalTitle ?? anterior;
-    env.title = nombre;
-    input.value = nombre;
-    input.disabled = true;
-    try {
-        if (!await guardarConfiguracionChecklist()) {
-            env.title = anterior;
-            if (identidadAnterior === undefined) delete env.originalTitle;
-            else env.originalTitle = identidadAnterior;
-            input.value = anterior;
-        }
-    } catch (error) {
-        env.title = anterior;
-        if (identidadAnterior === undefined) delete env.originalTitle;
-        else env.originalTitle = identidadAnterior;
-        input.value = anterior;
-        console.error("Error guardando nombre del ambiente:", error);
-        alert("No se pudo guardar el nombre. Volvé a intentarlo.");
-    } finally {
-        input.disabled = false;
-        if (current === houseIndex) {
-            const sel = document.getElementById("ambienteSel");
-            actualizarSelectorAmbientesChecklist(sel.value);
-        }
-    }
 }
 
 function loadChecklistEditor(){
@@ -10896,7 +10856,6 @@ function loadChecklistEditor(){
  const box=document.getElementById('items');
  box.innerHTML='';
 const env = data[idx];
-if (!env) return;
 
 env.items.forEach((t,i)=>{
 
@@ -10914,19 +10873,6 @@ box.innerHTML += `<div style="display:flex;gap:6px;margin:4px 0"><input value="$
 </button>
 </div>`;
 });
-const label = document.createElement("label");
-label.htmlFor = "nombreAmbienteChecklist";
-label.textContent = "Nombre del ambiente";
-const nombre = document.createElement("input");
-nombre.id = "nombreAmbienteChecklist";
-nombre.type = "text";
-nombre.value = env.title;
-nombre.required = true;
-nombre.onchange = () => editarNombreAmbienteChecklist(idx, nombre);
-const encabezado = document.createElement("div");
-encabezado.style.marginBottom = "16px";
-encabezado.append(label, nombre);
-box.prepend(encabezado);
 }
 
 async function guardarConfiguracionChecklist(){
@@ -10939,7 +10885,7 @@ async function guardarConfiguracionChecklist(){
             "❌ La casa no tiene UUID de Supabase"
         );
 
-        return false;
+        return;
     }
 
     const key = "c" + current;
@@ -10969,10 +10915,9 @@ async function guardarConfiguracionChecklist(){
             "No se pudo guardar el checklist. Revisá la consola."
         );
 
-        return false;
+        return;
     }
 
-    return true;
 }
 
 async function editItem(a, i, v){
