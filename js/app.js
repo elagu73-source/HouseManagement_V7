@@ -7568,80 +7568,121 @@ async function cargarDashboardMensual() {
         );
 
     resumen.innerHTML = `
-        <div
-            style="
-                display:grid;
-                grid-template-columns:
-                    repeat(auto-fit, minmax(150px, 1fr));
-                gap:12px;
-            "
-        >
-            <div class="card">
-                <div class="sub">Incidencias</div>
-                <strong>
-                    ${Number(datos.incident_count) || 0}
-                </strong>
-            </div>
-
-            <div class="card">
-                <div class="sub">Trabajos</div>
-                <strong>
-                    ${formatoDinero.format(
-                        Number(datos.work_subtotal) || 0
-                    )}
-                </strong>
-            </div>
-
-            <div class="card">
-                <div class="sub">Comisiones</div>
-                <strong>
-                    ${formatoDinero.format(
-                        Number(datos.commission_subtotal) || 0
-                    )}
-                </strong>
-            </div>
-
-            <div class="card">
-                <div class="sub">Total del mes</div>
-                <strong>
-                    ${formatoDinero.format(
-                        Number(datos.total) || 0
-                    )}
-                </strong>
-            </div>
-
-            <div class="card">
-                <div class="sub">Total aprobado</div>
-                <strong>
-                    ${formatoDinero.format(
-                        Number(datos.approved_total) || 0
-                    )}
-                </strong>
-            </div>
-
-            <div class="card">
-                <div class="sub">Total pagado</div>
-                <strong>
-                    ${formatoDinero.format(
-                        Number(datos.paid_total) || 0
-                    )}
-                </strong>
-            </div>
+    <div
+        style="
+            display:grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(180px, 1fr));
+            gap:12px;
+        "
+    >
+        <div class="card">
+            <div class="sub">Reservas</div>
+            <strong>
+                ${Number(datos.reservation_count) || 0}
+            </strong>
         </div>
 
-        <div class="card" style="margin-top:12px;">
-            Pendientes:
-            <strong>${Number(datos.pending_count) || 0}</strong>
-            · Presupuestadas:
-            <strong>${Number(datos.budgeted_count) || 0}</strong>
-            · Aprobadas:
-            <strong>${Number(datos.approved_count) || 0}</strong>
-            · Rechazadas:
-            <strong>${Number(datos.rejected_count) || 0}</strong>
-            · Pagadas:
-            <strong>${Number(datos.paid_count) || 0}</strong>
+        <div class="card">
+            <div class="sub">Ingresos por alquiler</div>
+            <strong>
+                ${formatoDinero.format(
+                    Number(datos.rental_net) || 0
+                )}
+            </strong>
         </div>
-    `;
+
+        <div class="card">
+            <div class="sub">Limpieza</div>
+            <strong>
+                ${formatoDinero.format(
+                    Number(datos.cleaning_cost) || 0
+                )}
+            </strong>
+        </div>
+
+        <div class="card">
+            <div class="sub">Incidencias / mantenimiento</div>
+            <strong>
+                ${formatoDinero.format(
+                    Number(datos.work_subtotal) || 0
+                )}
+            </strong>
+        </div>
+    </div>
+
+    <div
+        style="
+            display:grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(260px, 1fr));
+            gap:12px;
+            margin-top:12px;
+        "
+    >
+        <div class="card">
+            <div class="sub">
+                NETO PARA EL PROPIETARIO
+            </div>
+
+            <strong style="font-size:26px;">
+                ${formatoDinero.format(
+                    Number(datos.owner_net) || 0
+                )}
+            </strong>
+        </div>
+
+        <div class="card">
+            <div class="sub">
+                INGRESO EXPERIENCIA COSTA
+            </div>
+
+            <strong style="font-size:26px;">
+                ${formatoDinero.format(
+                    Number(datos.ec_income) || 0
+                )}
+            </strong>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+        <div>
+            Comisión alquiler EC:
+            <strong>
+                ${formatoDinero.format(
+                    Number(datos.rental_commission) || 0
+                )}
+            </strong>
+        </div>
+
+        <div>
+            Comisión limpieza EC:
+            <strong>
+                ${formatoDinero.format(
+                    Number(datos.cleaning_commission) || 0
+                )}
+            </strong>
+        </div>
+
+        <div>
+            Comisión incidencias / mantenimiento EC:
+            <strong>
+                ${formatoDinero.format(
+                    Number(datos.commission_subtotal) || 0
+                )}
+            </strong>
+        </div>
+
+        <div style="margin-top:8px;">
+            Total de gastos/cargos al propietario:
+            <strong>
+                ${formatoDinero.format(
+                    Number(datos.owner_expenses) || 0
+                )}
+            </strong>
+        </div>
+    </div>
+`;
 
     await cargarDetalleEstadoCuenta(
         house.id,
