@@ -7608,6 +7608,30 @@ async function cargarDashboardMensual() {
         return;
     }
 
+    const anioSeleccionado =
+    selectorMes.value.split("-")[0];
+
+const fechaInicioAnio =
+    `${anioSeleccionado}-01-01`;
+
+const { data: mesesAcumulados, error: errorAcumulado } =
+    await supabaseClient
+        .from("house_monthly_cost_summary")
+        .select("*")
+        .eq("house_id", house.id)
+        .gte("month", fechaInicioAnio)
+        .lte("month", fechaMes)
+        .order("month", {
+            ascending: true
+        });
+
+if (errorAcumulado) {
+    console.error(
+        "Error cargando saldo acumulado:",
+        errorAcumulado
+    );
+}
+
     const datos = data || {};
 
     const moneda =
@@ -7739,6 +7763,30 @@ async function cargarDashboardMensual() {
     </div>
 `;
 
+let saldoAcumuladoPropietario = 0;
+
+if (!errorAcumulado && mesesAcumulados) {
+
+    saldoAcumuladoPropietario =
+        mesesAcumulados.reduce(
+            (acumulado, mes) => {
+
+                const ingresoPropietario =
+                    (Number(mes.rental_net) || 0)
+                    - (Number(mes.rental_commission) || 0);
+
+                const egresosPropietario =
+                    (Number(mes.work_subtotal) || 0)
+                    + (Number(mes.commission_subtotal) || 0);
+
+                return acumulado
+                    + ingresoPropietario
+                    - egresosPropietario;
+            },
+            0
+        );
+}
+
 const resumenPropietario =
     document.getElementById(
         "estadoCuentaPropietarioResumen"
@@ -7805,8 +7853,10 @@ if (resumenPropietario) {
                     SALDO ACUMULADO
                 </div>
                 <strong style="font-size:22px;">
-                    —
-                </strong>
+    ${formatoDinero.format(
+        saldoAcumuladoPropietario
+    )}
+</strong>
             </div>
         </div>
     `;
@@ -8255,8 +8305,8 @@ if (contenedorMovimientosPropietario) {
                             </div>
 
                             <strong style="font-size:20px;">
-                                ${formatoDinero.format(total)}
-                            </strong>
+    -${formatoDinero.format(total)}
+</strong>
                         </div>
                     </div>
                 </div>
