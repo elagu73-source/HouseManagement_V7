@@ -1540,35 +1540,35 @@ async function cargarResumenCuentas() {
             totalGeneral +=
                 total;
 
-            return `
-                <tr>
-                    <td>
-                        ${house.name || house.nombre || "Casa"}
-                    </td>
+                    return `
+            <tr>
+                <td data-label="Casa">
+                    ${house.name || house.nombre || "Casa"}
+                </td>
 
-                    <td>
-                        ${formatoDinero.format(alquileres)}
-                    </td>
+                <td data-label="Alquileres">
+                    ${formatoDinero.format(alquileres)}
+                </td>
 
-                    <td>
-                        ${formatoDinero.format(limpieza)}
-                    </td>
+                <td data-label="Limpieza">
+                    ${formatoDinero.format(limpieza)}
+                </td>
 
-                    <td>
-                        ${formatoDinero.format(incidencias)}
-                    </td>
+                <td data-label="Incidencias">
+                    ${formatoDinero.format(incidencias)}
+                </td>
 
-                    <td>
-                        ${formatoDinero.format(honorarios)}
-                    </td>
+                <td data-label="Honorarios">
+                    ${formatoDinero.format(honorarios)}
+                </td>
 
-                    <td>
-                        <strong>
-                            ${formatoDinero.format(total)}
-                        </strong>
-                    </td>
-                </tr>
-            `;
+                <td data-label="Total">
+                    <strong>
+                        ${formatoDinero.format(total)}
+                    </strong>
+                </td>
+            </tr>
+        `;
         })
         .join("");
 
@@ -1710,29 +1710,31 @@ const cumplimientoObjetivo =
                 <tbody>
                     ${filas}
 
-                    <tr style="font-weight:700;">
-                        <td>TOTAL</td>
+                    <tr class="resumen-cuentas-total" style="font-weight:700;">
+    <td data-label="Casa">
+        TOTAL
+    </td>
 
-                        <td>
-                            ${formatoDinero.format(totalAlquileres)}
-                        </td>
+    <td data-label="Alquileres">
+        ${formatoDinero.format(totalAlquileres)}
+    </td>
 
-                        <td>
-                            ${formatoDinero.format(totalLimpieza)}
-                        </td>
+    <td data-label="Limpieza">
+        ${formatoDinero.format(totalLimpieza)}
+    </td>
 
-                        <td>
-                            ${formatoDinero.format(totalIncidencias)}
-                        </td>
+    <td data-label="Incidencias">
+        ${formatoDinero.format(totalIncidencias)}
+    </td>
 
-                        <td>
-                            ${formatoDinero.format(totalHonorarios)}
-                        </td>
+    <td data-label="Honorarios">
+        ${formatoDinero.format(totalHonorarios)}
+    </td>
 
-                        <td>
-                            ${formatoDinero.format(totalGeneral)}
-                        </td>
-                    </tr>
+    <td data-label="Total">
+        ${formatoDinero.format(totalGeneral)}
+    </td>
+</tr>
                 </tbody>
             </table>
 
@@ -1765,17 +1767,30 @@ const cumplimientoObjetivo =
         </div>
 
         <input
-            id="objetivoMensualInput"
-            type="number"
-            min="0"
-            step="1000"
-            value="${objetivoMes}"
-            style="
-                margin-top:8px;
-                width:100%;
-                box-sizing:border-box;
-            "
-        >
+    id="objetivoMensualInput"
+    type="number"
+    min="0"
+    step="1000"
+    value="${objetivoMes}"
+    oninput="actualizarFormatoObjetivo(this.value)"
+    style="
+        margin-top:8px;
+        width:100%;
+        box-sizing:border-box;
+    "
+>
+
+        <div
+    id="objetivoMensualFormato"
+    style="
+        margin-top:6px;
+        font-size:18px;
+        font-weight:700;
+        color:#0D2B45;
+    "
+>
+    ${formatoDinero.format(objetivoMes)}
+</div>
 
         <button
             type="button"
@@ -14510,4 +14525,26 @@ async function editarTituloMantenimiento(plan) {
 
     mostrarAvisoHM("Título de mantenimiento actualizado.");
     await abrirMantenimientoCasa();
+}
+
+function actualizarFormatoObjetivo(valor) {
+
+    const formato =
+        document.getElementById(
+            "objetivoMensualFormato"
+        );
+
+    if (!formato) return;
+
+    const numero =
+        Number(valor) || 0;
+
+    formato.textContent =
+        new Intl.NumberFormat(
+            "es-AR",
+            {
+                style: "currency",
+                currency: "ARS"
+            }
+        ).format(numero);
 }
