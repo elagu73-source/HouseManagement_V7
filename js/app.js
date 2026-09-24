@@ -1276,6 +1276,368 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 });
 
+async function abrirResumenCuentas() {
+
+    const {
+        data: rolResumen,
+        error: errorRolResumen
+    } =
+        await supabaseClient.rpc(
+            "current_organization_role"
+        );
+
+    const {
+        data: esSuperadminResumen,
+        error: errorSuperadminResumen
+    } =
+        await supabaseClient.rpc(
+            "current_user_is_superadmin"
+        );
+
+    const tieneAcceso =
+        (
+            !errorRolResumen &&
+            rolResumen === "admin"
+        ) ||
+        (
+            !errorSuperadminResumen &&
+            esSuperadminResumen === true
+        );
+
+    if (!tieneAcceso) {
+
+        mostrarAvisoHM(
+            "No tenés permisos para acceder al resumen de cuentas."
+        );
+
+        return;
+    }
+
+    const selectorMes =
+        document.getElementById(
+            "resumenCuentasMes"
+        );
+
+    if (!selectorMes.value) {
+
+        const hoy = new Date();
+
+        const anio =
+            hoy.getFullYear();
+
+        const mes =
+            String(
+                hoy.getMonth() + 1
+            ).padStart(2, "0");
+
+        selectorMes.value =
+            `${anio}-${mes}`;
+    }
+
+     selectorMes.onchange =
+        cargarResumenCuentas;
+
+    go("resumenCuentas");
+
+        await cargarResumenCuentas();
+
+}
+
+async function cargarResumenCuentas() {
+
+    const selectorMes =
+        document.getElementById(
+            "resumenCuentasMes"
+        );
+
+    const contenedor =
+        document.getElementById(
+            "resumenCuentasContenido"
+        );
+
+    if (!selectorMes || !contenedor) {
+        return;
+    }
+
+    if (!selectorMes.value) {
+        return;
+    }
+
+    contenedor.innerHTML = `
+        <div class="card">
+            Cargando resumen de cuentas...
+        </div>
+    `;
+
+    const fechaMes =
+        `${selectorMes.value}-01`;
+
+    const [anio, mes] =
+        selectorMes.value
+            .split("-")
+            .map(Number);
+
+    const siguienteAnio =
+        mes === 12
+            ? anio + 1
+            : anio;
+
+    const siguienteMes =
+        mes === 12
+            ? 1
+            : mes + 1;
+
+    const fechaFin =
+        `${siguienteAnio}-${String(
+            siguienteMes
+        ).padStart(2, "0")}-01`;
+
+    const {
+        data: resumenMes,
+        error: errorResumen
+    } =
+        await supabaseClient
+            .from(
+                "house_monthly_cost_summary"
+            )
+            .select("*")
+            .eq("month", fechaMes);
+
+    if (errorResumen) {
+
+        console.error(
+            "Error cargando resumen de cuentas:",
+            errorResumen
+        );
+
+        contenedor.innerHTML = `
+            <div class="card">
+                No se pudo cargar el resumen de cuentas.
+            </div>
+        `;
+
+        return;
+    }
+
+    const {
+        data: honorariosMes,
+        error: errorHonorarios
+    } =
+        await supabaseClient
+            .from("house_honorarios")
+            .select(`
+                house_id,
+                fecha,
+                importe
+            `)
+            .gte("fecha", fechaMes)
+            .lt("fecha", fechaFin);
+
+    if (errorHonorarios) {
+
+        console.error(
+            "Error cargando honorarios del resumen:",
+            errorHonorarios
+        );
+    }
+
+    const honorariosPorCasa = {};
+
+    (honorariosMes || []).forEach(
+        honorario => {
+
+            if (!honorariosPorCasa[
+                honorario.house_id
+            ]) {
+                honorariosPorCasa[
+                    honorario.house_id
+                ] = 0;
+            }
+
+            honorariosPorCasa[
+                honorario.house_id
+            ] +=
+                Number(
+                    honorario.importe
+                ) || 0;
+        }
+    );
+
+    const resumenPorCasa =
+        new Map(
+            (resumenMes || []).map(
+                fila => [
+                    fila.house_id,
+                    fila
+                ]
+            )
+        );
+
+    const formatoDinero =
+        new Intl.NumberFormat(
+            "es-AR",
+            {
+                style: "currency",
+                currency: "ARS",
+                maximumFractionDigits: 0
+            }
+        );
+
+    let totalAlquileres = 0;
+    let totalLimpieza = 0;
+    let totalIncidencias = 0;
+    let totalHonorarios = 0;
+    let totalGeneral = 0;
+
+    const filas =
+        houses.map(house => {
+
+            const datos =
+                resumenPorCasa.get(
+                    house.id
+                ) || {};
+
+            const alquileres =
+                Number(
+                    datos.rental_commission
+                ) || 0;
+
+            const limpieza =
+                Number(
+                    datos.cleaning_commission
+                ) || 0;
+
+            const incidencias =
+                Number(
+                    datos.commission_subtotal
+                ) || 0;
+
+            const honorarios =
+                Number(
+                    honorariosPorCasa[
+                        house.id
+                    ]
+                ) || 0;
+
+            const total =
+                alquileres +
+                limpieza +
+                incidencias +
+                honorarios;
+
+            totalAlquileres +=
+                alquileres;
+
+            totalLimpieza +=
+                limpieza;
+
+            totalIncidencias +=
+                incidencias;
+
+            totalHonorarios +=
+                honorarios;
+
+            totalGeneral +=
+                total;
+
+            return `
+                <tr>
+                    <td>
+                        ${house.name || house.nombre || "Casa"}
+                    </td>
+
+                    <td>
+                        ${formatoDinero.format(alquileres)}
+                    </td>
+
+                    <td>
+                        ${formatoDinero.format(limpieza)}
+                    </td>
+
+                    <td>
+                        ${formatoDinero.format(incidencias)}
+                    </td>
+
+                    <td>
+                        ${formatoDinero.format(honorarios)}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${formatoDinero.format(total)}
+                        </strong>
+                    </td>
+                </tr>
+            `;
+        })
+        .join("");
+
+    contenedor.innerHTML = `
+        <div class="card" style="overflow-x:auto;">
+
+            <table
+                style="
+                    width:100%;
+                    border-collapse:collapse;
+                    min-width:800px;
+                "
+            >
+                <thead>
+                    <tr>
+                        <th>Casa</th>
+                        <th>Alquileres</th>
+                        <th>Limpieza</th>
+                        <th>Comisiones incidencias</th>
+                        <th>Honorarios</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${filas}
+
+                    <tr style="font-weight:700;">
+                        <td>TOTAL</td>
+
+                        <td>
+                            ${formatoDinero.format(totalAlquileres)}
+                        </td>
+
+                        <td>
+                            ${formatoDinero.format(totalLimpieza)}
+                        </td>
+
+                        <td>
+                            ${formatoDinero.format(totalIncidencias)}
+                        </td>
+
+                        <td>
+                            ${formatoDinero.format(totalHonorarios)}
+                        </td>
+
+                        <td>
+                            ${formatoDinero.format(totalGeneral)}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+
+            <div class="sub">
+                TOTAL INGRESOS DEL MES
+            </div>
+
+            <strong style="font-size:28px;">
+                ${formatoDinero.format(totalGeneral)}
+            </strong>
+
+        </div>
+    `;
+}
+
 async function abrirSuperadmin() {
 
     const {
@@ -1713,6 +2075,48 @@ if (superadminAccess) {
     } else {
         superadminAccess.style.display = "block";
     }
+}
+
+// ============================================
+// ACCESO A RESUMEN DE CUENTAS
+// Admin o Superadministrador
+// ============================================
+
+const resumenCuentasAccess =
+    document.getElementById(
+        "resumenCuentasAccess"
+    );
+
+if (resumenCuentasAccess) {
+
+    const {
+        data: rolResumenCuentas,
+        error: errorRolResumenCuentas
+    } =
+        await supabaseClient.rpc(
+            "current_organization_role"
+        );
+
+    const {
+        data: esSuperadminResumen,
+        error: errorSuperadminResumen
+    } =
+        await supabaseClient.rpc(
+            "current_user_is_superadmin"
+        );
+
+    const puedeVerResumenCuentas =
+        !errorRolResumenCuentas &&
+        rolResumenCuentas === "admin" ||
+        (
+            !errorSuperadminResumen &&
+            esSuperadminResumen === true
+        );
+
+    resumenCuentasAccess.style.display =
+        puedeVerResumenCuentas
+            ? "block"
+            : "none";
 }
 
 await aplicarModulosOrganizacion();

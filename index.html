@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#0D2B45">
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>House Management V7</title>
-<link rel="stylesheet" href="css/style.css?v=19"></head><body>
+<link rel="stylesheet" href="css/style.css?v=20"></head><body>
 
 <section id="cover" class="screen active">
     <div class="cover-content">
@@ -142,6 +142,14 @@
     onclick="abrirConfiguracionOrganizacion()"
     style="display:none;">
     Configuración
+</button>
+
+<button
+    id="resumenCuentasAccess"
+    type="button"
+    onclick="abrirResumenCuentas()"
+    style="display:none;">
+    Resumen de cuentas
 </button>
 
 <button
@@ -1921,7 +1929,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=113"></script>
 <script src="js/storage.js?v=4"></script>
 <script src="js/photos.js?v=2"></script>
-<script src="js/app.js?v=186"></script>
+<script src="js/app.js?v=187"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();
@@ -2277,6 +2285,41 @@ document.addEventListener("DOMContentLoaded", () => {
             Guardar configuración
         </button>
 
+    </div>
+
+</section>
+
+<!-- ============================================
+     RESUMEN DE CUENTAS
+     ============================================ -->
+
+<section id="resumenCuentas" class="screen">
+
+    <button
+        type="button"
+        onclick="go('home')"
+        class="btn usuarios-back-btn">
+        &lt; Propiedades
+    </button>
+
+    <h2>Resumen de cuentas</h2>
+
+    <div class="card">
+
+        <label for="resumenCuentasMes">
+            Mes
+        </label>
+
+        <input
+            id="resumenCuentasMes"
+            type="month"
+        >
+
+    </div>
+
+    <div
+        id="resumenCuentasContenido"
+        style="margin-top:18px;">
     </div>
 
 </section>

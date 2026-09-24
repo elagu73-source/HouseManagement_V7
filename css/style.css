@@ -3397,3 +3397,43 @@ ACTIVIDAD RECIENTE - MOBILE
     margin: 0;
     padding: 8px 12px;
 }
+
+/* ============================================
+   HOME - BOTONES DE GESTIÓN
+   ============================================ */
+
+/* PC */
+.activity-dashboard-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+#superadminAccess {
+    background: #B85F52;
+}
+
+/* CELULAR */
+@media (max-width: 700px) {
+
+    .activity-dashboard-header {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .activity-dashboard-header > span {
+        grid-column: 1 / -1;
+        margin-bottom: 2px;
+    }
+
+    .activity-dashboard-header button {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    #superadminAccess {
+        grid-column: 1 / -1;
+    }
+}
