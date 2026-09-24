@@ -7493,6 +7493,82 @@ async function openDashboardMensual() {
     selectorMes.onchange =
         cargarDashboardMensual;
 
+    // ============================================
+    // CONTROL DE SOLAPAS SEGÚN ROL
+    // ============================================
+
+    const {
+        data: rolEstadoCuenta,
+        error: errorRolEstadoCuenta
+    } =
+        await supabaseClient.rpc(
+            "current_organization_role"
+        );
+
+    if (errorRolEstadoCuenta) {
+        console.error(
+            "Error obteniendo rol para Estado de Cuenta:",
+            errorRolEstadoCuenta
+        );
+    }
+
+    const tabsEstadoCuenta =
+        document.getElementById(
+            "estadoCuentaTabs"
+        );
+
+    const tabPropietario =
+        document.getElementById(
+            "tabEstadoPropietario"
+        );
+
+    const tabEC =
+        document.getElementById(
+            "tabEstadoEC"
+        );
+
+    if (rolEstadoCuenta === "propietario") {
+
+        // El propietario no puede acceder
+        // a la información interna de EC.
+        if (tabsEstadoCuenta) {
+            tabsEstadoCuenta.style.display =
+                "none";
+        }
+
+        if (tabEC) {
+            tabEC.style.display =
+                "none";
+        }
+
+        cambiarTabEstadoCuenta(
+            "propietario"
+        );
+
+    } else {
+
+        // Admin / colaborador:
+        // restauramos las dos solapas.
+        if (tabsEstadoCuenta) {
+            tabsEstadoCuenta.style.display =
+                "grid";
+        }
+
+        if (tabPropietario) {
+            tabPropietario.style.display =
+                "block";
+        }
+
+        if (tabEC) {
+            tabEC.style.display =
+                "block";
+        }
+
+        cambiarTabEstadoCuenta(
+            "propietario"
+        );
+    }
+
     go("estadoCuenta");
 
     await cargarDashboardMensual();
