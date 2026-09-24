@@ -8484,13 +8484,14 @@ const totalHonorariosMes =
 
     resumen.innerHTML = `
     <div
-        style="
-            display:grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(180px, 1fr));
-            gap:12px;
-        "
-    >
+    class="estado-cuenta-resumen-grid"
+    style="
+        display:grid;
+        grid-template-columns:
+            repeat(auto-fit, minmax(180px, 1fr));
+        gap:12px;
+    "
+>
         <div class="card">
             <div class="sub">Reservas</div>
             <strong>
@@ -9252,7 +9253,10 @@ if (contenedorMovimientosPropietario) {
                     flex-shrink:0;
                 "
             >
-                <div style="text-align:right;">
+                <div
+    class="estado-cuenta-movimiento-importe"
+    style="text-align:right;"
+>
                     <div class="sub">
                         INGRESO
                     </div>

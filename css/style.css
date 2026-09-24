@@ -3608,3 +3608,74 @@ ACTIVIDAD RECIENTE - MOBILE
         margin: 7px 0 0 !important;
     }
 }
+
+/* ============================================
+   ESTADO DE CUENTA - RESUMEN MOBILE
+   ============================================ */
+
+@media (max-width: 600px) {
+
+    .estado-cuenta-resumen-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .estado-cuenta-resumen-grid .card {
+        min-width: 0 !important;
+        padding: 12px 10px !important;
+        margin-bottom: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .estado-cuenta-resumen-grid .sub {
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+        margin-bottom: 4px !important;
+    }
+
+    .estado-cuenta-resumen-grid strong {
+        display: block !important;
+        max-width: 100% !important;
+        font-size: 17px !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+        letter-spacing: -0.3px !important;
+    }
+}
+
+/* ============================================
+ESTADO DE CUENTA - MOVIMIENTOS PROPIETARIO MOBILE
+============================================ */
+
+@media (max-width: 600px) {
+
+    #estadoCuentaPropietarioMovimientos .card {
+        padding: 12px !important;
+    }
+
+    #estadoCuentaPropietarioMovimientos .card > div {
+        gap: 8px !important;
+    }
+
+    #estadoCuentaPropietarioMovimientos .card > div > div:first-child {
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
+    }
+
+    .estado-cuenta-movimiento-importe {
+        flex: 0 0 auto !important;
+        min-width: 0 !important;
+    }
+
+    .estado-cuenta-movimiento-importe strong {
+        font-size: 16px !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+        letter-spacing: -0.3px !important;
+    }
+
+    .estado-cuenta-movimiento-importe .sub {
+        font-size: 10px !important;
+    }
+}
