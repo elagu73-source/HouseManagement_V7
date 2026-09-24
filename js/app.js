@@ -8660,7 +8660,11 @@ if (resumenPropietario) {
                 <div class="sub">
                     INGRESOS DEL MES
                 </div>
-                <strong style="font-size:22px;">
+                <strong style="
+    font-size:clamp(16px, 4.2vw, 22px);
+    white-space:nowrap;
+    display:block;
+">
                     ${formatoDinero.format(
                         ingresoAlquilerPropietario
                     )}
@@ -8671,7 +8675,11 @@ if (resumenPropietario) {
                 <div class="sub">
                     EGRESOS DEL MES
                 </div>
-                <strong style="font-size:22px;">
+                <strong style="
+    font-size:clamp(16px, 4.2vw, 22px);
+    white-space:nowrap;
+    display:block;
+">
                     ${formatoDinero.format(
                         egresosAdministracion
                     )}
@@ -8682,7 +8690,11 @@ if (resumenPropietario) {
                 <div class="sub">
                     SALDO DEL MES
                 </div>
-                <strong style="font-size:22px;">
+                <strong style="
+    font-size:clamp(16px, 4.2vw, 22px);
+    white-space:nowrap;
+    display:block;
+">
                     ${formatoDinero.format(
                         saldoMesPropietario
                     )}
@@ -8693,7 +8705,11 @@ if (resumenPropietario) {
                 <div class="sub">
                     SALDO ACUMULADO
                 </div>
-                <strong style="font-size:22px;">
+                <strong style="
+    font-size:clamp(16px, 4.2vw, 22px);
+    white-space:nowrap;
+    display:block;
+">
     ${formatoDinero.format(
         saldoAcumuladoPropietario
     )}
@@ -8756,7 +8772,11 @@ if (resumenEC) {
                 <div class="sub">
                     INGRESOS DEL MES
                 </div>
-                <strong style="font-size:22px;">
+                <strong style="
+    font-size:clamp(16px, 4.2vw, 22px);
+    white-space:nowrap;
+    display:block;
+">
                     ${formatoDinero.format(
                         ingresoECMes
                     )}
@@ -8767,7 +8787,11 @@ if (resumenEC) {
                 <div class="sub">
                     EGRESOS DEL MES
                 </div>
-                <strong style="font-size:22px;">
+                <strong style="
+    font-size:clamp(16px, 4.2vw, 22px);
+    white-space:nowrap;
+    display:block;
+">
                     ${formatoDinero.format(
                         egresosECMes
                     )}
@@ -8778,7 +8802,11 @@ if (resumenEC) {
                 <div class="sub">
                     SALDO DEL MES
                 </div>
-                <strong style="font-size:22px;">
+                <strong style="
+    font-size:clamp(16px, 4.2vw, 22px);
+    white-space:nowrap;
+    display:block;
+">
                     ${formatoDinero.format(
                         saldoECMes
                     )}
@@ -8789,7 +8817,11 @@ if (resumenEC) {
                 <div class="sub">
                     SALDO ACUMULADO
                 </div>
-                <strong style="font-size:22px;">
+                <strong style="
+    font-size:clamp(16px, 4.2vw, 22px);
+    white-space:nowrap;
+    display:block;
+">
                     ${formatoDinero.format(
                         saldoAcumuladoEC
                     )}
