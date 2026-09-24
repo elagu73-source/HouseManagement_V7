@@ -1572,6 +1572,120 @@ async function cargarResumenCuentas() {
         })
         .join("");
 
+        const {
+    data: objetivoGuardado,
+    error: errorObjetivo
+} =
+    await supabaseClient
+        .from("organization_monthly_targets")
+        .select(`
+            id,
+            target_amount
+        `)
+        .eq("month", fechaMes)
+        .maybeSingle();
+
+if (errorObjetivo) {
+    console.error(
+        "Error cargando objetivo mensual:",
+        errorObjetivo
+    );
+}
+
+// ============================================
+// INGRESOS ACUMULADOS DEL AÑO
+// ============================================
+
+const fechaInicioAnio =
+    `${anio}-01-01`;
+
+const {
+    data: resumenAcumulado,
+    error: errorResumenAcumulado
+} =
+    await supabaseClient
+        .from("house_monthly_cost_summary")
+        .select(`
+            house_id,
+            month,
+            rental_commission,
+            cleaning_commission,
+            commission_subtotal
+        `)
+        .gte("month", fechaInicioAnio)
+        .lte("month", fechaMes);
+
+if (errorResumenAcumulado) {
+    console.error(
+        "Error cargando ingresos acumulados:",
+        errorResumenAcumulado
+    );
+}
+
+const {
+    data: honorariosAcumuladosResumen,
+    error: errorHonorariosAcumuladosResumen
+} =
+    await supabaseClient
+        .from("house_honorarios")
+        .select(`
+            house_id,
+            fecha,
+            importe
+        `)
+        .gte("fecha", fechaInicioAnio)
+        .lt("fecha", fechaFin);
+
+if (errorHonorariosAcumuladosResumen) {
+    console.error(
+        "Error cargando honorarios acumulados:",
+        errorHonorariosAcumuladosResumen
+    );
+}
+
+const idsCasasResumen =
+    new Set(
+        houses.map(house => house.id)
+    );
+
+const ingresosAcumulados =
+    (resumenAcumulado || [])
+        .filter(fila =>
+            idsCasasResumen.has(fila.house_id)
+        )
+        .reduce(
+            (total, fila) =>
+                total +
+                (Number(fila.rental_commission) || 0) +
+                (Number(fila.cleaning_commission) || 0) +
+                (Number(fila.commission_subtotal) || 0),
+            0
+        )
+    +
+    (honorariosAcumuladosResumen || [])
+        .filter(honorario =>
+            idsCasasResumen.has(honorario.house_id)
+        )
+        .reduce(
+            (total, honorario) =>
+                total +
+                (Number(honorario.importe) || 0),
+            0
+        );
+
+const objetivoMes =
+    Number(
+        objetivoGuardado?.target_amount
+    ) || 0;
+
+const diferenciaObjetivo =
+    totalGeneral - objetivoMes;
+
+const cumplimientoObjetivo =
+    objetivoMes > 0
+        ? (totalGeneral / objetivoMes) * 100
+        : 0;
+
     contenedor.innerHTML = `
         <div class="card" style="overflow-x:auto;">
 
@@ -1635,7 +1749,171 @@ async function cargarResumenCuentas() {
             </strong>
 
         </div>
+
+<div
+    style="
+        display:grid;
+        grid-template-columns:
+            repeat(auto-fit, minmax(190px, 1fr));
+        gap:12px;
+        margin-top:16px;
+    "
+>
+    <div class="card">
+        <div class="sub">
+            OBJETIVO DEL MES
+        </div>
+
+        <input
+            id="objetivoMensualInput"
+            type="number"
+            min="0"
+            step="1000"
+            value="${objetivoMes}"
+            style="
+                margin-top:8px;
+                width:100%;
+                box-sizing:border-box;
+            "
+        >
+
+        <button
+            type="button"
+            class="btn"
+            onclick="guardarObjetivoMensual()"
+            style="margin-top:8px;">
+            Guardar objetivo
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="sub">
+    INGRESOS ACUMULADOS
+</div>
+
+<strong style="font-size:22px;">
+    ${formatoDinero.format(ingresosAcumulados)}
+</strong>
+    </div>
+
+    <div class="card">
+        <div class="sub">
+            DIFERENCIA VS. OBJETIVO
+        </div>
+
+        <strong style="font-size:22px;">
+            ${diferenciaObjetivo >= 0 ? "+" : ""}
+            ${formatoDinero.format(diferenciaObjetivo)}
+        </strong>
+    </div>
+
+    <div class="card">
+        <div class="sub">
+            CUMPLIMIENTO
+        </div>
+
+        <strong style="font-size:22px;">
+            ${cumplimientoObjetivo.toFixed(1)}%
+        </strong>
+    </div>
+</div>
+
     `;
+}
+
+async function guardarObjetivoMensual() {
+
+    const selectorMes =
+        document.getElementById(
+            "resumenCuentasMes"
+        );
+
+    const inputObjetivo =
+        document.getElementById(
+            "objetivoMensualInput"
+        );
+
+    if (!selectorMes || !inputObjetivo) {
+        return;
+    }
+
+    const fechaMes =
+        `${selectorMes.value}-01`;
+
+    const objetivo =
+        Number(inputObjetivo.value) || 0;
+
+    const {
+        data: organizationId,
+        error: errorOrganizacion
+    } =
+        await supabaseClient.rpc(
+            "current_organization_id"
+        );
+
+    if (
+        errorOrganizacion ||
+        !organizationId
+    ) {
+
+        console.error(
+            "Error obteniendo organización:",
+            errorOrganizacion
+        );
+
+        mostrarAvisoHM(
+            "No se pudo identificar la organización."
+        );
+
+        return;
+    }
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from(
+                "organization_monthly_targets"
+            )
+            .upsert(
+                {
+                    organization_id:
+                        organizationId,
+
+                    month:
+                        fechaMes,
+
+                    target_amount:
+                        objetivo,
+
+                    updated_at:
+                        new Date().toISOString()
+                },
+                {
+                    onConflict:
+                        "organization_id,month"
+                }
+            );
+
+    if (error) {
+
+        console.error(
+            "Error guardando objetivo mensual:",
+            error
+        );
+
+        mostrarAvisoHM(
+            "No se pudo guardar el objetivo."
+        );
+
+        return;
+    }
+
+    mostrarAvisoHM(
+        "Objetivo mensual guardado correctamente."
+    );
+
+    await cargarResumenCuentas();
 }
 
 async function abrirSuperadmin() {
