@@ -1925,26 +1925,33 @@ onclick="cerrarVisorFoto()">
         type="button"
         class="btn"
         onclick="agregarAmbienteChecklist()"
-        style="flex:1;"
+        style="
+    flex:1;
+    min-height:48px;
+    margin:0;
+"
     >
         + Agregar ambiente
     </button>
 
     <button
-        type="button"
-        onclick="eliminarAmbienteChecklist()"
-        style="
-            flex:1;
-            border:1px solid #C94A4A;
-            background:#FFFFFF;
-            color:#C94A4A;
-            border-radius:8px;
-            font-weight:600;
-            cursor:pointer;
-        "
-    >
-        Eliminar ambiente
-    </button>
+    type="button"
+    onclick="eliminarAmbienteChecklist()"
+    style="
+        flex:1;
+        min-height:48px;
+        padding:10px 16px;
+        border:1px solid #C94A4A;
+        background:#FFFFFF;
+        color:#C94A4A;
+        border-radius:8px;
+        font-size:15px;
+        font-weight:600;
+        cursor:pointer;
+    "
+>
+    Eliminar ambiente
+</button>
 </div>
 
 <div id="items"></div>
@@ -1964,7 +1971,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=113"></script>
 <script src="js/storage.js?v=4"></script>
 <script src="js/photos.js?v=2"></script>
-<script src="js/app.js?v=192"></script>
+<script src="js/app.js?v=193"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();

@@ -11828,13 +11828,163 @@ async function addItem(){
 // AGREGAR / ELIMINAR AMBIENTES DEL CHECKLIST
 // ============================================
 
+function pedirNombreAmbienteHM() {
+
+    return new Promise(resolve => {
+
+        const fondo = document.createElement("div");
+
+        fondo.style.cssText = `
+            position:fixed;
+            inset:0;
+            background:rgba(13,43,69,0.55);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:20px;
+            z-index:99999;
+        `;
+
+        fondo.innerHTML = `
+            <div style="
+                width:100%;
+                max-width:420px;
+                background:#FFFFFF;
+                border-radius:18px;
+                padding:24px;
+                box-shadow:0 12px 35px rgba(0,0,0,0.20);
+            ">
+
+                <div style="
+                    color:#0D2B45;
+                    font-size:24px;
+                    font-weight:700;
+                    margin-bottom:8px;
+                ">
+                    Nuevo ambiente
+                </div>
+
+                <div style="
+                    color:#6F7478;
+                    font-size:15px;
+                    margin-bottom:18px;
+                ">
+                    Escribí el nombre del ambiente que querés agregar.
+                </div>
+
+                <input
+                    id="nuevoAmbienteHM"
+                    type="text"
+                    placeholder="Ej: Garage"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        min-height:48px;
+                        border:1px solid #D6D8D6;
+                        border-radius:10px;
+                        padding:10px 14px;
+                        font-size:16px;
+                        color:#0D2B45;
+                        outline:none;
+                        margin-bottom:18px;
+                    "
+                >
+
+                <div style="
+                    display:flex;
+                    gap:10px;
+                ">
+
+                    <button
+                        id="cancelarNuevoAmbienteHM"
+                        type="button"
+                        style="
+                            flex:1;
+                            min-height:48px;
+                            background:#FFFFFF;
+                            color:#0D2B45;
+                            border:1px solid #0D2B45;
+                            border-radius:10px;
+                            font-size:15px;
+                            font-weight:700;
+                            cursor:pointer;
+                        "
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        id="confirmarNuevoAmbienteHM"
+                        type="button"
+                        style="
+                            flex:1;
+                            min-height:48px;
+                            background:#748666;
+                            color:#FFFFFF;
+                            border:0;
+                            border-radius:10px;
+                            font-size:15px;
+                            font-weight:700;
+                            cursor:pointer;
+                        "
+                    >
+                        Agregar ambiente
+                    </button>
+
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(fondo);
+
+        const input =
+            fondo.querySelector("#nuevoAmbienteHM");
+
+        const cerrar = valor => {
+            fondo.remove();
+            resolve(valor);
+        };
+
+        fondo.querySelector(
+            "#cancelarNuevoAmbienteHM"
+        ).onclick = () => cerrar(null);
+
+        fondo.querySelector(
+            "#confirmarNuevoAmbienteHM"
+        ).onclick = () => {
+
+            const nombre = input.value.trim();
+
+            if (!nombre) {
+                input.focus();
+                return;
+            }
+
+            cerrar(nombre);
+        };
+
+        input.addEventListener(
+            "keydown",
+            event => {
+                if (event.key === "Enter") {
+                    fondo.querySelector(
+                        "#confirmarNuevoAmbienteHM"
+                    ).click();
+                }
+            }
+        );
+
+        setTimeout(() => input.focus(), 50);
+    });
+}
+
 async function agregarAmbienteChecklist() {
 
-    const nombre = prompt("Nombre del nuevo ambiente:");
+    const nombre = await pedirNombreAmbienteHM();
 
-    if (!nombre || !nombre.trim()) {
-        return;
-    }
+if (!nombre || !nombre.trim()) {
+    return;
+}
 
     const lista = ensureChecklist();
 
