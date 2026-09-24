@@ -2228,12 +2228,19 @@ if (casasError) {
         boton.type = "button";
         boton.className = "btn";
         boton.textContent = casa.visible_to_clients ? "Apagar" : "Prender";
-        boton.style.backgroundColor =
+        boton.style.setProperty(
+    "background",
     casa.visible_to_clients
-        ? "#748666"   // verde HM - casa prendida
-        : "#B86F52";  // terracota - casa apagada
+        ? "#748666"
+        : "#B86F52",
+    "important"
+);
 
-boton.style.color = "#FFFFFF";
+boton.style.setProperty(
+    "color",
+    "#FFFFFF",
+    "important"
+);
         boton.addEventListener("click", async () => {
             const accion = casa.visible_to_clients ? "ocultar" : "mostrar";
             if (!window.confirm(`¿Querés ${accion} “${casa.nombre}” para sus usuarios? No se borrará ningún dato.`)) return;
