@@ -11825,6 +11825,129 @@ async function addItem(){
 }
 
 // ============================================
+// AGREGAR / ELIMINAR AMBIENTES DEL CHECKLIST
+// ============================================
+
+async function agregarAmbienteChecklist() {
+
+    const nombre = prompt("Nombre del nuevo ambiente:");
+
+    if (!nombre || !nombre.trim()) {
+        return;
+    }
+
+    const lista = ensureChecklist();
+
+    const nuevoAmbiente = {
+        title: nombre.trim(),
+        items: []
+    };
+
+    // Control Final siempre queda último
+    const indiceControlFinal =
+        lista.findIndex(
+            ambiente =>
+                (ambiente.originalTitle ?? ambiente.title) ===
+                "Control Final"
+        );
+
+    let nuevoIndex;
+
+    if (indiceControlFinal >= 0) {
+
+        lista.splice(
+            indiceControlFinal,
+            0,
+            nuevoAmbiente
+        );
+
+        nuevoIndex = indiceControlFinal;
+
+    } else {
+
+        lista.push(nuevoAmbiente);
+        nuevoIndex = lista.length - 1;
+    }
+
+    const guardado =
+        await guardarConfiguracionChecklist();
+
+    if (!guardado) {
+        return;
+    }
+
+    actualizarSelectorAmbientesChecklist(
+        nuevoIndex
+    );
+
+    document.getElementById(
+        "ambienteSel"
+    ).value = String(nuevoIndex);
+
+    loadChecklistEditor();
+}
+
+
+async function eliminarAmbienteChecklist() {
+
+    const selector =
+        document.getElementById(
+            "ambienteSel"
+        );
+
+    const index =
+        parseInt(selector.value);
+
+    const lista = ensureChecklist();
+
+    const ambiente = lista[index];
+
+    if (!ambiente) {
+        return;
+    }
+
+    if (
+        (ambiente.originalTitle ?? ambiente.title) ===
+        "Control Final"
+    ) {
+        mostrarAvisoHM(
+            "Control Final no se puede eliminar."
+        );
+        return;
+    }
+
+    const confirmar =
+        await confirmarAccionHM(
+            `¿Querés eliminar el ambiente “${ambiente.title}”?`
+        );
+
+    if (!confirmar) {
+        return;
+    }
+
+    lista.splice(index, 1);
+
+    const guardado =
+        await guardarConfiguracionChecklist();
+
+    if (!guardado) {
+        return;
+    }
+
+    actualizarSelectorAmbientesChecklist();
+
+    const nuevoSelector =
+        document.getElementById(
+            "ambienteSel"
+        );
+
+    if (nuevoSelector.options.length) {
+        nuevoSelector.selectedIndex = 0;
+        loadChecklistEditor();
+    }
+}
+
+// ============================================
 // MANUAL DE LA CASA - SUPABASE
 // ============================================
 

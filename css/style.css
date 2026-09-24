@@ -3679,3 +3679,9 @@ ESTADO DE CUENTA - MOVIMIENTOS PROPIETARIO MOBILE
         font-size: 10px !important;
     }
 }
+
+/* RESUMEN DE CUENTAS - BOTÓN HOME AZUL HM */
+#resumenCuentasAccess {
+    background: #0D2B45 !important;
+    color: #FFFFFF !important;
+}
