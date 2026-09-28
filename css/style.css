@@ -3685,3 +3685,7 @@ ESTADO DE CUENTA - MOVIMIENTOS PROPIETARIO MOBILE
     background: #0D2B45 !important;
     color: #FFFFFF !important;
 }
+
+.flecha-ec {
+    display: none !important;
+}

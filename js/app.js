@@ -8870,9 +8870,9 @@ if (resumenEC) {
     white-space:nowrap;
     display:block;
 ">
-                    ${formatearPagoHM(
-    egresosECMes
-)}
+                    egresosECMes > 0
+    ? formatearPagoHM(egresosECMes)
+    : formatearDineroHM(0)
                 </strong>
             </div>
 
@@ -9620,7 +9620,7 @@ if (contenedorMovimientosPropietario) {
                             </div>
 
                             <strong style="font-size:20px;">
-    -${formatoDinero.format(total)}
+    ${formatearPagoHM(total)}
 </strong>
                         </div>
                     </div>
