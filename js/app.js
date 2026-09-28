@@ -8870,9 +8870,9 @@ if (resumenEC) {
     white-space:nowrap;
     display:block;
 ">
-                    egresosECMes > 0
+       ${egresosECMes > 0
     ? formatearPagoHM(egresosECMes)
-    : formatearDineroHM(0)
+    : formatearDineroHM(0)}
                 </strong>
             </div>
 
