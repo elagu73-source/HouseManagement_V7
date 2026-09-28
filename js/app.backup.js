@@ -2595,8 +2595,7 @@ if (inquilino) {
     datosEconomicos.style.gap = "8px";
 
     const formatoDinero = valor =>
-        "$ " + Number(valor || 0)
-            .toLocaleString("es-AR");
+    formatearDineroHM(valor);
 
     const lineasEconomicas = [
         "Importe del alquiler: " +
@@ -5061,7 +5060,7 @@ datosInquilino.innerHTML = `
        id="calRentalAmount"
        type="number"
        min="0"
-       placeholder="$ Importe del alquiler"
+       placeholder="u$s Importe del alquiler"
    >
 
    <label for="calLongStayDiscount">
@@ -5094,11 +5093,11 @@ datosInquilino.innerHTML = `
 ">
     <div>
         Alquiler neto:
-        <strong id="calRentalNet">$ 0</strong>
+        <strong id="calRentalNet">u$s 0</strong>
     </div>
     <div style="margin-top:5px;">
         Ganancia Experiencia Costa por alquiler:
-        <strong id="calRentalProfit">$ 0</strong>
+        <strong id="calRentalProfit">u$s 0</strong>
     </div>
 </div>
 
@@ -5109,7 +5108,7 @@ datosInquilino.innerHTML = `
        id="calCleaningAmount"
        type="number"
        min="0"
-       placeholder="$ Importe de limpieza"
+       placeholder="u$s Importe de limpieza"
    >
 
    <label for="calCleaningCommission">
@@ -5131,7 +5130,7 @@ datosInquilino.innerHTML = `
     border-radius:10px;
 ">
     Ganancia Experiencia Costa por limpieza:
-    <strong id="calCleaningProfit">$ 0</strong>
+    <strong id="calCleaningProfit">u$s 0</strong>
 </div>
 
 `;
@@ -5191,13 +5190,13 @@ function actualizarCalculosEconomicos() {
         limpieza * comisionLimpieza / 100;
 
     resultadoAlquilerNeto.textContent =
-        "$ " + alquilerNeto.toLocaleString("es-AR");
+    formatearDineroHM(alquilerNeto);
 
     resultadoGananciaAlquiler.textContent =
-        "$ " + gananciaAlquiler.toLocaleString("es-AR");
+    formatearDineroHM(gananciaAlquiler);
 
     resultadoGananciaLimpieza.textContent =
-        "$ " + gananciaLimpieza.toLocaleString("es-AR");
+    formatearDineroHM(gananciaLimpieza);
 }
 
 campoImporteAlquiler.addEventListener("input", actualizarCalculosEconomicos);
@@ -12995,17 +12994,17 @@ if (controlesDelPlan.length) {
     economico.style.marginTop = "6px";
 
     economico.innerHTML =
-        "Costo: <strong>$ " +
-        Number(control.work_amount).toLocaleString("es-AR") +
-        "</strong>" +
-        " · Comisión EC (" +
-        Number(control.commission_pct || 0) +
-        "%): <strong>$ " +
-        Number(control.commission_amount || 0).toLocaleString("es-AR") +
-        "</strong>" +
-        " · Total: <strong>$ " +
-        Number(control.total_amount || 0).toLocaleString("es-AR") +
-        "</strong>";
+    "Costo: <strong>" +
+    formatearDineroHM(control.work_amount) +
+    "</strong>" +
+    " · Comisión EC (" +
+    Number(control.commission_pct || 0) +
+    "%): <strong>" +
+    formatearDineroHM(control.commission_amount) +
+    "</strong>" +
+    " · Total: <strong>" +
+    formatearDineroHM(control.total_amount) +
+    "</strong>";
 
     fila.appendChild(economico);
 }
@@ -13399,10 +13398,10 @@ function actualizarCalculoMantenimiento() {
         costo + comision;
 
     resultadoComision.textContent =
-        "$ " + comision.toLocaleString("es-AR");
+    formatearDineroHM(comision);
 
-    resultadoTotal.textContent =
-        "$ " + total.toLocaleString("es-AR");
+resultadoTotal.textContent =
+    formatearDineroHM(total);
 }
 
 campoCosto.oninput =
@@ -13474,10 +13473,10 @@ function editarControlMantenimiento(control, plan) {
             costo + comision;
 
         resultadoComision.textContent =
-            "$ " + comision.toLocaleString("es-AR");
+    formatearDineroHM(comision);
 
-        resultadoTotal.textContent =
-            "$ " + total.toLocaleString("es-AR");
+resultadoTotal.textContent =
+    formatearDineroHM(total);
     }
 
     campoCosto.oninput = actualizarCalculo;

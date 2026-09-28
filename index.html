@@ -518,7 +518,7 @@
             id="registroMantenimientoCosto"
             type="number"
             min="0"
-            placeholder="$ Importe del trabajo">
+            placeholder="u$s Importe del trabajo"
 
         <label for="registroMantenimientoComision"
                style="display:block;margin-top:16px;">
@@ -540,12 +540,12 @@
         ">
             <div>
                 Comisión Experiencia Costa:
-                <strong id="registroMantenimientoComisionImporte">$ 0</strong>
+                <strong id="registroMantenimientoComisionImporte">u$s 0</strong>
             </div>
 
             <div style="margin-top:6px;">
                 Total a descontar al propietario:
-                <strong id="registroMantenimientoTotal">$ 0</strong>
+                <strong id="registroMantenimientoTotal">u$s 0</strong>
             </div>
         </div>
 
@@ -961,20 +961,17 @@
             <circle cx="12" cy="10" r="2.5"></circle>
         </svg>
     </span>
-    Ambiente
+    Ítem
 </label>
 
-<select id="incAmbiente">
-        <option value="">Seleccionar ambiente</option>
-        <option>Exterior</option>
-        <option>Living</option>
-        <option>Cocina</option>
-        <option>Dormitorio</option>
-        <option>Baño</option>
-        <option>Parrilla</option>
-        <option>Pileta</option>
-        <option>Otro</option>
-    </select>
+<input
+    id="incAmbiente"
+    type="text"
+    list="incAmbienteOpciones"
+    placeholder="Seleccionar o escribir ítem"
+>
+
+<datalist id="incAmbienteOpciones"></datalist>
 
 <label>
     <span class="cb-icon">
@@ -1086,17 +1083,17 @@
 <div class="card" style="margin-top:16px;">
     <div class="sub">
         Costo del trabajo:
-        <strong id="incCostoVista">$ 0,00</strong>
+        <strong id="incCostoVista">u$s 0,00</strong>
     </div>
 
     <div class="sub">
         Comisión:
-        <strong id="incComisionVista">$ 0,00</strong>
+        <strong id="incComisionVista">u$s 0,00</strong>
     </div>
 
     <div style="margin-top:8px;">
         Total:
-        <strong id="incTotalVista">$ 0,00</strong>
+        <strong id="incTotalVista">u$s 0,00</strong>
     </div>
 </div>
 
@@ -1971,7 +1968,7 @@ onclick="cerrarVisorFoto()">
 <script src="js/supabase.js?v=113"></script>
 <script src="js/storage.js?v=4"></script>
 <script src="js/photos.js?v=2"></script>
-<script src="js/app.js?v=195"></script>
+<script src="js/app.js?v=196"></script>
 <script>
 function togglePhotoAmbiente(event) {
     event.stopPropagation();

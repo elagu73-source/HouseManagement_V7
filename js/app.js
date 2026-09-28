@@ -1473,15 +1473,43 @@ async function cargarResumenCuentas() {
             )
         );
 
-    const formatoDinero =
-        new Intl.NumberFormat(
-            "es-AR",
-            {
-                style: "currency",
-                currency: "ARS",
-                maximumFractionDigits: 0
-            }
-        );
+    const formatoNumero =
+    new Intl.NumberFormat(
+        "es-AR",
+        {
+            maximumFractionDigits: 0
+        }
+    );
+
+const formatoDinero = {
+    format(valor) {
+        const numero = Number(valor) || 0;
+        const absoluto = Math.abs(numero);
+
+        return numero < 0
+            ? `-u$s ${formatoNumero.format(absoluto)}`
+            : `u$s ${formatoNumero.format(absoluto)}`;
+    }
+};
+
+const formatoImporte = (valor, esPago = false) => {
+
+    const numero = Number(valor) || 0;
+    const absoluto = Math.abs(numero);
+
+    const texto =
+        `u$s ${formatoNumero.format(absoluto)}`;
+
+    if (esPago || numero < 0) {
+        return `
+            <span style="color:#C94A4A;">
+                -u$s ${formatoNumero.format(absoluto)}
+            </span>
+        `;
+    }
+
+    return texto;
+};
 
     let totalAlquileres = 0;
     let totalLimpieza = 0;
@@ -1582,8 +1610,8 @@ async function cargarResumenCuentas() {
             id,
             target_amount
         `)
-        .eq("month", fechaMes)
-        .maybeSingle();
+        .eq("month", `${anio}-01-01`)
+.maybeSingle();
 
 if (errorObjetivo) {
     console.error(
@@ -1679,11 +1707,11 @@ const objetivoMes =
     ) || 0;
 
 const diferenciaObjetivo =
-    totalGeneral - objetivoMes;
+    ingresosAcumulados - objetivoMes;
 
 const cumplimientoObjetivo =
     objetivoMes > 0
-        ? (totalGeneral / objetivoMes) * 100
+        ? (ingresosAcumulados / objetivoMes) * 100
         : 0;
 
     contenedor.innerHTML = `
@@ -1763,7 +1791,7 @@ const cumplimientoObjetivo =
 >
     <div class="card">
         <div class="sub">
-            OBJETIVO DEL MES
+            OBJETIVO ANUAL
         </div>
 
         <input
@@ -1817,8 +1845,8 @@ const cumplimientoObjetivo =
         </div>
 
         <strong style="font-size:22px;">
-            ${diferenciaObjetivo >= 0 ? "+" : ""}
-            ${formatoDinero.format(diferenciaObjetivo)}
+        
+            ${formatoImporte(diferenciaObjetivo)}
         </strong>
     </div>
 
@@ -1852,8 +1880,11 @@ async function guardarObjetivoMensual() {
         return;
     }
 
-    const fechaMes =
-        `${selectorMes.value}-01`;
+    const anioSeleccionado =
+    selectorMes.value.split("-")[0];
+
+const fechaMes =
+    `${anioSeleccionado}-01-01`;
 
     const objetivo =
         Number(inputObjetivo.value) || 0;
@@ -1913,7 +1944,7 @@ async function guardarObjetivoMensual() {
     if (error) {
 
         console.error(
-            "Error guardando objetivo mensual:",
+            "Error guardando objetivo anual:",
             error
         );
 
@@ -1925,7 +1956,7 @@ async function guardarObjetivoMensual() {
     }
 
     mostrarAvisoHM(
-        "Objetivo mensual guardado correctamente."
+        "Objetivo anual guardado correctamente."
     );
 
     await cargarResumenCuentas();
@@ -3305,8 +3336,7 @@ if (inquilino) {
     datosEconomicos.style.gap = "8px";
 
     const formatoDinero = valor =>
-        "$ " + Number(valor || 0)
-            .toLocaleString("es-AR");
+    formatearDineroHM(valor);
 
     const lineasEconomicas = [
         "Importe del alquiler: " +
@@ -5771,7 +5801,7 @@ datosInquilino.innerHTML = `
        id="calRentalAmount"
        type="number"
        min="0"
-       placeholder="$ Importe del alquiler"
+       placeholder="u$s Importe del alquiler"
    >
 
    <label for="calLongStayDiscount">
@@ -5804,11 +5834,11 @@ datosInquilino.innerHTML = `
 ">
     <div>
         Alquiler neto:
-        <strong id="calRentalNet">$ 0</strong>
+        <strong id="calRentalNet">u$s 0</strong>
     </div>
     <div style="margin-top:5px;">
         Ganancia Experiencia Costa por alquiler:
-        <strong id="calRentalProfit">$ 0</strong>
+        <strong id="calRentalProfit">u$s 0</strong>
     </div>
 </div>
 
@@ -5819,7 +5849,7 @@ datosInquilino.innerHTML = `
        id="calCleaningAmount"
        type="number"
        min="0"
-       placeholder="$ Importe de limpieza"
+       placeholder="u$s Importe de limpieza"
    >
 
    <label for="calCleaningCommission">
@@ -5841,7 +5871,7 @@ datosInquilino.innerHTML = `
     border-radius:10px;
 ">
     Ganancia Experiencia Costa por limpieza:
-    <strong id="calCleaningProfit">$ 0</strong>
+    <strong id="calCleaningProfit">u$s 0</strong>
 </div>
 
 `;
@@ -5901,13 +5931,13 @@ function actualizarCalculosEconomicos() {
         limpieza * comisionLimpieza / 100;
 
     resultadoAlquilerNeto.textContent =
-        "$ " + alquilerNeto.toLocaleString("es-AR");
+    formatearDineroHM(alquilerNeto);
 
-    resultadoGananciaAlquiler.textContent =
-        "$ " + gananciaAlquiler.toLocaleString("es-AR");
+resultadoGananciaAlquiler.textContent =
+    formatearDineroHM(gananciaAlquiler);
 
-    resultadoGananciaLimpieza.textContent =
-        "$ " + gananciaLimpieza.toLocaleString("es-AR");
+resultadoGananciaLimpieza.textContent =
+    formatearDineroHM(gananciaLimpieza);
 }
 
 campoImporteAlquiler.addEventListener("input", actualizarCalculosEconomicos);
@@ -8332,6 +8362,45 @@ if (contenidoEC) {
         "1px solid #0D2B45";
 }
 
+function formatearDineroHM(valor) {
+
+    const numero = Number(valor) || 0;
+    const absoluto = Math.abs(numero);
+
+    const numeroFormateado =
+        new Intl.NumberFormat(
+            "es-AR",
+            {
+                maximumFractionDigits: 0
+            }
+        ).format(absoluto);
+
+    return numero < 0
+        ? `-u$s ${numeroFormateado}`
+        : `u$s ${numeroFormateado}`;
+}
+
+
+function formatearPagoHM(valor) {
+
+    const numero =
+        Math.abs(Number(valor) || 0);
+
+    const numeroFormateado =
+        new Intl.NumberFormat(
+            "es-AR",
+            {
+                maximumFractionDigits: 0
+            }
+        ).format(numero);
+
+    return `
+        <span style="color:#C94A4A;">
+            -u$s ${numeroFormateado}
+        </span>
+    `;
+}
+
 async function cargarDashboardMensual() {
 
     const house = houses[current];
@@ -8483,17 +8552,13 @@ const totalHonorariosMes =
 
     const datos = data || {};
 
-    const moneda =
-        datos.currency || "ARS";
+   const moneda = "USD";
 
-    const formatoDinero =
-        new Intl.NumberFormat(
-            "es-AR",
-            {
-                style: "currency",
-                currency: moneda
-            }
-        );
+const formatoDinero = {
+    format(valor) {
+        return formatearDineroHM(valor);
+    }
+};
 
     resumen.innerHTML = `
     <div
@@ -8693,9 +8758,9 @@ if (resumenPropietario) {
     white-space:nowrap;
     display:block;
 ">
-                    ${formatoDinero.format(
-                        egresosAdministracion
-                    )}
+                    ${formatearPagoHM(
+    egresosAdministracion
+)}
                 </strong>
             </div>
 
@@ -8805,9 +8870,9 @@ if (resumenEC) {
     white-space:nowrap;
     display:block;
 ">
-                    ${formatoDinero.format(
-                        egresosECMes
-                    )}
+                    ${formatearPagoHM(
+    egresosECMes
+)}
                 </strong>
             </div>
 
@@ -8926,14 +8991,11 @@ if (contenedorHonorarios) {
 
     } else {
 
-        const formatoDineroHonorarios =
-            new Intl.NumberFormat(
-                "es-AR",
-                {
-                    style: "currency",
-                    currency: moneda || "ARS"
-                }
-            );
+        const formatoDineroHonorarios = {
+    format(valor) {
+        return formatearDineroHM(valor);
+    }
+};
 
         contenedorHonorarios.innerHTML =
             honorariosMes
@@ -8998,7 +9060,7 @@ if (contenedorHonorarios) {
                                         </div>
 
                                         <strong style="font-size:20px;">
-                                            +${formatoDineroHonorarios.format(importe)}
+                                            ${formatoDineroHonorarios.format(importe)}
                                         </strong>
                                     </div>
 
@@ -9135,14 +9197,11 @@ if (contenedorReservas) {
                     )
                 );
 
-            const formatoDineroReservas =
-                new Intl.NumberFormat(
-                    "es-AR",
-                    {
-                        style: "currency",
-                        currency: moneda || "ARS"
-                    }
-                );
+            const formatoDineroReservas = {
+    format(valor) {
+        return formatearDineroHM(valor);
+    }
+};
 
 if (contenedorMovimientosPropietario) {
 
@@ -9307,7 +9366,7 @@ if (contenedorMovimientosPropietario) {
                     </div>
 
                     <strong style="font-size:20px;">
-                        +${formatoDineroReservas.format(ingresoEC)}
+                        ${formatoDineroReservas.format(ingresoEC)}
                     </strong>
                 </div>
 
@@ -9439,14 +9498,11 @@ if (contenedorMovimientosPropietario) {
         return;
     }
 
-    const formatoDinero =
-        new Intl.NumberFormat(
-            "es-AR",
-            {
-                style: "currency",
-                currency: moneda || "ARS"
-            }
-        );
+    const formatoDinero = {
+    format(valor) {
+        return formatearDineroHM(valor);
+    }
+};
 
     const nombresEstado = {
         pendiente: "Pendiente",
@@ -9657,7 +9713,7 @@ if (contenedorMovimientosPropietario) {
                                 </div>
 
                                 <strong style="font-size:20px;">
-                                    +${formatoDinero.format(comision)}
+                                    ${formatoDinero.format(comision)}
                                 </strong>
                             </div>
 
@@ -9868,11 +9924,11 @@ if (botonNuevaIncidencia) {
             incidencia.estado === 'En curso' ? '#DCC9A6' :
             '#0D2B45';
 
-            const formatoDineroIncidencia =
-    new Intl.NumberFormat("es-AR", {
-        style: "currency",
-        currency: incidencia.currency || "ARS"
-    });
+        const formatoDineroIncidencia = {
+    format(valor) {
+        return formatearDineroHM(valor);
+    }
+};
 
 const costoTrabajo =
     Number(incidencia.work_cost) || 0;
@@ -10554,11 +10610,11 @@ async function cambiarEstadoIncidencia(id){
     const total =
         costo + comision;
 
-    const formatoDinero =
-        new Intl.NumberFormat("es-AR", {
-            style: "currency",
-            currency: "ARS"
-        });
+    const formatoDinero = {
+    format(valor) {
+        return formatearDineroHM(valor);
+    }
+};
 
     const costoVista =
         document.getElementById("incCostoVista");
@@ -10694,14 +10750,85 @@ function cancelarFormularioIncidencia() {
     }
 }
 
+async function cargarItemsIncidencia() {
+
+    const datalist =
+        document.getElementById("incAmbienteOpciones");
+
+    const house = houses[current];
+
+    if (!datalist || !house?.id) {
+        return;
+    }
+
+    datalist.innerHTML = "";
+
+    const { data, error } =
+        await supabaseClient
+            .from("house_checklists")
+            .select("*")
+            .eq("house_id", house.id);
+
+    if (error) {
+        console.error(
+            "Error cargando ítems para incidencia:",
+            error
+        );
+        return;
+    }
+
+    const items = [];
+
+    (data || []).forEach(registro => {
+
+        const posiblesItems = [
+            registro.item,
+            registro.nombre,
+            registro.title,
+            registro.task,
+            registro.label
+        ];
+
+        posiblesItems.forEach(valor => {
+            if (
+                typeof valor === "string" &&
+                valor.trim() &&
+                !items.includes(valor.trim())
+            ) {
+                items.push(valor.trim());
+            }
+        });
+    });
+
+    items
+        .sort((a, b) =>
+            a.localeCompare(b, "es")
+        )
+        .forEach(item => {
+
+            const opcion =
+                document.createElement("option");
+
+            opcion.value = item;
+
+            datalist.appendChild(opcion);
+        });
+}
+
 function nuevaIncidencia(){
 
     incidenciaEditandoId = null;
         mantenimientoOrigenTaskId = null;
 
+        cargarItemsIncidencia();
+
     document.getElementById('formIncidencia').style.display='block';
 
-    document.getElementById('incAmbiente').value='';
+    const campoAmbiente = document.getElementById('incAmbiente');
+
+if (campoAmbiente) {
+    campoAmbiente.value = '';
+}
     document.getElementById('incDescripcion').value='';
     document.getElementById('incPrioridad').value='Media';
     document.getElementById('incEstado').value='Abierta';
@@ -14145,17 +14272,17 @@ if (controlesDelPlan.length) {
     economico.style.marginTop = "6px";
 
     economico.innerHTML =
-        "Costo: <strong>$ " +
-        Number(control.work_amount).toLocaleString("es-AR") +
-        "</strong>" +
-        " · Comisión EC (" +
-        Number(control.commission_pct || 0) +
-        "%): <strong>$ " +
-        Number(control.commission_amount || 0).toLocaleString("es-AR") +
-        "</strong>" +
-        " · Total: <strong>$ " +
-        Number(control.total_amount || 0).toLocaleString("es-AR") +
-        "</strong>";
+    "Costo: <strong>" +
+    formatearDineroHM(control.work_amount) +
+    "</strong>" +
+    " · Comisión EC (" +
+    Number(control.commission_pct || 0) +
+    "%): <strong>" +
+    formatearDineroHM(control.commission_amount) +
+    "</strong>" +
+    " · Total: <strong>" +
+    formatearDineroHM(control.total_amount) +
+    "</strong>";
 
     fila.appendChild(economico);
 }
@@ -14549,10 +14676,10 @@ function actualizarCalculoMantenimiento() {
         costo + comision;
 
     resultadoComision.textContent =
-        "$ " + comision.toLocaleString("es-AR");
+    formatearDineroHM(comision);
 
-    resultadoTotal.textContent =
-        "$ " + total.toLocaleString("es-AR");
+resultadoTotal.textContent =
+    formatearDineroHM(total);
 }
 
 campoCosto.oninput =
@@ -14624,10 +14751,10 @@ function editarControlMantenimiento(control, plan) {
             costo + comision;
 
         resultadoComision.textContent =
-            "$ " + comision.toLocaleString("es-AR");
+    formatearDineroHM(comision);
 
-        resultadoTotal.textContent =
-            "$ " + total.toLocaleString("es-AR");
+resultadoTotal.textContent =
+    formatearDineroHM(total);
     }
 
     campoCosto.oninput = actualizarCalculo;
@@ -14862,11 +14989,5 @@ function actualizarFormatoObjetivo(valor) {
         Number(valor) || 0;
 
     formato.textContent =
-        new Intl.NumberFormat(
-            "es-AR",
-            {
-                style: "currency",
-                currency: "ARS"
-            }
-        ).format(numero);
+    formatearDineroHM(numero);
 }
