@@ -1396,12 +1396,7 @@ async function cargarResumenCuentas() {
         data: resumenMes,
         error: errorResumen
     } =
-        await supabaseClient
-            .from(
-                "house_monthly_cost_summary"
-            )
-            .select("*")
-            .eq("month", fechaMes);
+        await cargarResumenConProgramadosHM(fechaMes, fechaMes);
 
     if (errorResumen) {
 
@@ -1631,17 +1626,7 @@ const {
     data: resumenAcumulado,
     error: errorResumenAcumulado
 } =
-    await supabaseClient
-        .from("house_monthly_cost_summary")
-        .select(`
-            house_id,
-            month,
-            rental_commission,
-            cleaning_commission,
-            commission_subtotal
-        `)
-        .gte("month", fechaInicioAnio)
-        .lte("month", fechaMes);
+    await cargarResumenConProgramadosHM(fechaInicioAnio, fechaMes);
 
 if (errorResumenAcumulado) {
     console.error(
@@ -1729,7 +1714,7 @@ const cumplimientoObjetivo =
                         <th>Casa</th>
                         <th>Alquileres</th>
                         <th>Limpieza</th>
-                        <th>Comisiones incidencias</th>
+                        <th>Comisiones incidencias y mantenimiento</th>
                         <th>Honorarios</th>
                         <th>Total</th>
                     </tr>
@@ -8691,14 +8676,7 @@ async function cargarDashboardMensual() {
         `${selectorMes.value}-01`;
 
     const { data, error } =
-        await supabaseClient
-            .from(
-                "house_monthly_cost_summary"
-            )
-            .select("*")
-            .eq("house_id", house.id)
-            .eq("month", fechaMes)
-            .maybeSingle();
+        await cargarResumenConProgramadosHM(fechaMes, fechaMes, house.id, true);
 
     if (error) {
 
@@ -8723,15 +8701,7 @@ const fechaInicioAnio =
     `${anioSeleccionado}-01-01`;
 
 const { data: mesesAcumulados, error: errorAcumulado } =
-    await supabaseClient
-        .from("house_monthly_cost_summary")
-        .select("*")
-        .eq("house_id", house.id)
-        .gte("month", fechaInicioAnio)
-        .lte("month", fechaMes)
-        .order("month", {
-            ascending: true
-        });
+    await cargarResumenConProgramadosHM(fechaInicioAnio, fechaMes, house.id);
 
 if (errorAcumulado) {
     console.error(
@@ -9704,6 +9674,51 @@ if (contenedorMovimientosPropietario) {
     }
 }
 
+    let { data: mantenimientos, error: errorMantenimientos } =
+        await supabaseClient.from("house_maintenance_tasks")
+            .select("id, scheduled_date, responsible, work_amount, commission_pct, commission_amount, total_amount, house_maintenance_plans!inner(title, house_id)")
+            .eq("house_maintenance_plans.house_id", houseId)
+            .gte("scheduled_date", fechaInicio)
+            .lt("scheduled_date", fechaFin)
+            .order("scheduled_date", { ascending: false });
+
+    const proyeccionesMes = await cargarProyeccionesMantenimientoHM(fechaInicio, fechaInicio, houseId);
+    if (proyeccionesMes.error) errorMantenimientos = errorMantenimientos || proyeccionesMes.error;
+    mantenimientos = [...(mantenimientos || []), ...(proyeccionesMes.data || []).map(p => ({
+        ...p,
+        scheduled_date: p.month,
+        programado: true,
+        commission_pct: Number(p.work_amount) ? Number(p.commission_amount) * 100 / Number(p.work_amount) : 0,
+        house_maintenance_plans: { title: p.title }
+    }))];
+
+    const escaparMantenimiento = valor => String(valor ?? "").replace(/[&<>"']/g,
+        caracter => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[caracter]));
+    const tarjetasMantenimiento = esPropietario => (mantenimientos || []).map(control => {
+        const plan = Array.isArray(control.house_maintenance_plans)
+            ? control.house_maintenance_plans[0] : control.house_maintenance_plans;
+        const titulo = escaparMantenimiento(plan?.title || "Mantenimiento");
+        const fecha = control.programado ? "Programado · " + escaparMantenimiento(control.scheduled_date.slice(0, 7)) : escaparMantenimiento(control.scheduled_date || "Sin fecha");
+        const costo = Number(control.work_amount) || 0;
+        const comision = Number(control.commission_amount) || 0;
+        const total = Number(control.total_amount) || 0;
+        return `<div class="card">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+                <div><div class="title">${titulo}</div><div class="sub">${fecha}</div>
+                <div class="sub">Trabajo: ${formatearDineroHM(costo)} · Comisión EC (${Number(control.commission_pct) || 0}%): ${formatearDineroHM(comision)}</div></div>
+                <div style="text-align:right"><div class="sub">${esPropietario ? "EGRESO" : "INGRESO"}</div>
+                <strong>${esPropietario ? "-" : ""}${formatearDineroHM(esPropietario ? total : comision)}</strong></div>
+            </div></div>`;
+    }).join("");
+    if (errorMantenimientos) console.error("Error cargando mantenimientos:", errorMantenimientos);
+    const detalleMantenimientoEC = errorMantenimientos
+        ? '<div class="card">No se pudieron cargar los mantenimientos.</div>'
+        : tarjetasMantenimiento(false);
+    if (contenedorMovimientosPropietario) {
+        contenedorMovimientosPropietario.innerHTML += errorMantenimientos
+            ? detalleMantenimientoEC : tarjetasMantenimiento(true);
+    }
+
     const { data: incidencias, error } =
         await supabaseClient
             .from("house_incidencias")
@@ -9736,18 +9751,6 @@ if (contenedorMovimientosPropietario) {
         contenedor.innerHTML = `
             <div class="card">
                 No se pudo cargar el detalle.
-            </div>
-        `;
-
-        return;
-    }
-
-    if (!incidencias?.length) {
-
-        contenedor.innerHTML = `
-            <div class="card">
-                No hay incidencias registradas
-                durante este mes.
             </div>
         `;
 
@@ -9833,7 +9836,7 @@ if (
 if (contenedorMovimientosPropietario) {
 
     const movimientosEgresos =
-        incidencias.map(incidencia => {
+        (incidencias || []).map(incidencia => {
 
             const total =
                 Number(incidencia.total_cost) || 0;
@@ -9889,8 +9892,8 @@ if (contenedorMovimientosPropietario) {
         movimientosEgresos;
 }
 
-    contenedor.innerHTML =
-    incidencias
+    contenedor.innerHTML = detalleMantenimientoEC +
+    (incidencias || [])
         .map(incidencia => {
 
             const costo =
@@ -15247,4 +15250,54 @@ function actualizarFormatoObjetivo(valor) {
 
     formato.textContent =
     formatearDineroHM(numero);
+}
+
+// Las proyecciones son importes programados; los controles registrados las reemplazan.
+async function cargarProyeccionesMantenimientoHM(desde, hasta, houseId) {
+    let consulta = supabaseClient.from("house_maintenance_monthly_projection")
+        .select("*").gte("month", desde).lte("month", hasta);
+    let controles = supabaseClient.from("house_maintenance_tasks")
+        .select("plan_id, scheduled_date, house_maintenance_plans!inner(house_id)")
+        .gte("scheduled_date", desde);
+    const [anio, mes] = hasta.slice(0, 7).split("-").map(Number);
+    const fin = `${mes === 12 ? anio + 1 : anio}-${String(mes === 12 ? 1 : mes + 1).padStart(2, "0")}-01`;
+    controles = controles.lt("scheduled_date", fin);
+    if (houseId) {
+        consulta = consulta.eq("house_id", houseId);
+        controles = controles.eq("house_maintenance_plans.house_id", houseId);
+    }
+    const [proyecciones, realizados] = await Promise.all([consulta, controles]);
+    if (proyecciones.error || realizados.error) {
+        return { data: null, error: proyecciones.error || realizados.error };
+    }
+    const registrados = new Set((realizados.data || []).map(t => `${t.plan_id}|${t.scheduled_date.slice(0, 7)}`));
+    return { data: (proyecciones.data || []).filter(p => !registrados.has(`${p.plan_id}|${p.month.slice(0, 7)}`)), error: null };
+}
+
+function sumarProyeccionesMantenimientoHM(filas, proyecciones) {
+    const mapa = new Map((filas || []).map(f => [`${f.house_id}|${f.month.slice(0, 7)}`, { ...f }]));
+    for (const p of proyecciones || []) {
+        const clave = `${p.house_id}|${p.month.slice(0, 7)}`;
+        const fila = mapa.get(clave) || { house_id: p.house_id, month: p.month };
+        const trabajo = Number(p.work_amount) || 0;
+        const comision = Number(p.commission_amount) || 0;
+        const total = Number(p.total_amount) || 0;
+        for (const [campo, importe] of Object.entries({ work_subtotal: trabajo, commission_subtotal: comision, owner_expenses: total, owner_net: -total, ec_income: comision })) {
+            fila[campo] = (Number(fila[campo]) || 0) + importe;
+        }
+        mapa.set(clave, fila);
+    }
+    return [...mapa.values()].sort((a, b) => a.month.localeCompare(b.month));
+}
+
+async function cargarResumenConProgramadosHM(desde, hasta, houseId, unico = false) {
+    let consulta = supabaseClient.from("house_monthly_cost_summary")
+        .select("*").gte("month", desde).lte("month", hasta);
+    if (houseId) consulta = consulta.eq("house_id", houseId);
+    const [resumen, programados] = await Promise.all([
+        consulta, cargarProyeccionesMantenimientoHM(desde, hasta, houseId)
+    ]);
+    if (resumen.error || programados.error) return { data: null, error: resumen.error || programados.error };
+    const filas = sumarProyeccionesMantenimientoHM(resumen.data, programados.data);
+    return { data: unico ? filas[0] || null : filas, error: null };
 }
