@@ -9704,6 +9704,66 @@ if (contenedorMovimientosPropietario) {
     }
 }
 
+let { data: mantenimientosMes, error: errorMantenimientos } =
+    await supabaseClient
+        .from("house_maintenance_tasks")
+        .select(`
+            id,
+            scheduled_date,
+            responsible,
+            status,
+            observations,
+            work_amount,
+            commission_pct,
+            commission_amount,
+            total_amount,
+            house_maintenance_plans!inner(title)
+        `)
+        .eq("house_maintenance_plans.house_id", houseId)
+        .gte("scheduled_date", fechaInicio)
+        .lt("scheduled_date", fechaFin)
+        .order("scheduled_date", { ascending: false });
+
+if (errorMantenimientos) {
+    console.error(
+        "Error cargando mantenimientos del estado de cuenta:",
+        errorMantenimientos
+    );
+}
+
+const { data: proyeccionesMes, error: errorProyecciones } =
+    await supabaseClient
+        .from("house_maintenance_monthly_projection")
+        .select(`
+            plan_id,
+            title,
+            month,
+            work_amount,
+            commission_amount,
+            total_amount
+        `)
+        .eq("house_id", houseId)
+        .eq("month", fechaInicio);
+
+if (errorProyecciones) {
+    console.error(
+        "Error cargando proyecciones de mantenimiento:",
+        errorProyecciones
+    );
+}
+
+mantenimientosMes = [
+    ...(mantenimientosMes || []),
+    ...(proyeccionesMes || []).map(proyeccion => ({
+        ...proyeccion,
+        scheduled_date: proyeccion.month,
+        responsible: "Programado",
+        house_maintenance_plans: {
+            title: proyeccion.title
+        }
+    }))
+];
+
     const { data: incidencias, error } =
         await supabaseClient
             .from("house_incidencias")
@@ -9742,7 +9802,55 @@ if (contenedorMovimientosPropietario) {
         return;
     }
 
+if (contenedorMovimientosPropietario && mantenimientosMes?.length) {
+    contenedorMovimientosPropietario.innerHTML +=
+        mantenimientosMes.map(mantenimiento => {
+            const costo =
+                Number(mantenimiento.total_amount) || 0;
+
+            const fecha =
+                mantenimiento.scheduled_date
+                    ? new Date(
+                        `${mantenimiento.scheduled_date}T12:00:00`
+                    ).toLocaleDateString("es-AR")
+                    : "Sin fecha";
+
+            const titulo =
+                mantenimiento.house_maintenance_plans?.title ||
+                "Mantenimiento";
+
+            return `
+                <div class="card">
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        gap:12px;
+                        align-items:center;
+                    ">
+                        <div>
+                            <div class="title">
+                                ${titulo}
+                            </div>
+                            <div class="sub">
+                                ${fecha} ·
+                                ${mantenimiento.responsible || "Sin responsable"}
+                            </div>
+                        </div>
+
+                        <div style="text-align:right;">
+                            <div class="sub">EGRESO</div>
+                            <strong style="font-size:20px;">
+                                ${formatearPagoHM(costo)}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join("");
+}
+
     if (!incidencias?.length) {
+        return;
 
         contenedor.innerHTML = `
             <div class="card">
@@ -10034,6 +10142,52 @@ if (contenedorMovimientosPropietario) {
             `;
         })
         .join("");
+}
+
+if (mantenimientosMes?.length) {
+    contenedor.innerHTML +=
+        mantenimientosMes.map(mantenimiento => {
+            const comision =
+                Number(mantenimiento.commission_amount) || 0;
+
+            const fecha =
+                mantenimiento.scheduled_date
+                    ? new Date(
+                        `${mantenimiento.scheduled_date}T12:00:00`
+                    ).toLocaleDateString("es-AR")
+                    : "Sin fecha";
+
+            const titulo =
+                mantenimiento.house_maintenance_plans?.title ||
+                "Mantenimiento";
+
+            return `
+                <div class="card">
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        gap:16px;
+                        align-items:center;
+                    ">
+                        <div>
+                            <div class="title">
+                                Mantenimiento · ${titulo}
+                            </div>
+                            <div class="sub">
+                                ${fecha}
+                            </div>
+                        </div>
+
+                        <div style="text-align:right;">
+                            <div class="sub">INGRESO</div>
+                            <strong style="font-size:20px;">
+                                ${formatearDineroHM(comision)}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join("");
 }
 
 async function openIncidencias(){
