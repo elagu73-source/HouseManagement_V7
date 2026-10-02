@@ -8198,6 +8198,72 @@ async function cambiarEstadoInventario(index, estado){
     await renderControlInventario();
 }
 
+function prepararSelectorMesEstadoCuenta() {
+    const campo = document.getElementById("estadoCuentaMes");
+    if (!campo) return;
+
+    let selector = document.getElementById("selectorMesHM");
+
+    if (!selector) {
+        selector = document.createElement("div");
+        selector.id = "selectorMesHM";
+        selector.style.cssText = `
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:16px;
+        `;
+
+        selector.innerHTML = `
+            <button type="button" data-paso="-1"
+                aria-label="Mes anterior"
+                style="border:none;background:transparent;
+                color:#0D2B45;font-size:28px;cursor:pointer;">
+                ‹
+            </button>
+            <span data-titulo
+                style="font-weight:600;color:#0D2B45;"></span>
+            <button type="button" data-paso="1"
+                aria-label="Mes siguiente"
+                style="border:none;background:transparent;
+                color:#0D2B45;font-size:28px;cursor:pointer;">
+                ›
+            </button>
+        `;
+
+        campo.insertAdjacentElement("afterend", selector);
+
+        selector.querySelectorAll("button").forEach(boton => {
+            boton.onclick = () => {
+                const [anio, mes] = campo.value.split("-").map(Number);
+                const fecha = new Date(
+                    anio,
+                    mes - 1 + Number(boton.dataset.paso),
+                    1
+                );
+
+                campo.value =
+                    `${fecha.getFullYear()}-` +
+                    String(fecha.getMonth() + 1).padStart(2, "0");
+
+                prepararSelectorMesEstadoCuenta();
+                campo.dispatchEvent(new Event("change", { bubbles: true }));
+            };
+        });
+    }
+
+    campo.type = "hidden";
+
+    const [anio, mes] = campo.value.split("-").map(Number);
+    const titulo = new Date(anio, mes - 1, 1).toLocaleDateString(
+        "es-AR",
+        { month: "long", year: "numeric" }
+    );
+
+    selector.querySelector("[data-titulo]").textContent =
+        titulo.charAt(0).toUpperCase() + titulo.slice(1);
+}
+
 async function openDashboardMensual() {
 
     const house = houses[current];
@@ -8240,6 +8306,7 @@ if (nombreCasaEstadoCuenta) {
 
     selectorMes.onchange =
         cargarDashboardMensual;
+        prepararSelectorMesEstadoCuenta();
 
     // ============================================
     // CONTROL DE SOLAPAS SEGÚN ROL
