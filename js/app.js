@@ -14316,7 +14316,7 @@ async function abrirMantenimientoCasa() {
 
     const { data: planes, error } = await supabaseClient
         .from("house_maintenance_plans")
-        .select("id, template_code, title, description, frequency_type, interval_value, next_due_date, active")
+        .select("id, template_code, title, description, frequency_type, interval_value, next_due_date, active, recurring_work_amount, recurring_commission_pct")
         .eq("house_id", casa.id)
         .eq("active", true)
         .order("template_code", { ascending: true });
@@ -14646,135 +14646,8 @@ if (puedeEditarMantenimiento) {
     tarjeta.appendChild(historial);
 }
         if (puedeEditarMantenimiento) {
-    const etiqueta = document.createElement("label");
-    etiqueta.textContent = "Programar próximo control";
-    etiqueta.style.display = "block";
-    etiqueta.style.marginTop = "14px";
-
-    const fechaInput = document.createElement("input");
-    fechaInput.type = "date";
-    fechaInput.value = plan.next_due_date || "";
-    fechaInput.style.width = "100%";
-    fechaInput.style.boxSizing = "border-box";
-
-    const guardarFecha = document.createElement("button");
-    guardarFecha.type = "button";
-    guardarFecha.className = "btn";
-    guardarFecha.textContent = "Guardar programación";
-    guardarFecha.style.marginTop = "10px";
-
-    guardarFecha.onclick = async () => {
-        const intervalo = Number(intervaloInput.value);
-
-if (
-    frecuenciaInput.value !== "personalizado" &&
-    (!Number.isInteger(intervalo) || intervalo < 1)
-) {
-    mostrarAvisoHM("Ingresá un intervalo válido.");
-    return;
-}
-        guardarFecha.disabled = true;
-        mostrarLoader("Guardando fecha...");
-
-        try {
-            const { error } = await supabaseClient
-                .from("house_maintenance_plans")
-                .update({
-    next_due_date: fechaInput.value || null,
-    frequency_type: frecuenciaInput.value,
-    interval_value:
-        frecuenciaInput.value === "personalizado"
-            ? 1
-            : intervalo
-})
-                .eq("id", plan.id)
-                .eq("house_id", casa.id)
-                .select("id")
-                .single();
-
-            if (error) {
-                console.error("Error guardando fecha:", error);
-                mostrarAvisoHM("No se pudo guardar la fecha.");
-                return;
-            }
-
-            mostrarAvisoHM("Programación de mantenimiento guardada.");
-            await abrirMantenimientoCasa();
-
-        } catch (error) {
-            console.error("Error guardando fecha:", error);
-            mostrarAvisoHM("No se pudo guardar la fecha.");
-        } finally {
-            guardarFecha.disabled = false;
-            ocultarLoader();
+            agregarFormularioMantenimientoHM(tarjeta, plan, casa.id);
         }
-    };
-
-    tarjeta.appendChild(etiqueta);
-    tarjeta.appendChild(fechaInput);
-    conectarCalendarioFechaHM(fechaInput);
-    const frecuenciaLabel = document.createElement("label");
-frecuenciaLabel.textContent = "Frecuencia";
-frecuenciaLabel.style.display = "block";
-frecuenciaLabel.style.marginTop = "12px";
-
-const frecuenciaInput = document.createElement("select");
-frecuenciaInput.style.width = "100%";
-
-[
-    ["personalizado", "Manual"],
-    ["dias", "Cada cierta cantidad de días"],
-    ["semanas", "Cada cierta cantidad de semanas"],
-    ["meses", "Cada cierta cantidad de meses"],
-    ["anual", "Cada cierta cantidad de años"]
-].forEach(([valor, texto]) => {
-    frecuenciaInput.add(new Option(texto, valor));
-});
-
-frecuenciaInput.value = plan.frequency_type || "personalizado";
-
-const intervaloLabel = document.createElement("label");
-intervaloLabel.textContent = "Repetir cada";
-intervaloLabel.style.display = "block";
-intervaloLabel.style.marginTop = "12px";
-
-const intervaloInput = document.createElement("input");
-intervaloInput.type = "number";
-intervaloInput.min = "1";
-intervaloInput.step = "1";
-intervaloInput.value = plan.interval_value || 1;
-intervaloInput.style.width = "100%";
-intervaloInput.style.boxSizing = "border-box";
-
-function actualizarIntervalo() {
-    const esManual = frecuenciaInput.value === "personalizado";
-    intervaloLabel.style.display = esManual ? "none" : "block";
-    intervaloInput.style.display = esManual ? "none" : "block";
-}
-
-frecuenciaInput.onchange = actualizarIntervalo;
-actualizarIntervalo();
-
-tarjeta.appendChild(frecuenciaLabel);
-tarjeta.appendChild(frecuenciaInput);
-tarjeta.appendChild(intervaloLabel);
-tarjeta.appendChild(intervaloInput);
-    tarjeta.appendChild(guardarFecha);
-}
-
-if (puedeEditarMantenimiento && plan.next_due_date) {
-    const botonRegistrar = document.createElement("button");
-    botonRegistrar.type = "button";
-    botonRegistrar.className = "btn";
-    botonRegistrar.textContent = "Registrar control";
-    botonRegistrar.style.marginTop = "10px";
-
-    botonRegistrar.onclick = () => {
-        abrirRegistroMantenimiento(plan);
-    };
-
-    tarjeta.appendChild(botonRegistrar);
-}
 
         contenido.appendChild(tarjeta);
     });
@@ -15300,4 +15173,98 @@ async function cargarResumenConProgramadosHM(desde, hasta, houseId, unico = fals
     if (resumen.error || programados.error) return { data: null, error: resumen.error || programados.error };
     const filas = sumarProyeccionesMantenimientoHM(resumen.data, programados.data);
     return { data: unico ? filas[0] || null : filas, error: null };
+}
+
+function agregarFormularioMantenimientoHM(tarjeta, plan, casaId) {
+    const formulario = document.createElement('form');
+    formulario.style.marginTop = '16px';
+    const campos = document.createElement('div');
+    campos.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;';
+    formulario.appendChild(campos);
+    function campo(texto, tipo, valor = '') {
+        const etiqueta = document.createElement('label');
+        etiqueta.textContent = texto;
+        const input = document.createElement(tipo === 'textarea' ? 'textarea' : tipo === 'select' ? 'select' : 'input');
+        if (!['textarea', 'select'].includes(tipo)) input.type = tipo;
+        input.style.cssText = 'display:block;width:100%;min-width:0;min-height:44px;font-size:16px;box-sizing:border-box;margin-top:5px;';
+        etiqueta.style.minWidth = '0';
+        input.value = valor;
+        etiqueta.appendChild(input);
+        campos.appendChild(etiqueta);
+        return input;
+    }
+    const hoy = new Date();
+    const fechaHoy = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
+    const fecha = campo('Fecha del mantenimiento', 'date', plan.next_due_date || fechaHoy);
+    fecha.required = true;
+    const frecuencia = campo('Frecuencia', 'select');
+    for (const [valor, texto] of [['personalizado','Una sola vez'],['meses','Mensual'],['semanas','Semanal'],['dias','Diaria'],['anual','Anual']]) {
+        frecuencia.add(new Option(texto, valor));
+    }
+    frecuencia.value = plan.frequency_type || 'personalizado';
+    const intervalo = campo('Repetir cada', 'number', plan.interval_value || 1);
+    intervalo.min = '1'; intervalo.step = '1'; intervalo.required = true;
+    frecuencia.onchange = () => {
+        intervalo.disabled = frecuencia.value === 'personalizado';
+        intervalo.parentElement.style.display = intervalo.disabled ? 'none' : 'block';
+    };
+    frecuencia.onchange();
+    const responsable = campo('Responsable', 'text');
+    responsable.required = true;
+    const observaciones = campo('Observaciones', 'textarea');
+    const costo = campo('Costo del mantenimiento (u$s)', 'number', plan.recurring_work_amount || '');
+    costo.min = '0'; costo.step = '0.01'; costo.required = true;
+    const porcentaje = campo('Comisión de EC (%)', 'number', plan.recurring_commission_pct || 0);
+    porcentaje.min = '0'; porcentaje.max = '100'; porcentaje.step = '0.01'; porcentaje.required = true;
+    costo.parentElement.style.gridColumn = '1';
+    const estado = campo('Estado', 'select');
+    for (const [valor,texto] of [['realizado','Realizado'],['problema','Con problema'],['no_aplica','No aplica']]) estado.add(new Option(texto,valor));
+    const resumen = document.createElement('div');
+    resumen.className = 'sub'; resumen.style.marginTop = '12px';
+    resumen.setAttribute('aria-live','polite');
+    function calcular() {
+        const trabajo = Number(costo.value) || 0;
+        const comision = trabajo * (Number(porcentaje.value) || 0) / 100;
+        resumen.textContent = `Comisión EC: ${formatearDineroHM(comision)} · Total propietario: ${formatearDineroHM(trabajo+comision)}`;
+    }
+    costo.oninput = porcentaje.oninput = calcular;
+    calcular(); formulario.appendChild(resumen);
+    const aviso = document.createElement('div');
+    aviso.className = 'sub'; aviso.style.marginTop = '8px';
+    aviso.textContent = 'Se guarda en el historial y en las cuentas del mes de la fecha elegida. Si se repite mensualmente, los meses siguientes quedan programados con estos importes.';
+    formulario.appendChild(aviso);
+    const guardar = document.createElement('button');
+    guardar.type = 'submit'; guardar.className = 'btn';
+    guardar.style.cssText = 'margin-top:12px;background:#0D2B45;color:white;';
+    guardar.textContent = 'Guardar mantenimiento';
+    formulario.appendChild(guardar);
+    formulario.onsubmit = async event => {
+        event.preventDefault();
+        if (guardar.disabled || !formulario.reportValidity()) return;
+        if (!responsable.value.trim()) { mostrarAvisoHM('Ingresá el responsable.'); return; }
+        if (estado.value === 'problema' && !observaciones.value.trim()) { mostrarAvisoHM('Describí el problema en observaciones.'); return; }
+        guardar.disabled = true;
+        mostrarLoader('Guardando mantenimiento...');
+        let guardado = false;
+        try {
+            const {error} = await supabaseClient.rpc('guardar_mantenimiento_directo', {
+                p_plan_id: plan.id, p_house_id: casaId, p_fecha: fecha.value,
+                p_frecuencia: frecuencia.value, p_intervalo: frecuencia.value === 'personalizado' ? 1 : Number(intervalo.value),
+                p_status: estado.value, p_responsible: responsable.value.trim(),
+                p_observations: observaciones.value.trim() || null,
+                p_work_amount: Number(costo.value), p_commission_pct: Number(porcentaje.value)
+            });
+            if (error) throw error;
+            guardado = true;
+            mostrarAvisoHM('Mantenimiento guardado en su historial y en el estado de cuenta.');
+            await abrirMantenimientoCasa();
+        } catch (error) {
+            console.error('Error guardando mantenimiento directo:', error);
+            mostrarAvisoHM(guardado ? 'El mantenimiento se guardó. Volvé a abrir esta pantalla para verlo.' : 'No se pudo guardar. Revisá los datos y volvé a intentarlo.');
+        } finally {
+            if (!guardado) guardar.disabled = false;
+            ocultarLoader();
+        }
+    };
+    tarjeta.appendChild(formulario);
 }
