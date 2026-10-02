@@ -14313,7 +14313,7 @@ async function abrirMantenimientoCasa() {
 
     const { data: planes, error } = await supabaseClient
         .from("house_maintenance_plans")
-        .select("id, template_code, title, description, frequency_type, interval_value, next_due_date, active")
+        .select("id, template_code, title, description, frequency_type, interval_value, next_due_date, active, work_cost, commission_percentage")
         .eq("house_id", casa.id)
         .eq("active", true)
         .order("template_code", { ascending: true });
@@ -14654,6 +14654,39 @@ if (puedeEditarMantenimiento) {
     fechaInput.style.width = "100%";
     fechaInput.style.boxSizing = "border-box";
 
+const costoLabel = document.createElement("label");
+costoLabel.textContent = "Costo por mantenimiento (u$s)";
+costoLabel.style.display = "block";
+costoLabel.style.marginTop = "12px";
+
+const costoInput = document.createElement("input");
+costoInput.type = "number";
+costoInput.min = "0";
+costoInput.max = "9999999999.99";
+costoInput.step = "0.01";
+costoInput.value = plan.work_cost ?? 0;
+costoInput.style.width = "100%";
+costoInput.style.boxSizing = "border-box";
+costoLabel.appendChild(costoInput);
+
+const comisionLabel = document.createElement("label");
+comisionLabel.textContent = "Comisión EC (%)";
+comisionLabel.style.display = "block";
+comisionLabel.style.marginTop = "12px";
+
+const comisionInput = document.createElement("input");
+comisionInput.type = "number";
+comisionInput.min = "0";
+comisionInput.max = "100";
+comisionInput.step = "0.01";
+comisionInput.value = plan.commission_percentage ?? 0;
+comisionInput.style.width = "100%";
+comisionInput.style.boxSizing = "border-box";
+comisionLabel.appendChild(comisionInput);
+
+tarjeta.appendChild(costoLabel);
+tarjeta.appendChild(comisionLabel);
+
     const guardarFecha = document.createElement("button");
     guardarFecha.type = "button";
     guardarFecha.className = "btn";
@@ -14670,19 +14703,46 @@ if (
     mostrarAvisoHM("Ingresá un intervalo válido.");
     return;
 }
+
+if (
+    costoInput.value.trim() === "" ||
+    comisionInput.value.trim() === "" ||
+    !costoInput.reportValidity() ||
+    !comisionInput.reportValidity()
+) {
+    mostrarAvisoHM("Ingresá un costo válido y una comisión entre 0 y 100.");
+    return;
+}
+
+const costo = Number(costoInput.value);
+const porcentajeComision = Number(comisionInput.value);
+
+if (
+    !Number.isFinite(costo) ||
+    costo < 0 ||
+    !Number.isFinite(porcentajeComision) ||
+    porcentajeComision < 0 ||
+    porcentajeComision > 100
+) {
+    mostrarAvisoHM("Revisá el costo y el porcentaje de comisión.");
+    return;
+}
+
         guardarFecha.disabled = true;
         mostrarLoader("Guardando fecha...");
 
         try {
             const { error } = await supabaseClient
                 .from("house_maintenance_plans")
-                .update({
+               .update({
     next_due_date: fechaInput.value || null,
     frequency_type: frecuenciaInput.value,
     interval_value:
         frecuenciaInput.value === "personalizado"
             ? 1
-            : intervalo
+            : intervalo,
+    work_cost: costo,
+    commission_percentage: porcentajeComision
 })
                 .eq("id", plan.id)
                 .eq("house_id", casa.id)
