@@ -8198,6 +8198,159 @@ async function cambiarEstadoInventario(index, estado){
     await renderControlInventario();
 }
 
+function conectarCalendarioFechaHM(campo) {
+    campo.type = "hidden";
+
+    const caja = document.createElement("div");
+    caja.style.cssText = `
+        margin-top:8px;
+        padding:12px;
+        background:white;
+        border:1px solid #E6E7E5;
+        border-radius:10px;
+        max-width:360px;
+    `;
+
+    campo.insertAdjacentElement("afterend", caja);
+
+    let vista = campo.value
+        ? new Date(campo.value + "T12:00:00")
+        : new Date();
+
+    vista = new Date(vista.getFullYear(), vista.getMonth(), 1);
+
+    function dibujar() {
+        caja.innerHTML = "";
+
+        const anio = vista.getFullYear();
+        const mes = vista.getMonth();
+
+        const encabezado = document.createElement("div");
+        encabezado.style.cssText = `
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:14px;
+        `;
+
+        const titulo = document.createElement("span");
+        const texto = vista.toLocaleDateString("es-AR", {
+            month: "long",
+            year: "numeric"
+        });
+
+        titulo.textContent =
+            texto.charAt(0).toUpperCase() + texto.slice(1);
+        titulo.style.cssText = "font-weight:600;color:#0D2B45;";
+
+        function flecha(texto, paso, descripcion) {
+            const boton = document.createElement("button");
+            boton.type = "button";
+            boton.textContent = texto;
+            boton.setAttribute("aria-label", descripcion);
+            boton.style.cssText = `
+                border:none;
+                background:transparent;
+                color:#0D2B45;
+                font-size:28px;
+                cursor:pointer;
+            `;
+            boton.onclick = () => {
+                vista = new Date(anio, mes + paso, 1);
+                dibujar();
+            };
+            return boton;
+        }
+
+        encabezado.append(
+            flecha("‹", -1, "Mes anterior"),
+            titulo,
+            flecha("›", 1, "Mes siguiente")
+        );
+        caja.appendChild(encabezado);
+
+        const grilla = document.createElement("div");
+        grilla.style.cssText = `
+            display:grid;
+            grid-template-columns:repeat(7,1fr);
+            gap:4px;
+        `;
+
+        ["L", "M", "M", "J", "V", "S", "D"].forEach(dia => {
+            const nombre = document.createElement("div");
+            nombre.textContent = dia;
+            nombre.style.cssText = `
+                text-align:center;
+                font-size:12px;
+                font-weight:600;
+                color:#556B4F;
+                padding:5px;
+            `;
+            grilla.appendChild(nombre);
+        });
+
+        const inicio = (new Date(anio, mes, 1).getDay() + 6) % 7;
+        const cantidad = new Date(anio, mes + 1, 0).getDate();
+
+        for (let i = 0; i < inicio; i++) {
+            grilla.appendChild(document.createElement("div"));
+        }
+
+        for (let dia = 1; dia <= cantidad; dia++) {
+            const valor =
+                `${anio}-${String(mes + 1).padStart(2, "0")}-` +
+                String(dia).padStart(2, "0");
+
+            const seleccionado = campo.value === valor;
+            const boton = document.createElement("button");
+            boton.type = "button";
+            boton.textContent = dia;
+            boton.setAttribute("aria-label", `${dia} de ${texto}`);
+            boton.setAttribute("aria-pressed", String(seleccionado));
+            boton.style.cssText = `
+                border:none;
+                background:${seleccionado ? "#0D2B45" : "white"};
+                color:${seleccionado ? "white" : "#0D2B45"};
+                border-radius:8px;
+                padding:9px 4px;
+                font-size:14px;
+                cursor:pointer;
+            `;
+            boton.onclick = () => {
+                campo.value = valor;
+                campo.dispatchEvent(
+                    new Event("change", { bubbles: true })
+                );
+                dibujar();
+            };
+            grilla.appendChild(boton);
+        }
+
+        caja.appendChild(grilla);
+
+        const borrar = document.createElement("button");
+        borrar.type = "button";
+        borrar.textContent = "Borrar fecha";
+        borrar.style.cssText = `
+            margin-top:12px;
+            border:none;
+            background:transparent;
+            color:#556B4F;
+            cursor:pointer;
+        `;
+        borrar.onclick = () => {
+            campo.value = "";
+            campo.dispatchEvent(
+                new Event("change", { bubbles: true })
+            );
+            dibujar();
+        };
+        caja.appendChild(borrar);
+    }
+
+    dibujar();
+}
+
 function prepararSelectorMesEstadoCuenta() {
     const campo = document.getElementById("estadoCuentaMes");
     if (!campo) return;
@@ -14531,6 +14684,7 @@ if (
 
     tarjeta.appendChild(etiqueta);
     tarjeta.appendChild(fechaInput);
+    conectarCalendarioFechaHM(fechaInput);
     const frecuenciaLabel = document.createElement("label");
 frecuenciaLabel.textContent = "Frecuencia";
 frecuenciaLabel.style.display = "block";
