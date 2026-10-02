@@ -8202,6 +8202,17 @@ async function openDashboardMensual() {
 
     const house = houses[current];
 
+    const nombreCasaEstadoCuenta =
+    document.getElementById("estadoCuentaCasaNombre");
+
+if (nombreCasaEstadoCuenta) {
+    nombreCasaEstadoCuenta.textContent =
+        house?.nombre ||
+        house?.name ||
+        house?.nombreCasa ||
+        "Casa";
+}
+
     if (!house || !house.id) {
         console.error(
             "La casa no tiene UUID de Supabase"
@@ -8213,8 +8224,6 @@ async function openDashboardMensual() {
         document.getElementById(
             "estadoCuentaMes"
         );
-
-    if (!selectorMes.value) {
 
         const hoy = new Date();
 
@@ -8228,7 +8237,6 @@ async function openDashboardMensual() {
 
         selectorMes.value =
             `${anio}-${mes}`;
-    }
 
     selectorMes.onchange =
         cargarDashboardMensual;
@@ -8933,6 +8941,9 @@ async function cargarDetalleEstadoCuenta(
     );
 
     if (!contenedor) return;
+    if (contenedorMovimientosPropietario) {
+    contenedorMovimientosPropietario.innerHTML = "";
+}
 
     const [anio, mes] =
         mesSeleccionado
