@@ -8212,6 +8212,31 @@ function conectarCalendarioFechaHM(campo) {
     `;
 
     campo.insertAdjacentElement("afterend", caja);
+    caja.style.display = "none";
+
+const etiqueta = campo.previousElementSibling;
+
+if (etiqueta) {
+    etiqueta.style.cursor = "pointer";
+    etiqueta.setAttribute("role", "button");
+    etiqueta.tabIndex = 0;
+    etiqueta.setAttribute("aria-expanded", "false");
+
+    const alternarCalendario = () => {
+        const abrir = caja.style.display === "none";
+        caja.style.display = abrir ? "block" : "none";
+        etiqueta.setAttribute("aria-expanded", String(abrir));
+    };
+
+    etiqueta.onclick = alternarCalendario;
+
+    etiqueta.onkeydown = event => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            alternarCalendario();
+        }
+    };
+}
 
     let vista = campo.value
         ? new Date(campo.value + "T12:00:00")
