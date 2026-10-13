@@ -14350,6 +14350,7 @@ async function abrirMantenimientoCasa() {
         boton.textContent = "Crear mantenimiento de esta casa";
         boton.style.marginTop = "14px";
         boton.onclick = crearPlantillaMantenimientoCasa;
+        agregarCreadorItemMantenimientoHM(contenido, casa.id);
 
         aviso.appendChild(boton);
     }
@@ -14392,6 +14393,8 @@ if (errorRolMantenimiento) {
 const puedeEditarMantenimiento =
     !errorRolMantenimiento &&
     ["admin", "colaborador"].includes(rolMantenimiento);
+
+    if (puedeEditarMantenimiento) agregarCreadorItemMantenimientoHM(contenido, casa.id);
 
     const grupos = [
     "Pretemporada / anual",
@@ -15267,4 +15270,65 @@ function agregarFormularioMantenimientoHM(tarjeta, plan, casaId) {
         }
     };
     tarjeta.appendChild(formulario);
+}
+
+function agregarCreadorItemMantenimientoHM(contenido, casaId) {
+    const panel = document.createElement('details');
+    panel.className = 'card';
+    const abrir = document.createElement('summary');
+    abrir.textContent = '+ Agregar ítem de mantenimiento';
+    abrir.style.cssText = 'cursor:pointer;font-weight:700;color:#0D2B45;padding:8px 0;';
+    panel.appendChild(abrir);
+    const formulario = document.createElement('form');
+    formulario.style.cssText = 'display:grid;gap:12px;margin-top:12px;';
+    const etiquetaNombre = document.createElement('label');
+    etiquetaNombre.textContent = 'Nombre del nuevo ítem';
+    const nombre = document.createElement('input');
+    nombre.type = 'text'; nombre.required = true; nombre.minLength = 2;
+    nombre.style.cssText = 'display:block;width:100%;box-sizing:border-box;min-height:44px;font-size:16px;';
+    etiquetaNombre.appendChild(nombre);
+    const etiquetaGrupo = document.createElement('label');
+    etiquetaGrupo.textContent = 'Sección';
+    const grupo = document.createElement('select');
+    grupo.style.cssText = nombre.style.cssText;
+    for (const texto of ['Pretemporada / anual', 'Jardín y exterior', 'Blanquería y textiles']) grupo.add(new Option(texto, texto));
+    etiquetaGrupo.appendChild(grupo);
+    const guardar = document.createElement('button');
+    guardar.type = 'submit'; guardar.className = 'btn'; guardar.textContent = 'Crear ítem';
+    guardar.style.cssText = 'justify-self:start;background:#0D2B45;color:white;min-height:44px;';
+    formulario.appendChild(etiquetaNombre);
+    formulario.appendChild(etiquetaGrupo);
+    formulario.appendChild(guardar);
+    formulario.onsubmit = async event => {
+        event.preventDefault();
+        if (guardar.disabled || !formulario.reportValidity()) return;
+        const titulo = nombre.value.trim();
+        if (titulo.length < 2) { mostrarAvisoHM('Ingresá un nombre de al menos 2 caracteres.'); return; }
+        guardar.disabled = true;
+        let creado = false;
+        mostrarLoader('Creando ítem...');
+        try {
+            const permiso = await supabaseClient.rpc('current_organization_role');
+            if (permiso.error || !['admin','colaborador'].includes(permiso.data)) {
+                mostrarAvisoHM('No tenés permiso para agregar mantenimiento.'); return;
+            }
+            const {data, error} = await supabaseClient.from('house_maintenance_plans').insert({
+                house_id: casaId, title: titulo, description: grupo.value,
+                template_code: null, frequency_type: 'personalizado', interval_value: 1,
+                next_due_date: null, active: true
+            }).select('id').single();
+            if (error || !data?.id) throw error || new Error('No se recibió el ítem creado');
+            creado = true;
+            mostrarAvisoHM('Ítem creado. Ya podés cargar su mantenimiento.');
+            if (houses[current]?.id === casaId) await abrirMantenimientoCasa();
+        } catch (error) {
+            console.error('Error creando ítem de mantenimiento:', error);
+            mostrarAvisoHM(creado ? 'El ítem se creó. Volvé a abrir mantenimiento para verlo.' : 'No se pudo crear el ítem. Los datos ingresados se conservaron.');
+        } finally {
+            guardar.disabled = creado;
+            ocultarLoader();
+        }
+    };
+    panel.appendChild(formulario);
+    contenido.appendChild(panel);
 }
