@@ -1482,7 +1482,7 @@ const formatoDinero = {
         const absoluto = Math.abs(numero);
 
         return numero < 0
-            ? `-u$s ${formatoNumero.format(absoluto)}`
+            ? `<span style="color:#C94A4A;">-u$s ${formatoNumero.format(absoluto)}</span>`
             : `u$s ${formatoNumero.format(absoluto)}`;
     }
 };
@@ -8779,7 +8779,7 @@ const totalHonorariosMes =
 
 const formatoDinero = {
     format(valor) {
-        return formatearDineroHM(valor);
+        return formatearImporteCuentaHM(valor);
     }
 };
 
@@ -9219,7 +9219,7 @@ if (contenedorHonorarios) {
 
         const formatoDineroHonorarios = {
     format(valor) {
-        return formatearDineroHM(valor);
+        return formatearImporteCuentaHM(valor);
     }
 };
 
@@ -9425,7 +9425,7 @@ if (contenedorReservas) {
 
             const formatoDineroReservas = {
     format(valor) {
-        return formatearDineroHM(valor);
+        return formatearImporteCuentaHM(valor);
     }
 };
 
@@ -9707,7 +9707,7 @@ if (contenedorMovimientosPropietario) {
                 <div><div class="title">${titulo}</div><div class="sub">${fecha}</div>
                 <div class="sub">Trabajo: ${formatearDineroHM(costo)} · Comisión EC (${Number(control.commission_pct) || 0}%): ${formatearDineroHM(comision)}</div></div>
                 <div style="text-align:right"><div class="sub">${esPropietario ? "EGRESO" : "INGRESO"}</div>
-                <strong>${esPropietario ? "-" : ""}${formatearDineroHM(esPropietario ? total : comision)}</strong></div>
+                <strong>${esPropietario ? formatearPagoHM(total) : formatearImporteCuentaHM(comision)}</strong></div>
             </div></div>`;
     }).join("");
     if (errorMantenimientos) console.error("Error cargando mantenimientos:", errorMantenimientos);
@@ -9759,7 +9759,7 @@ if (contenedorMovimientosPropietario) {
 
     const formatoDinero = {
     format(valor) {
-        return formatearDineroHM(valor);
+        return formatearImporteCuentaHM(valor);
     }
 };
 
@@ -9820,7 +9820,7 @@ if (
                             </div>
 
                             <strong style="font-size:20px;">
-                                -${formatoDinero.format(importe)}
+                                ${formatearPagoHM(importe)}
                             </strong>
                         </div>
                     </div>
@@ -15331,4 +15331,9 @@ function agregarCreadorItemMantenimientoHM(contenido, casaId) {
     };
     panel.appendChild(formulario);
     contenido.appendChild(panel);
+}
+
+function formatearImporteCuentaHM(valor) {
+    const texto = formatearDineroHM(valor);
+    return Number(valor) < 0 ? `<span style="color:#C94A4A;">${texto}</span>` : texto;
 }
