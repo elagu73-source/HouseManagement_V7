@@ -14650,6 +14650,14 @@ if (puedeEditarMantenimiento) {
 }
         if (puedeEditarMantenimiento) {
             agregarFormularioMantenimientoHM(tarjeta, plan, casa.id);
+            const eliminarItem = document.createElement('button');
+            eliminarItem.type = 'button';
+            eliminarItem.className = 'btn';
+            eliminarItem.textContent = 'Eliminar ítem';
+            eliminarItem.style.cssText = 'display:block;margin-top:16px;background:#8B4B4B;color:white;min-height:44px;';
+            eliminarItem.onclick = () => eliminarItemMantenimientoHM(plan, casa.id, eliminarItem);
+            tarjeta.appendChild(eliminarItem);
+
         }
 
         contenido.appendChild(tarjeta);
@@ -15336,4 +15344,35 @@ function agregarCreadorItemMantenimientoHM(contenido, casaId) {
 function formatearImporteCuentaHM(valor) {
     const texto = formatearDineroHM(valor);
     return Number(valor) < 0 ? `<span style="color:#C94A4A;">${texto}</span>` : texto;
+}
+
+async function eliminarItemMantenimientoHM(plan, casaId, boton) {
+    if (!plan?.id || !casaId || boton.disabled) return;
+    boton.disabled = true;
+    let eliminado = false;
+    let cargando = false;
+    try {
+        const confirmado = await confirmarAccionHM(
+            `Se eliminará "${plan.title}" de esta casa, junto con todos sus controles, las incidencias vinculadas, gastos, comisiones y repeticiones futuras. Esta acción no se puede deshacer.`,
+            'Eliminar ítem de mantenimiento', 'ELIMINAR ÍTEM', '#8B4B4B'
+        );
+        if (!confirmado) return;
+        cargando = true;
+        mostrarLoader('Eliminando ítem de mantenimiento...');
+        const {data, error} = await supabaseClient.rpc('eliminar_item_mantenimiento', {
+            p_plan_id: plan.id, p_house_id: casaId
+        });
+        if (error || data !== true) throw error || new Error('No se confirmó la eliminación');
+        eliminado = true;
+        mostrarAvisoHM('Ítem eliminado. Sus importes se quitaron de las cuentas.');
+        if (houses[current]?.id === casaId) await abrirMantenimientoCasa();
+    } catch (error) {
+        console.error('Error eliminando ítem de mantenimiento:', error);
+        mostrarAvisoHM(eliminado
+            ? 'El ítem se eliminó. Volvé a abrir mantenimiento para actualizar la pantalla.'
+            : 'No se pudo eliminar el ítem. No se confirmó ningún cambio.');
+    } finally {
+        if (!eliminado) boton.disabled = false;
+        if (cargando) ocultarLoader();
+    }
 }
