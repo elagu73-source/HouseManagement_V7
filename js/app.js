@@ -3166,6 +3166,7 @@ calendarioDescuentoEstadia = "";
 calendarioComisionAlquiler = "15";
 calendarioImporteLimpieza = "";
 calendarioComisionLimpieza = "";
+    borradoresCobrosHM.clear();
     calendarioFechaActual = new Date();
 
     const nombreCasa =
@@ -3407,6 +3408,9 @@ botonCheckOut.onclick = function() {
     );
 };
 
+    borradoresCobrosHM.delete(reserva.id);
+    if (resumen) crearCobrosAlquilerHM(resumen, reserva.id,
+        () => ({total: Number(detalle?.rental_net)||0, porcentaje: Number(detalle?.rental_commission_pct)||0}), true);
     await go("detalleReserva");
 
     window.scrollTo(0, 0);
@@ -5827,6 +5831,8 @@ datosInquilino.innerHTML = `
     </div>
 </div>
 
+   <div id="calCobrosAlquiler"></div>
+
    <label for="calCleaningAmount">
        Importe de limpieza
    </label>
@@ -5961,6 +5967,17 @@ campoComisionLimpieza.value =
     calendarioComisionLimpieza;
 
 actualizarCalculosEconomicos();
+
+const formularioCobros = crearCobrosAlquilerHM(
+    document.getElementById('calCobrosAlquiler'),
+    calendarioReservaEditando || calendarioReservaViendo,
+    () => ({ total: (Number(campoImporteAlquiler.value)||0)*(1-(Number(campoDescuentoEstadia.value)||0)/100), porcentaje: Number(campoComisionAlquiler.value)||0 }),
+    !calendarioPuedeEditar || Boolean(calendarioReservaViendo)
+);
+for (const campo of [campoImporteAlquiler,campoDescuentoEstadia,campoComisionAlquiler]) {
+    campo.addEventListener('input', () => formularioCobros.actualizar());
+    campo.addEventListener('change', () => formularioCobros.actualizar());
+}
 
 campoNombre.oninput = () => {
     calendarioInquilinoNombre =
@@ -6109,6 +6126,7 @@ editarReserva.style.fontSize = "12px";
 editarReserva.style.cursor = "pointer";
 
 editarReserva.onclick = function() {
+    borradoresCobrosHM.delete(reserva.id);
     calendarioReservaViendo = null;
     calendarioReservaEditando = reserva.id;
 
@@ -6356,6 +6374,10 @@ if (
 }
 
    guardar.onclick = async function() {
+    let cobrosParaGuardar;
+    try { cobrosParaGuardar = formularioCobros.leer(); }
+    catch (error) { mostrarAvisoHM(error.message); return; }
+
 
     if (
         !calendarioIngreso ||
@@ -6579,6 +6601,11 @@ if (!reservationId) {
     return;
 }
 
+// Conservar el id ante un error posterior: reintentar no debe duplicar la reserva.
+const eraEdicionReserva = Boolean(calendarioReservaEditando);
+calendarioReservaEditando = reservationId;
+formularioCobros.conservar(reservationId);
+
 const {
     data: detalleGuardado,
     error: errorDetalle
@@ -6651,10 +6678,26 @@ if (errorDetalle || !detalleGuardado) {
     return;
 }
 
+if (cobrosParaGuardar.pagos !== null) {
+    let resultadoCobros;
+    try {
+        resultadoCobros = await supabaseClient.rpc('guardar_cobros_alquiler', {
+            p_reservation_id: reservationId,
+            p_mode: cobrosParaGuardar.modo,
+            p_payments: cobrosParaGuardar.pagos
+        });
+    } catch (error) { resultadoCobros = { error }; }
+    if (resultadoCobros.error || resultadoCobros.data !== true) {
+        console.error('Error guardando cobros:', resultadoCobros.error);
+        ocultarLoader(); guardar.disabled = false; guardar.style.opacity = '1'; guardar.style.cursor = 'pointer';
+        mostrarAvisoHM('La reserva quedó guardada, pero no se confirmaron los cobros. Conservamos lo cargado para que puedas reintentar Guardar cambios.');
+        return;
+    }
+}
+borradoresCobrosHM.clear();
 ocultarLoader();
 
-const reservaFueEditada =
-    Boolean(calendarioReservaEditando);
+const reservaFueEditada = eraEdicionReserva;
 
 calendarioReservaEditando = null;
 
@@ -9336,342 +9379,7 @@ if (contenedorHonorarios) {
     document.getElementById("estadoCuentaReservas");
 
 if (contenedorReservas) {
-
-    const { data: reservas, error: errorReservas } =
-        await supabaseClient
-            .from("house_reservations")
-            .select(`
-                id,
-                check_in,
-                check_out
-            `)
-            .eq("house_id", houseId)
-            .gte("check_in", fechaInicio)
-            .lt("check_in", fechaFin)
-            .order("check_in", {
-                ascending: false
-            });
-
-    if (errorReservas) {
-
-        console.error(
-            "Error cargando reservas del estado de cuenta:",
-            errorReservas
-        );
-
-        contenedorReservas.innerHTML = `
-            <div class="card">
-                No se pudo cargar el detalle de reservas.
-            </div>
-        `;
-
-    } else if (!reservas?.length) {
-
-        contenedorReservas.innerHTML = `
-            <div class="card">
-                No hay reservas registradas durante este mes.
-            </div>
-        `;
-
-    } else {
-
-        const idsReservas =
-            reservas.map(reserva => reserva.id);
-
-        const {
-            data: detallesReservas,
-            error: errorDetallesReservas
-        } =
-            await supabaseClient
-                .from("reservation_details")
-                .select(`
-                    reservation_id,
-                    tenant_name,
-                    rental_amount,
-                    long_stay_discount,
-                    rental_net,
-                    rental_commission_pct,
-                    rental_profit,
-                    cleaning_amount,
-                    cleaning_commission_pct,
-                    cleaning_profit
-                `)
-                .in("reservation_id", idsReservas);
-
-        if (errorDetallesReservas) {
-
-            console.error(
-                "Error cargando importes de reservas:",
-                errorDetallesReservas
-            );
-
-            contenedorReservas.innerHTML = `
-                <div class="card">
-                    No se pudieron cargar los importes de las reservas.
-                </div>
-            `;
-
-        } else {
-
-            const detallesPorReserva =
-                new Map(
-                    (detallesReservas || []).map(
-                        detalle => [
-                            detalle.reservation_id,
-                            detalle
-                        ]
-                    )
-                );
-
-            const formatoDineroReservas = {
-    format(valor) {
-        return formatearImporteCuentaHM(valor);
-    }
-};
-
-if (contenedorMovimientosPropietario) {
-
-    contenedorMovimientosPropietario.innerHTML =
-        reservas.map(reserva => {
-
-            const detalle =
-                detallesPorReserva.get(reserva.id) || {};
-
-            const alquilerNeto =
-                Number(detalle.rental_net) || 0;
-
-            const comisionAlquiler =
-                Number(detalle.rental_profit) || 0;
-
-            const ingresoPropietario =
-                alquilerNeto - comisionAlquiler;
-
-            const fecha =
-                reserva.check_in
-                    ? new Date(
-                        `${reserva.check_in}T12:00:00`
-                    ).toLocaleDateString("es-AR")
-                    : "-";
-
-            return `
-                <div class="card">
-                    <div
-                        style="
-                            display:flex;
-                            justify-content:space-between;
-                            gap:12px;
-                            align-items:center;
-                        "
-                    >
-                        <div>
-                            <div class="title">
-                                Alquiler
-                            </div>
-
-                            <div class="sub">
-                                ${detalle.tenant_name || "Huésped"}
-                                · ${fecha}
-                            </div>
-                        </div>
-
-                        <div style="text-align:right;">
-                            <div class="sub">
-                                INGRESO
-                            </div>
-
-                            <strong style="font-size:20px;">
-                                ${formatoDineroReservas.format(
-                                    ingresoPropietario
-                                )}
-                            </strong>
-                        </div>
-                    </div>
-                </div>
-            `;
-        })
-        .join("");
-}
-
-            contenedorReservas.innerHTML =
-                reservas.map(reserva => {
-
-                    const detalle =
-                        detallesPorReserva.get(reserva.id) || {};
-
-                    const alquilerBruto =
-                        Number(detalle.rental_amount) || 0;
-
-                    const descuentoPct =
-                        Number(detalle.long_stay_discount) || 0;
-
-                    const alquilerNeto =
-                        Number(detalle.rental_net) || 0;
-
-                    const comisionAlquiler =
-                        Number(detalle.rental_profit) || 0;
-
-                    const limpieza =
-                        Number(detalle.cleaning_amount) || 0;
-
-                    const comisionLimpieza =
-                        Number(detalle.cleaning_profit) || 0;
-
-                    const totalHuesped =
-                        alquilerNeto + limpieza;
-
-                    const ingresoEC =
-                        comisionAlquiler + comisionLimpieza;
-
-                    const netoPropietario =
-    alquilerNeto
-    - comisionAlquiler;
-
-                    const checkIn =
-                        reserva.check_in
-                            ? new Date(
-                                `${reserva.check_in}T12:00:00`
-                            ).toLocaleDateString("es-AR")
-                            : "-";
-
-                    const checkOut =
-                        reserva.check_out
-                            ? new Date(
-                                `${reserva.check_out}T12:00:00`
-                            ).toLocaleDateString("es-AR")
-                            : "-";
-
-                   return `
-    <div class="card" style="padding:0; overflow:hidden;">
-
-        <div
-            onclick="
-                const detalle = this.nextElementSibling;
-                const flecha = this.querySelector('.flecha-ec');
-
-                if (detalle.style.display === 'none') {
-                    detalle.style.display = 'block';
-                    flecha.textContent = '⌃';
-                } else {
-                    detalle.style.display = 'none';
-                    flecha.textContent = '⌄';
-                }
-            "
-            style="
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-                gap:16px;
-                padding:14px;
-                cursor:pointer;
-            "
-        >
-            <div>
-                <div class="title">
-                    Reserva · ${detalle.tenant_name || "Reserva"}
-                </div>
-
-                <div class="sub">
-                    ${checkIn} al ${checkOut}
-                </div>
-            </div>
-
-            <div
-                style="
-                    display:flex;
-                    align-items:center;
-                    gap:14px;
-                    flex-shrink:0;
-                "
-            >
-                <div
-    class="estado-cuenta-movimiento-importe"
-    style="text-align:right;"
->
-                    <div class="sub">
-                        INGRESO
-                    </div>
-
-                    <strong style="font-size:20px;">
-                        ${formatoDineroReservas.format(ingresoEC)}
-                    </strong>
-                </div>
-
-                <span
-                    class="flecha-ec"
-                    style="
-                        font-size:24px;
-                        font-weight:700;
-                        color:#0D2B45;
-                    "
-                >⌄</span>
-            </div>
-        </div>
-
-        <div
-            style="
-                display:none;
-                padding:0 14px 14px 14px;
-                border-top:1px solid #E6E7E5;
-            "
-        >
-            <div class="sub" style="margin-top:12px;">
-                Alquiler bruto:
-                ${formatoDineroReservas.format(alquilerBruto)}
-            </div>
-
-            <div class="sub">
-                Descuento larga estadía (${descuentoPct}%)
-            </div>
-
-            <div class="sub">
-                Alquiler neto:
-                ${formatoDineroReservas.format(alquilerNeto)}
-            </div>
-
-            <div class="sub">
-                Comisión alquiler EC
-                (${Number(detalle.rental_commission_pct) || 0}%):
-                ${formatoDineroReservas.format(comisionAlquiler)}
-            </div>
-
-            <div class="sub">
-                Limpieza:
-                ${formatoDineroReservas.format(limpieza)}
-            </div>
-
-            <div class="sub">
-                Comisión limpieza EC
-                (${Number(detalle.cleaning_commission_pct) || 0}%):
-                ${formatoDineroReservas.format(comisionLimpieza)}
-            </div>
-
-            <div style="margin-top:10px;">
-                Total cobrado al huésped:
-                <strong>
-                    ${formatoDineroReservas.format(totalHuesped)}
-                </strong>
-            </div>
-
-            <div style="margin-top:6px;">
-                Neto propietario de esta reserva:
-                <strong>
-                    ${formatoDineroReservas.format(netoPropietario)}
-                </strong>
-            </div>
-
-            <div style="margin-top:6px;">
-                Ingreso EC de esta reserva:
-                <strong>
-                    ${formatoDineroReservas.format(ingresoEC)}
-                </strong>
-            </div>
-        </div>
-
-    </div>
-`;
-                }).join("");
-        }
-    }
+    await pintarMovimientosAlquilerHM(houseId, fechaInicio, fechaFin, contenedorMovimientosPropietario, contenedorReservas);
 }
 
     let { data: mantenimientos, error: errorMantenimientos } =
@@ -15175,7 +14883,7 @@ function sumarProyeccionesMantenimientoHM(filas, proyecciones) {
 }
 
 async function cargarResumenConProgramadosHM(desde, hasta, houseId, unico = false) {
-    let consulta = supabaseClient.from("house_monthly_cost_summary")
+    let consulta = supabaseClient.from("house_monthly_cost_summary_payments")
         .select("*").gte("month", desde).lte("month", hasta);
     if (houseId) consulta = consulta.eq("house_id", houseId);
     const [resumen, programados] = await Promise.all([
@@ -15375,4 +15083,165 @@ async function eliminarItemMantenimientoHM(plan, casaId, boton) {
         if (!eliminado) boton.disabled = false;
         if (cargando) ocultarLoader();
     }
+}
+
+// Cobros del alquiler: la estadía conserva sus propias fechas.
+let borradoresCobrosHM = new Map();
+
+function validarCobrosAlquilerHM(modo, filas, total, porcentaje) {
+    if (!Number.isFinite(total) || total < 0 || !Number.isFinite(porcentaje) || porcentaje < 0 || porcentaje > 100) {
+        throw new Error('Revisá el importe, el descuento y la comisión del alquiler.');
+    }
+    if (modo === 'legacy') return null;
+    const tipos = modo === 'unico' ? ['unico'] : ['adelanto', 'saldo'];
+    if (!['unico', 'adelanto_saldo'].includes(modo)) throw new Error('Elegí una forma de cobro.');
+    const pagos = tipos.flatMap(tipo => {
+        const fila = filas[tipo] || {};
+        if (!fila.paid_on && (fila.amount === '' || fila.amount == null)) return [];
+        const importe = Number(fila.amount);
+        const fecha = String(fila.paid_on || '');
+        const fechaValida = /^\d{4}-\d{2}-\d{2}$/.test(fecha) &&
+            Number.isFinite(Date.parse(fecha)) && new Date(fecha + 'T12:00:00Z').toISOString().slice(0,10) === fecha;
+        if (!fechaValida || !Number.isFinite(importe) || importe <= 0 || Math.abs(importe * 100 - Math.round(importe * 100)) > 0.00001) {
+            throw new Error('Completá la fecha y un importe mayor a cero, con hasta dos decimales, para cada cobro. Dejá ambos vacíos si todavía no cobraste.');
+        }
+        return [{ payment_kind: tipo, paid_on: fecha, amount: importe }];
+    });
+    const centavos = pagos.reduce((s,p) => s + Math.round(p.amount * 100), 0);
+    if (centavos > Math.round(total * 100)) throw new Error('Los cobros no pueden superar el total del alquiler.');
+    if (modo === 'unico' && pagos.length && centavos !== Math.round(total * 100)) {
+        throw new Error('En pago único, el importe debe coincidir con el total del alquiler. Para un cobro parcial elegí adelanto y saldo.');
+    }
+    return pagos;
+}
+
+function crearCobrosAlquilerHM(destino, reservaId, obtenerEconomia, soloLectura = false) {
+    const clave = reservaId || 'nueva';
+    const panel = document.createElement('section');
+    panel.style.cssText = 'margin:18px 0;padding:14px;border:1px solid #deded8;border-radius:12px;min-width:0;';
+    destino.appendChild(panel);
+    panel.textContent = 'Cargando cobros…';
+    let listo = false;
+    let fallo = false;
+    let borrador;
+    let actualizar = () => {};
+    const lectura = () => {
+        if (!listo) throw new Error(fallo ? 'No se pudieron cargar los cobros. Volvé a abrir la reserva antes de guardar.' : 'Esperá a que terminen de cargar los cobros.');
+        const { total, porcentaje } = obtenerEconomia();
+        return { modo: borrador.modo, pagos: validarCobrosAlquilerHM(borrador.modo, borrador.filas, total, porcentaje) };
+    };
+    const listoPromise = (async () => {
+        try {
+            borrador = borradoresCobrosHM.get(clave);
+            if (!borrador) {
+                borrador = { modo: 'unico', filas: {}, legacy: false };
+                if (reservaId) {
+                    const [detalle, cobros] = await Promise.all([
+                        supabaseClient.from('reservation_details').select('rental_payment_mode').eq('reservation_id', reservaId).single(),
+                        supabaseClient.from('reservation_rental_payments').select('payment_kind,paid_on,amount').eq('reservation_id', reservaId)
+                    ]);
+                    if (detalle.error || cobros.error) throw detalle.error || cobros.error;
+                    borrador.modo = detalle.data.rental_payment_mode;
+                    borrador.legacy = borrador.modo === 'legacy';
+                    for (const pago of cobros.data || []) borrador.filas[pago.payment_kind] = { paid_on: pago.paid_on, amount: pago.amount };
+                }
+                borradoresCobrosHM.set(clave, borrador);
+            }
+            panel.replaceChildren();
+            const titulo = document.createElement('h3'); titulo.textContent = 'Cobros del alquiler'; panel.appendChild(titulo);
+            const ayuda = document.createElement('p'); ayuda.className = 'sub';
+            ayuda.textContent = 'Cada cobro y su comisión se reflejan en el mes de la fecha indicada. Las fechas de estadía y la limpieza se mantienen por separado. Dejá fecha e importe vacíos hasta cobrar.';
+            panel.appendChild(ayuda);
+            const etiqueta = document.createElement('label'); etiqueta.textContent = 'Forma de cobro'; panel.appendChild(etiqueta);
+            const modo = document.createElement('select'); modo.style.cssText = 'display:block;width:100%;min-height:44px;font-size:16px;margin:6px 0 14px;';
+            if (borrador.legacy) modo.add(new Option('Conservar registro anterior (mes del alquiler)', 'legacy'));
+            modo.add(new Option('Pago único', 'unico')); modo.add(new Option('Adelanto y saldo', 'adelanto_saldo'));
+            modo.value = borrador.modo; modo.disabled = soloLectura; etiqueta.appendChild(modo);
+            const aviso = document.createElement('p'); aviso.className = 'sub'; panel.appendChild(aviso);
+            const campos = document.createElement('div'); panel.appendChild(campos);
+            const resumen = document.createElement('p'); resumen.setAttribute('aria-live', 'polite'); panel.appendChild(resumen);
+            actualizar = () => {
+                const { total, porcentaje } = obtenerEconomia();
+                const tipos = borrador.modo === 'unico' ? ['unico'] : ['adelanto','saldo'];
+                const cobrado = tipos.reduce((s,t) => s + (Number(borrador.filas[t]?.amount) || 0),0);
+                resumen.textContent = borrador.modo === 'legacy'
+                    ? `Total del alquiler: ${formatearDineroHM(total)}. Esta reserva conserva su imputación anterior; todavía no tiene cobros fechados.`
+                    : `Total del alquiler: ${formatearDineroHM(total)} · Cobrado: ${formatearDineroHM(cobrado)} · Pendiente: ${formatearDineroHM(total-cobrado)}`;
+                for (const t of tipos) {
+                    const salida = campos.querySelector('[data-comision="' + t + '"]');
+                    if (salida) salida.textContent = 'Comisión EC: ' + formatearDineroHM(Math.round((Number(borrador.filas[t]?.amount)||0)*porcentaje)/100);
+                }
+            };
+            function dibujar() {
+                campos.replaceChildren();
+                aviso.textContent = borrador.modo === 'legacy' ? 'Al elegir una nueva forma de cobro, el alquiler pasará a contabilizarse únicamente por los cobros que cargues.' : '';
+                const tipos = borrador.modo === 'legacy' ? [] : borrador.modo === 'unico' ? ['unico'] : ['adelanto','saldo'];
+                for (const tipo of tipos) {
+                    const fila = borrador.filas[tipo] ||= { paid_on: '', amount: '' };
+                    const grupo = document.createElement('fieldset'); grupo.style.cssText = 'border:0;padding:0;margin:12px 0;min-width:0;';
+                    const leyenda = document.createElement('legend'); leyenda.textContent = { unico:'Pago único', adelanto:'Adelanto', saldo:'Saldo' }[tipo]; grupo.appendChild(leyenda);
+                    const grid = document.createElement('div'); grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px;'; grupo.appendChild(grid);
+                    for (const [nombre, texto, type] of [['paid_on','Fecha de cobro','date'],['amount','Importe cobrado (u$s)','number']]) {
+                        const label = document.createElement('label'); label.textContent = texto; label.style.minWidth = '0';
+                        const input = document.createElement('input'); input.type = type; input.value = fila[nombre]; input.disabled = soloLectura;
+                        if (type === 'number') { input.min = '0.01'; input.step = '0.01'; }
+                        input.style.cssText = 'display:block;box-sizing:border-box;width:100%;min-width:0;min-height:44px;font-size:16px;';
+                        input.oninput = () => { fila[nombre] = input.value; actualizar(); };
+                        label.appendChild(input); grid.appendChild(label);
+                    }
+                    const comision = document.createElement('p'); comision.className = 'sub'; comision.dataset.comision = tipo; grupo.appendChild(comision);
+                    campos.appendChild(grupo);
+                }
+                actualizar();
+            }
+            modo.onchange = () => { borrador.modo = modo.value; dibujar(); };
+            dibujar(); listo = true;
+        } catch (error) {
+            fallo = true; panel.textContent = 'No se pudieron cargar los cobros. Volvé a abrir la reserva.';
+            console.error('Error cargando cobros del alquiler:', error);
+        }
+    })();
+    return { leer: lectura, actualizar: () => actualizar(), listo: listoPromise,
+        conservar: id => borradoresCobrosHM.set(id, borrador) };
+}
+
+function escaparCobrosHM(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function pintarMovimientosAlquilerHM(houseId, desde, hasta, propietario, ec) {
+    const [cobros, reservas] = await Promise.all([
+        supabaseClient.from('house_rental_account_movements').select('*').eq('house_id',houseId).gte('paid_on',desde).lt('paid_on',hasta).order('paid_on',{ascending:false}),
+        supabaseClient.from('house_reservations').select('id,check_in,check_out').eq('house_id',houseId).gte('check_in',desde).lt('check_in',hasta)
+    ]);
+    const tarjetaError = '<div class="card">No se pudieron cargar los cobros del alquiler.</div>';
+    if (cobros.error || reservas.error) {
+        console.error('Error cargando movimientos de alquiler:',cobros.error || reservas.error);
+        if (propietario) propietario.innerHTML = tarjetaError; ec.innerHTML = tarjetaError; return;
+    }
+    const fecha = valor => new Date(valor + 'T12:00:00').toLocaleDateString('es-AR');
+    const tarjeta = (titulo, descripcion, importe, detalle) => `<details class="card"><summary style="cursor:pointer;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;"><div><div class="title">${escaparCobrosHM(titulo)}</div><div class="sub">${escaparCobrosHM(descripcion)}</div></div><div><div class="sub">INGRESO</div><strong>${formatearImporteCuentaHM(importe)}</strong></div></summary><div class="sub" style="margin-top:12px">${escaparCobrosHM(detalle)}</div></details>`;
+    const renderCobro = (p, esPropietario) => {
+        const titulo = {unico:'Pago único de alquiler',adelanto:'Adelanto de alquiler',saldo:'Saldo de alquiler',legacy:'Alquiler (registro anterior)'}[p.payment_kind] || 'Alquiler';
+        return tarjeta(titulo, `${p.tenant_name || 'Huésped'} · ${p.legacy ? 'Fecha del alquiler' : 'Cobrado'}: ${fecha(p.paid_on)}`,
+            esPropietario ? Number(p.rental_net)-Number(p.rental_commission) : Number(p.rental_commission),
+            `Estadía: ${fecha(p.check_in)} al ${fecha(p.check_out)} · Importe: ${formatearDineroHM(p.rental_net)} · Comisión EC (${p.rental_commission_pct}%): ${formatearDineroHM(p.rental_commission)}`);
+    };
+    if (propietario) propietario.innerHTML = (cobros.data || []).map(p=>renderCobro(p,true)).join('');
+    ec.innerHTML = (cobros.data || []).map(p=>renderCobro(p,false)).join('');
+    if (reservas.data?.length) {
+        const detalles = await supabaseClient.from('reservation_details').select('reservation_id,tenant_name,cleaning_amount,cleaning_profit,cleaning_commission_pct').in('reservation_id',reservas.data.map(r=>r.id));
+        if (detalles.error) {
+            console.error('Error cargando limpieza:',detalles.error);
+            ec.innerHTML += '<div class="card">No se pudo cargar la limpieza.</div>';
+        } else {
+            const mapa = new Map(reservas.data.map(r=>[r.id,r]));
+            ec.innerHTML += (detalles.data || []).filter(d=>Number(d.cleaning_amount)||Number(d.cleaning_profit)).map(d=> {
+                const r=mapa.get(d.reservation_id);
+                return tarjeta('Limpieza',`${d.tenant_name || 'Huésped'} · ${fecha(r.check_in)}`,Number(d.cleaning_profit)||0,
+                    `Importe de limpieza: ${formatearDineroHM(d.cleaning_amount)} · Comisión EC (${Number(d.cleaning_commission_pct)||0}%): ${formatearDineroHM(d.cleaning_profit)}`);
+            }).join('');
+        }
+    }
+    if (!ec.innerHTML) ec.innerHTML = '<div class="card">No hay cobros de alquiler ni limpieza durante este mes.</div>';
 }
